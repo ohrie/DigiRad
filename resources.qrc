@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/visionvelo_digirad" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
