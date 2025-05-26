@@ -25,8 +25,10 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
-from qgis.core import QgsMessageLog, QgsRasterLayer, QgsProject, QgsCoordinateReferenceSystem, QgsPointXY
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.core import QgsMapLayerProxyModel, QgsMessageLog, QgsProject, QgsPointXY
 
+from .dialogstate import DialogStateMachine, DialogState
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from .classes.processing.directRouteNetwork import DirectRouteNetwork
@@ -36,10 +38,13 @@ from .statics import ARS_INDEX, PROCESSING_CONFIG, LAYER_MANAGER, DUMMY_CENTER_O
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'visionvelo_digirad_dialog_base.ui'))
+    os.path.dirname(__file__), 'visionvelo_digirad_dockwidget.ui'))
 
 
-class DigiRadDialog(QtWidgets.QWizard, FORM_CLASS):
+class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
+
+    closingPlugin = pyqtSignal()
+
     def __init__(self, iface, parent=None):
         """Constructor."""
         super(DigiRadDialog, self).__init__(parent)
@@ -49,25 +54,66 @@ class DigiRadDialog(QtWidgets.QWizard, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.iface = iface
+
         self.setupUi(self)
+        self.postSetupUi()
+        
+        self.stateMachine = DialogStateMachine(DialogState.WELCOME, self)
+
         self.setupConnections()
+
+    def closeEvent(self, event):
+        self.closingPlugin.emit()
+        event.accept()
+    
+    def postSetupUi(self):
+        self.centersMapLayerSelection.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.reprojectSelectLayer.setFilters(QgsMapLayerProxyModel.LineLayer)
+
+        self.tabs = {
+            DialogState.WELCOME: self.welcomeTab,
+            DialogState.LCOATIONSELECT: self.locationTab,
+            DialogState.CENTERPOINTS: self.centerTab,
+            DialogState.CENTERPOINTSEDIT: self.centerEditTab,
+            DialogState.AIRLINE: self.airlineTab,
+            DialogState.AIRLINEEDIT: self.airlineEditTab,
+            DialogState.REPROJECT: self.reprojectTab,
+        }
     
     def setupConnections(self):
         # Connect signals and slots
-        self.loadProjectButton.clicked.connect(self.onloadProjectButton)
+
+        # Welcome Page
+        self.welcomeNextButton.clicked.connect(self.onWelcomeNextButton)
 
         # Location page
+        self.locationBackButton.clicked.connect(self.onLocationBackButton)
+        self.locationCreateProject.clicked.connect(self.onLocationCreateProject)
         self.locationSearchButton.clicked.connect(self.onLocationSearchButton)
         self.locationResultsListWidget.currentItemChanged.connect(self.onLocationRegionItemChanged)
 
         # Center page
-        self.centersGeneratePointsButton.clicked.connect(self.onCentersGeneratePointsButton)
+        self.centralGenerateButton.clicked.connect(self.onCentralGenerateButton)
+        self.centralNextButton.clicked.connect(self.onCentralNextButton)
+        self.centralBackButton.clicked.connect(self.onCentralBackButton)
+
+        # Center edit page
+        self.centerEditBackButton.clicked.connect(self.onCenterEditBackButton)
+        self.centerEditContinueButton.clicked.connect(self.onCenterEditContinueButton)
 
         # Airline page
-        self.generateAirlineButton.clicked.connect(self.onGenerateAirlineButton)
+        self.airlineBackButton.clicked.connect(self.onAirlineBackButton)
+        self.airlineContinueButton.clicked.connect(self.onAirlineContinueButton)
+        self.airlineGenerateButton.clicked.connect(self.onAirlineGenerateButton)
+
+        # Airline edit page
+        self.airlineEditBackButton.clicked.connect(self.onAirlineEditBackButton)
+        self.airlineEditContinueButton.clicked.connect(self.onAirlineEditContinueButton)
 
         # Route page
-        self.calculateRoutesButton.clicked.connect(self.onCalculateRoutesButton)
+        self.reprojectBackButton.clicked.connect(self.onReprojectBackButton)
+        self.reprojectContinueButton.clicked.connect(self.onReprojectContinueButton)
+        self.reprojectGenerateButton.clicked.connect(self.onReprojectGenerateButton)
     
     def setupMapView(self):
         # Setup map canvas
@@ -79,14 +125,53 @@ class DigiRadDialog(QtWidgets.QWizard, FORM_CLASS):
         # canvas.freeze(False)
 
         LAYER_MANAGER.show()
+    
+    def selectTab(self, state: DialogState):
+        for (tabState, tab) in self.tabs.items():
+            tab.setEnabled(tabState == state)
+        
+        if state in self.tabs:
+            self.tabWidget.setCurrentWidget(self.tabs[state])
+    
+    ### STATE TRANSITIONS
 
+    def showWelcomePage(self, context):
+        self.selectTab(DialogState.WELCOME)
     
+    def showLocationSelectPage(self, context):
+        self.selectTab(DialogState.LCOATIONSELECT)
+
+    def showCenterPointsPage(self, context):
+        self.selectTab(DialogState.CENTERPOINTS)
+    
+    def showCenterPointsEditPage(self, context):
+        self.selectTab(DialogState.CENTERPOINTSEDIT)
+    
+    def showAirlinePage(self, context):
+        self.selectTab(DialogState.AIRLINE)
+    
+    def showAirlineEditPage(self, context):
+        self.selectTab(DialogState.AIRLINEEDIT)
+    
+    def showReprojectPage(self, context):
+        self.selectTab(DialogState.REPROJECT)
+
     ### SIGNALS
-    
-    def onloadProjectButton(self):
-        self.setupMapView()
+
+    ## WELCOME PAGE
+    def onWelcomeNextButton(self):
+        self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
     
     ## LOCATION PAGE
+    def onLocationBackButton(self):
+        self.stateMachine.transitionTo(DialogState.WELCOME)
+
+    def onLocationCreateProject(self):
+        self.setupMapView()
+        self.stateMachine.transitionTo(DialogState.CENTERPOINTS)
+    
+    def onCentralNextButton(self):
+        self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
     
     def onLocationSearchButton(self):
         results = ARS_INDEX.searchByName(self.locationLineEdit.text())
@@ -110,18 +195,39 @@ class DigiRadDialog(QtWidgets.QWizard, FORM_CLASS):
         PROCESSING_CONFIG.setARSCode(code)
         LAYER_MANAGER.updateProjectName(PROCESSING_CONFIG.projectName)
 
+        self.locationCreateProject.setEnabled(True)
+
         self.iface.mapCanvas().setCenter(code.center)
         self.iface.mapCanvas().refresh()
 
     ## CENTER PAGE
+    def onCentralBackButton(self):
+        self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
 
-    def onCentersGeneratePointsButton(self):
+    def onCentralNextButton(self):
+        self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
+
+    def onCentralGenerateButton(self):
         centerLayer = CenterLayer.loadFromFile(DUMMY_CENTER_OGR_PATH + "|layername=dresden_zentren", "Zentren")
-        LAYER_MANAGER.updateCenterLayer(centerLayer)
+        if centerLayer:
+            LAYER_MANAGER.updateCenterLayer(centerLayer)
+            self.centralNextButton.setEnabled(True)
+    
+    ## CENTER EDIT PAGE
+    def onCenterEditBackButton(self):
+        self.stateMachine.transitionTo(DialogState.CENTERPOINTS)
+    
+    def onCenterEditContinueButton(self):
+        self.stateMachine.transitionTo(DialogState.AIRLINE)
 
     ## AIRLINE PAGE
+    def onAirlineBackButton(self):
+        self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
+    
+    def onAirlineContinueButton(self):
+        self.stateMachine.transitionTo(DialogState.AIRLINEEDIT)
 
-    def onGenerateAirlineButton(self):
+    def onAirlineGenerateButton(self):
         centerLayer = LAYER_MANAGER.centerLayer
 
         if not centerLayer:
@@ -130,11 +236,25 @@ class DigiRadDialog(QtWidgets.QWizard, FORM_CLASS):
         drn = DirectRouteNetwork(centerLayer)
         routeEntries = drn.createNetwork()
         directRouteLayer = DirectRouteNetworklayer(routeEntries)
-        LAYER_MANAGER.updateDirectRouteLayer(directRouteLayer)
-    
-    # ROUTE PAGE
+        if directRouteLayer:
+            LAYER_MANAGER.updateDirectRouteLayer(directRouteLayer)
+            self.airlineContinueButton.setEnabled(True)
 
-    def onCalculateRoutesButton(self):
+    ## AIRLINE EDIT PAGE
+    def onAirlineEditBackButton(self):
+        self.stateMachine.transitionTo(DialogState.AIRLINE)
+
+    def onAirlineEditContinueButton(self):
+        self.stateMachine.transitionTo(DialogState.REPROJECT)
+
+    # REPROJECT PAGE
+    def onReprojectBackButton(self):
+        self.stateMachine.transitionTo(DialogState.AIRLINEEDIT)
+
+    def onReprojectContinueButton(self):
+        pass
+
+    def onReprojectGenerateButton(self):
         directRouteLayer = LAYER_MANAGER.directRouteLayer
 
         if not directRouteLayer:
