@@ -25,6 +25,7 @@ import os
 from .classes.ars import ARSIndex
 from .classes.processingConfig import ProcessingConfig
 from .classes.layerManager import LayerManager
+from .classes.processing.networkValidator import Networkvalidator
 
 PLUGIN_PATH = os.path.dirname(os.path.realpath(__file__))
 DAT_PATH = os.path.join(PLUGIN_PATH, "dat")
@@ -34,3 +35,5 @@ DUMMY_CENTER_OGR_PATH = os.path.join("C:/Users/Lindemann/Documents/Arbeit/VV/Pro
 ARS_INDEX = ARSIndex(os.path.join(DAT_PATH, "ARS_Zentren_VG_Kreise.csv"))
 PROCESSING_CONFIG = ProcessingConfig()
 LAYER_MANAGER = LayerManager(PROCESSING_CONFIG.projectName)
+
+NETWORK_VALIDATOR = Networkvalidator(LAYER_MANAGER.crs())

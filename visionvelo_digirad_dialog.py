@@ -29,6 +29,9 @@ from qgis.core import QgsMessageLog, QgsRasterLayer, QgsProject, QgsCoordinateRe
 
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
+from .classes.processing.directRouteNetwork import DirectRouteNetwork
+from .classes.layers.routeNetworkLayer import RouteNetworklayer
+from .classes.processing.routeNetwork import RouteNetwork
 from .statics import ARS_INDEX, PROCESSING_CONFIG, LAYER_MANAGER, DUMMY_CENTER_OGR_PATH
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -59,6 +62,12 @@ class DigiRadDialog(QtWidgets.QWizard, FORM_CLASS):
 
         # Center page
         self.centersGeneratePointsButton.clicked.connect(self.onCentersGeneratePointsButton)
+
+        # Airline page
+        self.generateAirlineButton.clicked.connect(self.onGenerateAirlineButton)
+
+        # Route page
+        self.calculateRoutesButton.clicked.connect(self.onCalculateRoutesButton)
     
     def setupMapView(self):
         # Setup map canvas
@@ -110,11 +119,29 @@ class DigiRadDialog(QtWidgets.QWizard, FORM_CLASS):
         centerLayer = CenterLayer.loadFromFile(DUMMY_CENTER_OGR_PATH + "|layername=dresden_zentren", "Zentren")
         LAYER_MANAGER.updateCenterLayer(centerLayer)
 
-        from .classes.processing.directRouteNetwork import DirectRouteNetwork
+    ## AIRLINE PAGE
 
+    def onGenerateAirlineButton(self):
+        centerLayer = LAYER_MANAGER.centerLayer
+
+        if not centerLayer:
+            return
+        
         drn = DirectRouteNetwork(centerLayer)
         routeEntries = drn.createNetwork()
         directRouteLayer = DirectRouteNetworklayer(routeEntries)
         LAYER_MANAGER.updateDirectRouteLayer(directRouteLayer)
-        
-        
+    
+    # ROUTE PAGE
+
+    def onCalculateRoutesButton(self):
+        directRouteLayer = LAYER_MANAGER.directRouteLayer
+
+        if not directRouteLayer:
+            return
+        networkLayer = QgsProject.instance().mapLayersByName("graph_dd_eskn — dresden_lokales_netz")[0]
+
+        rn = RouteNetwork(networkLayer, directRouteLayer)
+        routeEntries = rn.createNetwork()
+        routeLayer = RouteNetworklayer(routeEntries)
+        LAYER_MANAGER.updateRouteLayer(routeLayer)

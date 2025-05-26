@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import copy
 from typing import List, Dict, Self
 
@@ -35,7 +36,7 @@ class DirectRouteEntry:
         self.relationId = relationId
         self.p1 = p1
         self.p2 = p2
-        self.loc = LevelOfCentrality.getUpperLoc(centerFeatureP1.loc, centerFeatureP2.loc)
+        self.cf = LevelOfCentrality.getUpperLoc(centerFeatureP1.loc, centerFeatureP2.loc).toConnectivityFunction()
         self._geom = None
     
     @staticmethod
@@ -69,7 +70,7 @@ class DirectRouteNetwork:
     def __init__(self, centerLayer: CenterLayer):
         self.centerLayer = centerLayer
     
-    def createNetwork(self):
+    def createNetwork(self) -> List[DirectRouteEntry]:
         meshCalc = MeshCalculator()
         routesAll = meshCalc.extractDirectRoutes(
             self.centerLayer.locFeatures[LevelOfCentrality.GRUNDZENTRUM] + 
@@ -80,19 +81,19 @@ class DirectRouteNetwork:
             self.centerLayer.locFeatures[LevelOfCentrality.OBERZENTRUM])
         routesOZ = meshCalc.extractDirectRoutes(self.centerLayer.locFeatures[LevelOfCentrality.OBERZENTRUM])
 
-        mergedRoutes = self._mergeLocRoutes(routesAll, routesMZ_OZ)
-        mergedRoutes = self._mergeLocRoutes(mergedRoutes, routesOZ)
+        mergedRoutes = self._mergeCFRoutes(routesAll, routesMZ_OZ)
+        mergedRoutes = self._mergeCFRoutes(mergedRoutes, routesOZ)
 
         return mergedRoutes.values()
     
-    def _mergeLocRoutes(self, routes1: Dict[int, DirectRouteEntry], routes2: Dict[int, DirectRouteEntry]) -> Dict[int, DirectRouteEntry]:
+    def _mergeCFRoutes(self, routes1: Dict[int, DirectRouteEntry], routes2: Dict[int, DirectRouteEntry]) -> Dict[int, DirectRouteEntry]:
         merged = copy.copy(routes1)
 
         for routeId2 in routes2:
             if routeId2 in routes1:
                 route1 = routes1[routeId2]
                 route2 = routes2[routeId2]
-                if route1.loc.isLowerEq(route2.loc):
+                if route1.cf.isLowerEq(route2.cf):
                     merged[routeId2] = route2
             else:
                 merged[routeId2] = routes2[routeId2]

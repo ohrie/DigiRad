@@ -25,6 +25,7 @@ from qgis.core import QgsMessageLog, QgsProject, QgsRasterLayer, QgsCoordinateRe
 
 from .layers.centerLayer import CenterLayer
 from .layers.directRouteNetworkLayer import DirectRouteNetworklayer
+from .layers.routeNetworkLayer import RouteNetworklayer
 
 class LayerManager:
     def __init__(self, projectName: str, showBaseMap: bool = True):
@@ -41,6 +42,7 @@ class LayerManager:
 
         self.centerLayer = None
         self.directRouteLayer = None
+        self.routeLayer = None
     
     def _createBaseLayer(self):
         tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=15&zmin=6"
@@ -63,7 +65,11 @@ class LayerManager:
     
     def _ensureLayer(self, root, group, layer):
         if layer:
-            if not group.findLayer(layer.name()):
+            try:
+                name = layer.name()
+            except:
+                pass
+            if name and not group.findLayer(name):
                 # Add the layer via the `addMapLayer` fn to the root
                 # and then move it to the group 
                 QgsProject.instance().addMapLayer(layer)
@@ -110,6 +116,18 @@ class LayerManager:
 
         self.directRouteLayer = directRouteLayer
         self.iface.layerTreeView().refreshLayerSymbology(directRouteLayer.qgsLayer().id())
+    
+    def updateRouteLayer(self, routeLayer: RouteNetworklayer):
+        (root, group) = self._getGroup()
+
+        if self.routeLayer:
+            self._removeLayer(group, self.routeLayer.qgsLayer())
+        
+        self._ensureLayer(root, group, routeLayer.qgsLayer())
+        # self._moveToTop(group, routeLayer.qgsLayer())
+
+        self.routeLayer = routeLayer
+        self.iface.layerTreeView().refreshLayerSymbology(routeLayer.qgsLayer().id())
 
     def updateProjectName(self, newName: str):
         root = QgsProject.instance().layerTreeRoot()

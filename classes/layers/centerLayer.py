@@ -21,9 +21,20 @@
  ***************************************************************************/
 """
 from typing import Self, List, Dict
-from qgis.core import QgsMessageLog, QgsVectorLayer, QgsCategorizedSymbolRenderer, QgsMarkerSymbol, QgsRendererCategory, QgsFeatureRequest, QgsPoint
+from qgis.core import (
+    QgsMessageLog,
+    QgsVectorLayer,
+    QgsCategorizedSymbolRenderer,
+    QgsMarkerSymbol,
+    QgsRendererCategory,
+    QgsFeatureRequest,
+    QgsPoint,
+    QgsSymbol,
+    QgsWkbTypes
+)
 
 from ..network import LevelOfCentrality
+from ..styling import Colors
 
 class CenterLayerFeatureConfig:
     def __init__(self, locName: str = "loc", nameName: str = "name"):
@@ -83,24 +94,24 @@ class CenterLayer():
         renderer = QgsCategorizedSymbolRenderer(categoryField)
 
         categories = [
-            [LevelOfCentrality.OBERZENTRUM.asStr(), QgsMarkerSymbol.createSimple({'color': '0,0,255', 'size': '4'}), LevelOfCentrality.OBERZENTRUM.asStr()],
-            [LevelOfCentrality.MITTELZENTRUM.asStr(), QgsMarkerSymbol.createSimple({'color': '0,255,0', 'size': '3'}), LevelOfCentrality.MITTELZENTRUM.asStr()],
-            [LevelOfCentrality.GRUNDZENTRUM.asStr(), QgsMarkerSymbol.createSimple({'color': '255,0,0', 'size': '2'}), LevelOfCentrality.GRUNDZENTRUM.asStr()],
+            [LevelOfCentrality.OBERZENTRUM.asStr(), Colors.OBERZENTRUM, 4],
+            [LevelOfCentrality.MITTELZENTRUM.asStr(), Colors.MITTELZENTRUM, 3],
+            [LevelOfCentrality.GRUNDZENTRUM.asStr(), Colors.GRUNDZENTRUM, 2],
         ]
 
         for category in categories:
-            value = category[0]
-            symbol = category[1]
-            label = category[2]
-            
-            cat = QgsRendererCategory(value, symbol, label)
+            symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+            symbol.setColor(category[1])
+            symbol.setSize(category[2])
+            cat = QgsRendererCategory(category[0], symbol, category[0])
+
             renderer.addCategory(cat)
         
         return renderer
     
 
-    def qgsLayer(self):
+    def qgsLayer(self) -> QgsVectorLayer:
         return self._layer
     
-    def name(self):
+    def name(self) -> str:
         return self._layer.name()
