@@ -52,9 +52,9 @@ class CenterLayerFeature:
     def featuresFromLayer(layer) -> Dict[LevelOfCentrality, List[Self]]:
         qgsLayer = layer.qgsLayer()
         features = {
-            LevelOfCentrality.GRUNDZENTRUM: [],
-            LevelOfCentrality.MITTELZENTRUM: [],
-            LevelOfCentrality.OBERZENTRUM: [],
+            LevelOfCentrality.IV: [],
+            LevelOfCentrality.III: [],
+            LevelOfCentrality.II: [],
         }
         
         nameIdx = qgsLayer.fields().indexFromName(layer.config.nameName)
@@ -94,9 +94,9 @@ class CenterLayer():
         renderer = QgsCategorizedSymbolRenderer(categoryField)
 
         categories = [
-            [LevelOfCentrality.OBERZENTRUM.asStr(), Colors.OBERZENTRUM, 4],
-            [LevelOfCentrality.MITTELZENTRUM.asStr(), Colors.MITTELZENTRUM, 3],
-            [LevelOfCentrality.GRUNDZENTRUM.asStr(), Colors.GRUNDZENTRUM, 2],
+            [LevelOfCentrality.II.asStr(), Colors.II, 4],
+            [LevelOfCentrality.III.asStr(), Colors.III, 3],
+            [LevelOfCentrality.IV.asStr(), Colors.IV, 2],
         ]
 
         for category in categories:

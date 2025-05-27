@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Self
+from typing import Self, List
 from enum import Enum
 
 class ConnectivityFunction(Enum):
@@ -30,6 +30,10 @@ class ConnectivityFunction(Enum):
     VFS_4 = 4
     VFS_5 = 5
 
+    @staticmethod
+    def defaults() -> List[Self]:
+        return [ConnectivityFunction.VFS_2, ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]
+    
     def asStr(self) -> str:
         match self:
             case ConnectivityFunction.VFS_1:
@@ -50,25 +54,33 @@ class ConnectivityFunction(Enum):
         return self.value >= other.value
 
 class LevelOfCentrality(Enum):
-    OBERZENTRUM = 2
-    MITTELZENTRUM = 3
-    GRUNDZENTRUM = 4
+    II = 2
+    III = 3
+    IV = 4
+
+    @staticmethod
+    def defaults() -> List[Self]:
+        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV]
 
     def fromStr(value: str) -> Self:
         value = value.lower()
-        if "oberzent" in value:
-            return LevelOfCentrality.OBERZENTRUM
-        elif "mittelze" in value:
-            return LevelOfCentrality.MITTELZENTRUM
-        elif "grundz" in value:
-            return LevelOfCentrality.GRUNDZENTRUM
+        if "oberzent" in value or value == "zentralitätsstufe ii":
+            return LevelOfCentrality.II
+        elif "mittelze" in value or value == "zentralitätsstufe iii":
+            return LevelOfCentrality.III
+        elif "grundz" in value or value == "zentralitätsstufe iv":
+            return LevelOfCentrality.IV
         else:
             raise ValueError(f"'{value}' is not a valid level of centrality")
     
     def asStr(self) -> str:
-        n = self.name.lower()
-        n = n[0].upper() + n[1:]
-        return n
+        match self:
+            case LevelOfCentrality.II:
+                return "Zentralitätsstufe II"
+            case LevelOfCentrality.III:
+                return "Zentralitätsstufe III"
+            case LevelOfCentrality.IV:
+                return "Zentralitätsstufe IV"
     
     def isLowerEq(self, other: Self) -> bool:
         return self.value <= other.value
@@ -84,11 +96,11 @@ class LevelOfCentrality(Enum):
     
     def toConnectivityFunction(self) -> ConnectivityFunction:
         match self:
-            case LevelOfCentrality.OBERZENTRUM:
+            case LevelOfCentrality.II:
                 return ConnectivityFunction.VFS_2
-            case LevelOfCentrality.MITTELZENTRUM:
+            case LevelOfCentrality.III:
                 return ConnectivityFunction.VFS_3
-            case LevelOfCentrality.GRUNDZENTRUM:
+            case LevelOfCentrality.IV:
                 return ConnectivityFunction.VFS_4
 
     

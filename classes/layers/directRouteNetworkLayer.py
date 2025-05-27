@@ -76,9 +76,9 @@ class DirectRouteNetworklayer:
         renderer = QgsCategorizedSymbolRenderer(categoryField)
 
         categories = [
-            [ConnectivityFunction.VFS_2.asStr(), Colors.OBERZENTRUM, 0.7],
-            [ConnectivityFunction.VFS_3.asStr(), Colors.MITTELZENTRUM, 0.5],
-            [ConnectivityFunction.VFS_4.asStr(), Colors.GRUNDZENTRUM, 0.2],
+            [ConnectivityFunction.VFS_2.asStr(), Colors.II, 0.7],
+            [ConnectivityFunction.VFS_3.asStr(), Colors.III, 0.5],
+            [ConnectivityFunction.VFS_4.asStr(), Colors.IV, 0.2],
         ]
 
         for category in categories:

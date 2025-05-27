@@ -22,6 +22,7 @@
 """
 
 import copy
+from enum import Enum
 from typing import List, Dict, Self
 
 from qgis.core import QgsMessageLog, QgsPoint, QgsMesh, QgsGeometry
@@ -30,6 +31,14 @@ from qgis.analysis import QgsMeshTriangulation
 from ..helper import createPointHash, createDoublePointHash
 from ..network import LevelOfCentrality
 from ..layers.centerLayer import CenterLayer, CenterLayerFeature
+
+class DirectRouteGenerateMethod(Enum):
+    AUTO = 1
+    MANUEL = 2
+
+    @staticmethod
+    def default() -> Self:
+        return DirectRouteGenerateMethod.AUTO
 
 class DirectRouteEntry:
     def __init__(self, relationId: int, p1: QgsPoint, p2: QgsPoint, centerFeatureP1: CenterLayerFeature, centerFeatureP2: CenterLayerFeature):
@@ -73,13 +82,13 @@ class DirectRouteNetwork:
     def createNetwork(self) -> List[DirectRouteEntry]:
         meshCalc = MeshCalculator()
         routesAll = meshCalc.extractDirectRoutes(
-            self.centerLayer.locFeatures[LevelOfCentrality.GRUNDZENTRUM] + 
-            self.centerLayer.locFeatures[LevelOfCentrality.MITTELZENTRUM] +
-            self.centerLayer.locFeatures[LevelOfCentrality.OBERZENTRUM])
+            self.centerLayer.locFeatures[LevelOfCentrality.IV] + 
+            self.centerLayer.locFeatures[LevelOfCentrality.III] +
+            self.centerLayer.locFeatures[LevelOfCentrality.II])
         routesMZ_OZ = meshCalc.extractDirectRoutes(
-            self.centerLayer.locFeatures[LevelOfCentrality.MITTELZENTRUM] +
-            self.centerLayer.locFeatures[LevelOfCentrality.OBERZENTRUM])
-        routesOZ = meshCalc.extractDirectRoutes(self.centerLayer.locFeatures[LevelOfCentrality.OBERZENTRUM])
+            self.centerLayer.locFeatures[LevelOfCentrality.III] +
+            self.centerLayer.locFeatures[LevelOfCentrality.II])
+        routesOZ = meshCalc.extractDirectRoutes(self.centerLayer.locFeatures[LevelOfCentrality.II])
 
         mergedRoutes = self._mergeCFRoutes(routesAll, routesMZ_OZ)
         mergedRoutes = self._mergeCFRoutes(mergedRoutes, routesOZ)
