@@ -73,7 +73,7 @@ class RouteNetworklayer:
                 QgsMessageLog.logMessage(f"Route not found {route.directRouteEntry.relationId}")
                 continue
             feat = QgsFeature()
-            feat.setAttributes([route.directRouteEntry.relationId, route.directRouteEntry.cf.asStr(), route.validation.detourFactor, route.cost])
+            feat.setAttributes([route.directRouteEntry.relationId, route.directRouteEntry.cf.asStr(), route.validation.detourFactor, route.routeResult.cost])
             feat.setGeometry(route.geometry())
             feats.append(feat)
 

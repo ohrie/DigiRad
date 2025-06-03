@@ -45,7 +45,7 @@ class LayerManager:
         self.routeLayer = None
     
     def _createBaseLayer(self):
-        tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=15&zmin=6"
+        tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=15"
         layer = QgsRasterLayer(tms, "Hintergrundkarte", "wms")
         return layer
     

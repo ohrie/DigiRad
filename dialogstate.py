@@ -2,10 +2,14 @@ from enum import Enum
 from typing import Dict, Any, Optional, Set, Callable, List
 from abc import ABC, abstractmethod
 
+from qgis.core import QgsVectorLayer
+
 from .classes.network import LevelOfCentrality, ConnectivityFunction
 from .classes.layers.centerLayer import CenterLayer
+from .classes.layers.routeNetworkLayer import RouteNetworklayer
+from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from .classes.processing.directRouteNetwork import DirectRouteGenerateMethod
-from .classes.processing.routeNetworkTask import RouteNetworkTask
+from .classes.processing.routeNetwork import NetworkPathFinder
 
 class StateHandler(ABC):
     """Base class for state handlers"""
@@ -13,24 +17,18 @@ class StateHandler(ABC):
     def __init__(self, name: str):
         self.name = name
         self.context_data = {}
-        self.context = {}
+        self.context = None
     
     def setUi(self, ui):
         """Set the UI reference"""
         self.ui = ui
     
-    def setContext(self, context: Dict[str, Any]):
+    def setContext(self, context: 'DialogStateContext'):
         """Set the context reference"""
         self.context = context
     
-    def _updateValue(self, value, key: str, default: Any = None) -> Any:
-        oldValue = default
-        if key in self.context:
-            oldValue = self.context[key]
-        
-        self.context[key] = value
-        
-        return oldValue
+    def getContext(self) -> 'DialogStateContext':
+        return self.context
     
     @abstractmethod
     def onEnter(self, previousState: Optional['DialogState'] = None):
@@ -56,10 +54,10 @@ class WelcomeHandler(StateHandler):
         super().__init__("Welcome")
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
-        print(f"[LOGIN] Entering login state")
-        if previousState:
-            print(f"[LOGIN] Coming from: {previousState.name}")
-        self.context['login_attempts'] = self.context.get('login_attempts', 0)
+        # print(f"[LOGIN] Entering login state")
+        # if previousState:
+        #     print(f"[LOGIN] Coming from: {previousState.name}")
+        # self.context['login_attempts'] = self.context.get('login_attempts', 0)
         self.handleUi()
     
     def onExit(self, nextState: Optional['DialogState'] = None):
@@ -129,43 +127,25 @@ class CenterPointsHandler(StateHandler):
         return targetState in [DialogState.LCOATIONSELECT, DialogState.CENTERPOINTSEDIT]
     
     def hasCenterLayer(self) -> bool:
-        return CenterPointsHandler.KCenterLayer in self.context
+        return self.context.has(CenterPointsHandler.KCenterLayer)
     
     def getCenterLayer(self) -> Optional[CenterLayer]:
-        if CenterPointsHandler.KCenterLayer in self.context:
-            return self.context[CenterPointsHandler.KCenterLayer]
-        else:
-            return None
+        return self.context.get(CenterPointsHandler.KCenterLayer)
     
     def setCenterLayer(self, value: CenterLayer) -> Optional[CenterLayer]:
-        oldValue = None
-        if CenterPointsHandler.KCenterLayer in self.context:
-            oldValue = self.context[CenterPointsHandler.KCenterLayer]
-        
-        self.context[CenterPointsHandler.KCenterLayer] = value
-        
-        # Update the UI
-        self.handleUi()
-
-        return oldValue
+        return self.context.updateValue(CenterPointsHandler.KCenterLayer, value)
     
     def getGenerateMethod(self) -> DirectRouteGenerateMethod:
-        if CenterPointsHandler.KGenerateMethod not in self.context:
-            self.context[CenterPointsHandler.KGenerateMethod] = DirectRouteGenerateMethod.default()
-    
-        return self.context[CenterPointsHandler.KGenerateMethod]
+        return self.context.getOrSetDefault(CenterPointsHandler.KGenerateMethod, default=DirectRouteGenerateMethod.default())
     
     def setGenerateMethod(self, value: DirectRouteGenerateMethod) -> Optional[DirectRouteGenerateMethod]:
-        return self._updateValue(value, CenterPointsHandler.KGenerateMethod, default=DirectRouteGenerateMethod.default())
+        return self.context.updateValue(CenterPointsHandler.KGenerateMethod, value, default=DirectRouteGenerateMethod.default())
     
     def getLOCS(self) -> List[LevelOfCentrality]:
-        if CenterPointsHandler.KLOCs not in self.context:
-            self.context[CenterPointsHandler.KLOCs] = LevelOfCentrality.defaults()
-    
-        return self.context[CenterPointsHandler.KLOCs]
+        return self.context.getOrSetDefault(CenterPointsHandler.KLOCs, default=LevelOfCentrality.defaults())
     
     def setLOCs(self, value: List[LevelOfCentrality]) -> Optional[List[LevelOfCentrality]]:
-        return self._updateValue(value, CenterPointsHandler.KLOCs, default=LevelOfCentrality.defaults())
+        return self.context.updateValue(CenterPointsHandler.KLOCs, value, default=LevelOfCentrality.defaults())
 
 class CenterPointsEditHandler(StateHandler):
     def __init__(self):
@@ -185,7 +165,7 @@ class CenterPointsEditHandler(StateHandler):
         return targetState in [DialogState.CENTERPOINTS, DialogState.AIRLINE]
 
 class AirlineHandler(StateHandler):
-    KCFs = "airline.CFs"
+    KDirectRouteLayer = "airline.DirectRouteLayer"
 
     def __init__(self):
         super().__init__("Airline")
@@ -203,17 +183,14 @@ class AirlineHandler(StateHandler):
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
         return targetState in [DialogState.CENTERPOINTSEDIT, DialogState.AIRLINEEDIT]
     
-    def hasCFs(self) -> bool:
-        return AirlineHandler.KCFs in self.context
+    def getDirectRouteLayer(self) -> DirectRouteNetworklayer:
+        return self.context.getOrSetDefault(AirlineHandler.KDirectRouteLayer)
     
-    def getCFs(self) -> List[ConnectivityFunction]:
-        if AirlineHandler.KCFs not in self.context:
-            self.context[AirlineHandler.KCFs] = ConnectivityFunction.defaults()
+    def setDirectRouteLayer(self, value: DirectRouteNetworklayer) -> DirectRouteNetworklayer:
+        return self.context.updateValue(AirlineHandler.KDirectRouteLayer, value)
     
-        return self.context[AirlineHandler.KCFs]
-    
-    def setCFs(self, value: List[ConnectivityFunction]) -> List[ConnectivityFunction]:
-        return self._updateValue(value, AirlineHandler.KCFs, default=ConnectivityFunction.defaults())
+    def hasDirectRouteLayer(self) -> bool:
+        return self.context.has(AirlineHandler.KDirectRouteLayer)
 
 class AirlineEditHandler(StateHandler):
     def __init__(self):
@@ -235,6 +212,10 @@ class AirlineEditHandler(StateHandler):
 class ReprojectHandler(StateHandler):
     KProcessing = "reproject.Processing"
     KProgress = "reproject.Progress"
+    KDetourTolerance = "reproject.DetourTolerance"
+    KNetworkLayer = "reproject.Networklayer"
+    KPathfinder = "reproject.Pathfinder"
+    KRouteLayer = "reproject.RouteLayer"
 
     def __init__(self):
         super().__init__("Airline")
@@ -253,28 +234,46 @@ class ReprojectHandler(StateHandler):
         return targetState in [DialogState.AIRLINEEDIT]
     
     def isProcessing(self) -> bool:
-        if ReprojectHandler.KProcessing in self.context:
-            return self.context[ReprojectHandler.KProcessing] != None
-        else:
-            return False
+        return self.context.has(ReprojectHandler.KProcessing)
     
-    def getProcessing(self) -> Optional[RouteNetworkTask]:
-        if ReprojectHandler.KProcessing in self.context:
-            return self.context[ReprojectHandler.KProcessing]
-        else:
-            return None
+    def getProcessing(self) -> Optional[Any]:
+        return self.context.get(ReprojectHandler.KProcessing)
     
-    def setProcessing(self, value: Optional[RouteNetworkTask]):
-        self.context[ReprojectHandler.KProcessing] = value
+    def setProcessing(self, value: Optional[Any]):
+        self.context.set(ReprojectHandler.KProcessing, value)
     
     def getProgress(self) -> int:
-        if ReprojectHandler.KProgress in self.context:
-            return self.context[ReprojectHandler.KProgress]
-        else:
-            return 0
+        return self.context.get(ReprojectHandler.KProgress, 0)
     
     def setProgress(self, value: int) -> int:
-        return self._updateValue(value, ReprojectHandler.KProgress, default=0)
+        return self.context.updateValue(ReprojectHandler.KProgress, value, default=0)
+    
+    def getDetourTolerance(self) -> float:
+        return self.context.get(ReprojectHandler.KDetourTolerance, 1)
+    
+    def setDetourTolerance(self, value: float) -> float:
+        return self.context.updateValue(ReprojectHandler.KDetourTolerance, value)
+    
+    def getNetworklayer(self) -> QgsVectorLayer:
+        return self.context.get(ReprojectHandler.KNetworkLayer)
+    
+    def setNetworklayer(self, value: QgsVectorLayer) -> QgsVectorLayer:
+        return self.context.updateValue(ReprojectHandler.KNetworkLayer, value)
+    
+    def getPathfinder(self) -> NetworkPathFinder:
+        return self.context.get(ReprojectHandler.KPathfinder)
+    
+    def setPathfinder(self, value: NetworkPathFinder) -> NetworkPathFinder:
+        return self.context.updateValue(ReprojectHandler.KPathfinder, value)
+    
+    def getRouteLayer(self) -> RouteNetworklayer:
+        return self.context.get(ReprojectHandler.KRouteLayer)
+    
+    def setRouteLayer(self, value: RouteNetworklayer) -> RouteNetworklayer:
+        return self.context.updateValue(ReprojectHandler.KRouteLayer, value)
+    
+    def hasRouteLayer(self) -> bool:
+        return self.context.has(ReprojectHandler.KRouteLayer)
 
 
 class DialogState(Enum):
@@ -309,9 +308,59 @@ class DialogState(Enum):
     def isType(self, type: 'DialogState') -> bool:
         return self.name == type.name
     
+    @staticmethod
+    def context() -> 'DialogStateContext':
+        return DialogState.WELCOME.value.getContext()
+    
     @property
     def name(self) -> str:
         return self.handler.name
+
+class DialogStateContext:
+    def __init__(self):
+        self._store = dict()
+    
+    def inner(self) -> Dict[str, Any]:
+        return self._store
+    
+    def merge(self, other: Dict):
+        self._store.update(other)
+    
+    def get(self, key: str, default: Any = None) -> Optional[Any]:
+        if key in self._store:
+            return self._store[key]
+        else:
+            return default
+    
+    def getOrSetDefault(self, key: str, default: Any) -> Any:
+        if key in self._store:
+            return self._store[key]
+        else:
+            self._store[key] = default
+            return default
+    
+    def set(self, key: str, value: Any):
+        self._store[key] = value
+    
+    def has(self, key: str) -> bool:
+        return key in self._store and self._store[key] != None
+    
+    def updateValue(self, key: str, value: Any, default: Any = None) -> Optional[Any]:
+        oldValue = default
+        if key in self._store:
+            oldValue = self._store[key]
+        
+        self._store[key] = value
+        
+        return oldValue
+    
+    def delete(self, key: str) -> Optional[Any]:
+        if key in self._store:
+            value = self._store[key]
+            del self._store[key]
+            return value
+        else:
+            return None
 
 class DialogStateMachine:
     """State machine controller"""
@@ -319,7 +368,7 @@ class DialogStateMachine:
     def __init__(self, initialState: DialogState, ui=None):
         self.ui = ui
         self.currentState = initialState
-        self.context = {}
+        self.context = DialogStateContext()
         self.stateHistory = [initialState]
         self.transitionCallbacks = {}
         
@@ -327,7 +376,7 @@ class DialogStateMachine:
         self.SetUiAndContextForAllStates()
         
         # Enter initial state
-        self.currentState.enter(self.context)
+        self.currentState.enter(None)
     
     def SetUiAndContextForAllStates(self):
         """Set UI reference for all state handlers"""
@@ -344,7 +393,7 @@ class DialogStateMachine:
         print(f"\n--- Transitioning: {self.currentState.name} -> {targetState.name} ---")
         
         # Add any additional context
-        self.context.update(additionalContext)
+        self.context.merge(additionalContext)
         
         # Exit current state
         previousState = self.currentState

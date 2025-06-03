@@ -36,7 +36,7 @@ from .classes.network import LevelOfCentrality, ConnectivityFunction
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from .classes.processing.directRouteNetwork import DirectRouteNetwork, DirectRouteGenerateMethod
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
-from .classes.processing.routeNetwork import RouteNetwork
+from .classes.processing.routeNetwork import RouteGenerationOptions
 from .classes.processing.routeNetworkTask import RouteNetworkTask
 from .statics import ARS_INDEX, PROCESSING_CONFIG, LAYER_MANAGER, DUMMY_CENTER_OGR_PATH
 
@@ -122,6 +122,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectContinueButton.clicked.connect(self.onReprojectContinueButton)
         self.reprojectGenerateButton.clicked.connect(self.onReprojectGenerateButton)
         self.reprojectCancelGenerateButton.clicked.connect(self.onReprojectCancelGenerateButton)
+        self.reprojectDetourToleranceCheckbox.clicked.connect(self.onReprojectDetourToleranceCheckbox)
     
     def setupMapView(self):
         # Setup map canvas
@@ -163,24 +164,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.selectTab(DialogState.CENTERPOINTSEDIT)
     
     def showAirlinePage(self):
-        QgsMessageLog.logMessage(f"{DialogState.CENTERPOINTS.value.getLOCS()}")
-        if not DialogState.AIRLINE.value.hasCFs():
-            locs = DialogState.CENTERPOINTS.value.getLOCS()
-            cfs = list(map(lambda l: l.toConnectivityFunction(), locs))
-            DialogState.AIRLINE.value.setCFs(cfs)
-        else:
-            cfs = DialogState.AIRLINE.value.getCFs()
-        
-        QgsMessageLog.logMessage(f"{cfs}")
-        
-        self.airlineVFS2Check.setChecked(ConnectivityFunction.VFS_2 in cfs)
-        self.airlineVFS3Check.setChecked(ConnectivityFunction.VFS_3 in cfs)
-        self.airlineVFS4Check.setChecked(ConnectivityFunction.VFS_4 in cfs)
-        
-        self.airlineVFS2Check.setEnabled(ConnectivityFunction.VFS_2 in cfs)
-        self.airlineVFS3Check.setEnabled(ConnectivityFunction.VFS_3 in cfs)
-        self.airlineVFS4Check.setEnabled(ConnectivityFunction.VFS_4 in cfs)
-
+        self.airlineContinueButton.setEnabled(DialogState.AIRLINE.value.hasDirectRouteLayer())
         self.selectTab(DialogState.AIRLINE)
     
     def showAirlineEditPage(self):
@@ -217,18 +201,6 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupMapView()
         self.stateMachine.transitionTo(DialogState.CENTERPOINTS)
     
-    def onCentralNextButton(self):
-        locs = []
-        if self.centerLOC2Check.chekced():
-            locs.append(LevelOfCentrality.II)
-        if self.centerLOC3Check.chekced():
-            locs.append(LevelOfCentrality.III)
-        if self.centerLOC4Check.chekced():
-            locs.append(LevelOfCentrality.IV)
-
-        DialogState.CENTERPOINTS.value.setLOCs(locs)
-        self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
-    
     def onLocationSearchButton(self):
         results = ARS_INDEX.searchByName(self.locationLineEdit.text())
 
@@ -261,6 +233,17 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
 
     def onCentralNextButton(self):
+        locs = []
+        if self.centerLOC2Check.isChecked():
+            locs.append(LevelOfCentrality.II)
+        if self.centerLOC3Check.isChecked():
+            locs.append(LevelOfCentrality.III)
+        if self.centerLOC4Check.isChecked():
+            locs.append(LevelOfCentrality.IV)
+        for loc in locs:
+            QgsMessageLog.logMessage(f"{loc.asStr()}")
+        
+        DialogState.CENTERPOINTS.value.setLOCs(locs)
         self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
 
     def onCentralGenerateButton(self):
@@ -268,7 +251,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if centerLayer:
             LAYER_MANAGER.updateCenterLayer(centerLayer)
             DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
-            self.centralNextButton.setEnabled(True)
+            self.showCenterPointsPage()
 
     def onCenterAutoRadioButton(self):
         DialogState.CENTERPOINTS.value.setGenerateMethod(DirectRouteGenerateMethod.AUTO)
@@ -302,8 +285,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         routeEntries = drn.createNetwork()
         directRouteLayer = DirectRouteNetworklayer(routeEntries)
         if directRouteLayer:
+            DialogState.AIRLINE.value.setDirectRouteLayer(directRouteLayer)
             LAYER_MANAGER.updateDirectRouteLayer(directRouteLayer)
-            self.airlineContinueButton.setEnabled(True)
+            self.showAirlinePage()
 
     ## AIRLINE EDIT PAGE
     def onAirlineEditBackButton(self):
@@ -327,8 +311,15 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         networkLayer = self.reprojectSelectLayer.currentLayer()
         if not networkLayer:
             return
+        
+        DialogState.REPROJECT.value.setNetworklayer(networkLayer)
 
-        task = RouteNetworkTask.createAndRunTask(networkLayer, directRouteLayer, self.onReprojectGenerateResult, self.onReprojectGenerateProgressChanged)
+        if self.reprojectDetourToleranceCheckbox.isChecked():
+            DialogState.REPROJECT.value.setDetourTolerance(self.reprojectDetourToleranceSpinbox.value() / 100.0)
+        else:
+            DialogState.REPROJECT.value.setDetourTolerance(0.0)
+
+        task = RouteNetworkTask.createAndRunFromContextStateHandler(DialogState.context(), self.onReprojectGenerateResult, self.onReprojectGenerateProgressChanged)
         # Save the task into the context, so it does not get garbage collected
         DialogState.REPROJECT.value.setProcessing(task)
         self.showReprojectPage()
@@ -341,6 +332,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
         if sucees:
             routeLayer = RouteNetworklayer(result)
+            DialogState.REPROJECT.value.setRouteLayer(routeLayer)
             LAYER_MANAGER.updateRouteLayer(routeLayer)
         else:
             QgsMessageLog.logMessage(f"Error while processing: {result}")
@@ -354,6 +346,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         task = DialogState.REPROJECT.value.getProcessing()
         if task:
             task.cancel()
+    
+    def onReprojectDetourToleranceCheckbox(self):
+        self.reprojectDetourToleranceSpinbox.setEnabled(self.reprojectDetourToleranceCheckbox.isChecked())
 
         
     
