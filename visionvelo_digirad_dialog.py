@@ -168,7 +168,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
         if not centerLayer:
             if DialogState.CENTERPOINTS.value.getGenerateMethod() == DirectRouteGenerateMethod.MANUEL:
-                centerLayer = CenterLayer.createEmpty()
+                centerLayer = CenterLayer.createEmpty(DialogState.CENTERPOINTS.value.getLOCS())
                 DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
                 LAYER_MANAGER.update()
             else:
@@ -252,10 +252,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.iface.mapCanvas().refresh()
 
     ## CENTER PAGE
-    def onCentralBackButton(self):
-        self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
 
-    def onCentralNextButton(self):
+    # HELPERS
+    def centerUpdateContextLocsFromUi(self):
         locs = []
         if self.centerLOC2Check.isChecked():
             locs.append(LevelOfCentrality.II)
@@ -263,18 +262,27 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             locs.append(LevelOfCentrality.III)
         if self.centerLOC4Check.isChecked():
             locs.append(LevelOfCentrality.IV)
-        for loc in locs:
-            QgsMessageLog.logMessage(f"{loc.asStr()}")
+        if self.centerLOCSingleCheck.isChecked():
+            locs.append(LevelOfCentrality.Singular)
         
         DialogState.CENTERPOINTS.value.setLOCs(locs)
+
+    # SIGNALS
+    def onCentralBackButton(self):
+        self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
+
+    def onCentralNextButton(self):
+        self.centerUpdateContextLocsFromUi()
         self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
 
     def onCentralGenerateButton(self):
         # TODO: Replace with non dummy center values
         if self.guardLayerRegeneration(DialogState.CENTERPOINTS):
             return
+        
+        self.centerUpdateContextLocsFromUi()
 
-        centerLayer = CenterLayer.loadFromFile(DUMMY_CENTER_OGR_PATH + "|layername=dresden_zentren", "Zentren")
+        centerLayer = CenterLayer.loadFromFile(DUMMY_CENTER_OGR_PATH + "|layername=dresden_zentren", DialogState.CENTERPOINTS.value.getLOCS())
         if centerLayer:
             DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
             LAYER_MANAGER.update()
@@ -289,14 +297,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.showCenterPointsPage()
     
     ## CENTER EDIT PAGE
-    def onCenterEditBackButton(self):
-        self.onCenterEditLeave()
-        self.stateMachine.transitionTo(DialogState.CENTERPOINTS)
-    
-    def onCenterEditContinueButton(self):
-        self.onCenterEditLeave()
-        self.stateMachine.transitionTo(DialogState.AIRLINE)
-    
+
+    # HELPERS
     def onCenterEditLeave(self):
         centerLayer = DialogState.CENTERPOINTS.value.getCenterLayer()
         if not centerLayer:
@@ -317,6 +319,15 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 LAYER_MANAGER.update()
         else:
             centerLayer.qgsLayer().commitChanges()
+    
+    # SIGNALS
+    def onCenterEditBackButton(self):
+        self.onCenterEditLeave()
+        self.stateMachine.transitionTo(DialogState.CENTERPOINTS)
+    
+    def onCenterEditContinueButton(self):
+        self.onCenterEditLeave()
+        self.stateMachine.transitionTo(DialogState.AIRLINE)
 
     ## AIRLINE PAGE
     def onAirlineBackButton(self):

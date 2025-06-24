@@ -89,19 +89,24 @@ class DirectRouteNetwork:
     
     def createNetwork(self) -> List[DirectRouteEntry]:
         meshCalc = MeshCalculator()
-        routesAll = meshCalc.extractDirectRoutes(
-            self.centerLayer.locFeatures[LevelOfCentrality.IV] + 
-            self.centerLayer.locFeatures[LevelOfCentrality.III] +
-            self.centerLayer.locFeatures[LevelOfCentrality.II])
-        routesMZ_OZ = meshCalc.extractDirectRoutes(
-            self.centerLayer.locFeatures[LevelOfCentrality.III] +
-            self.centerLayer.locFeatures[LevelOfCentrality.II])
-        routesOZ = meshCalc.extractDirectRoutes(self.centerLayer.locFeatures[LevelOfCentrality.II])
 
-        mergedRoutes = self._mergeCFRoutes(routesAll, routesMZ_OZ)
-        mergedRoutes = self._mergeCFRoutes(mergedRoutes, routesOZ)
+
+
+        routesAll = meshCalc.extractDirectRoutes(self._getLocBasedFeatures(list(LevelOfCentrality)))
+        routesIII_II_S = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.Singular]))
+        routesII = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II]))
+
+        mergedRoutes = self._mergeCFRoutes(routesAll, routesIII_II_S)
+        mergedRoutes = self._mergeCFRoutes(mergedRoutes, routesII)
 
         return mergedRoutes.values()
+    
+    def _getLocBasedFeatures(self, locs: List[LevelOfCentrality]) -> List[CenterLayerFeature]:
+        features = []
+        for loc in locs:
+            features += self.centerLayer.locFeatures[loc]
+        
+        return features
     
     def _mergeCFRoutes(self, routes1: Dict[int, DirectRouteEntry], routes2: Dict[int, DirectRouteEntry]) -> Dict[int, DirectRouteEntry]:
         merged = copy.copy(routes1)

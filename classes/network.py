@@ -37,15 +37,15 @@ class ConnectivityFunction(Enum):
     def asStr(self) -> str:
         match self:
             case ConnectivityFunction.VFS_1:
-                return "VFS I"
+                return "Verbindungsfunktionsstufe I"
             case ConnectivityFunction.VFS_2:
-                return "VFS II"
+                return "Verbindungsfunktionsstufe II"
             case ConnectivityFunction.VFS_3:
-                return "VFS III"
+                return "Verbindungsfunktionsstufe III"
             case ConnectivityFunction.VFS_4:
-                return "VFS IV"
+                return "Verbindungsfunktionsstufe IV"
             case ConnectivityFunction.VFS_5:
-                return "VFS V"
+                return "Verbindungsfunktionsstufe V"
     
     def isLowerEq(self, other: Self) -> bool:
         return self.value <= other.value
@@ -57,19 +57,22 @@ class LevelOfCentrality(Enum):
     II = 2
     III = 3
     IV = 4
+    Singular = 10
 
     @staticmethod
     def defaults() -> List[Self]:
-        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV]
+        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular]
 
     def fromStr(value: str) -> Self:
         value = value.lower()
-        if "oberzent" in value or value == "zentralitätsstufe ii":
+        if value == "zentralitätsstufe ii":
             return LevelOfCentrality.II
-        elif "mittelze" in value or value == "zentralitätsstufe iii":
+        elif value == "zentralitätsstufe iii":
             return LevelOfCentrality.III
-        elif "grundz" in value or value == "zentralitätsstufe iv":
+        elif value == "zentralitätsstufe iv":
             return LevelOfCentrality.IV
+        elif value == "singulärer erzeuger":
+            return LevelOfCentrality.Singular
         else:
             raise ValueError(f"'{value}' is not a valid level of centrality")
     
@@ -81,6 +84,8 @@ class LevelOfCentrality(Enum):
                 return "Zentralitätsstufe III"
             case LevelOfCentrality.IV:
                 return "Zentralitätsstufe IV"
+            case LevelOfCentrality.Singular:
+                return "Singulärer Erzeuger"
     
     def isLowerEq(self, other: Self) -> bool:
         return self.value <= other.value
@@ -102,5 +107,7 @@ class LevelOfCentrality(Enum):
                 return ConnectivityFunction.VFS_3
             case LevelOfCentrality.IV:
                 return ConnectivityFunction.VFS_4
+            case LevelOfCentrality.Singular:
+                return ConnectivityFunction.VFS_3
 
     

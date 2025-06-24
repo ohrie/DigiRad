@@ -36,7 +36,7 @@ from qgis.core import (
 from .layer import DigiRadLayer
 from ..network import LevelOfCentrality, ConnectivityFunction
 from ..processing.directRouteNetwork import DirectRouteEntry
-from ..styling import Colors
+from ..styling import Colors, Style
 
 class DirectRouteNetworkFeatureConfig:
     def __init__(self, cfName: str = "Verbindungsfunktionsstufe", relationName: str = "relation"):
@@ -44,6 +44,8 @@ class DirectRouteNetworkFeatureConfig:
         self.relationName = relationName
 
 class DirectRouteNetworklayer(DigiRadLayer):
+    LayerName = "Luftliniennetz"
+
     def __init__(self, routeEntries: List[DirectRouteEntry], config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> Self:
         super().__init__(DirectRouteNetworklayer._createLayerFromRouteEntries(routeEntries, config))
         renderer = self._createRenderer(config.cfName)
@@ -55,7 +57,7 @@ class DirectRouteNetworklayer(DigiRadLayer):
 
     @staticmethod
     def _createLayerFromRouteEntries(routeEntries: DirectRouteEntry, config: DirectRouteNetworkFeatureConfig) -> Self:
-        meshlayer = QgsVectorLayer("LineString?crs=EPSG:3857", "Luftliniennetz", "memory")
+        meshlayer = QgsVectorLayer("LineString?crs=EPSG:3857", DirectRouteNetworklayer.LayerName, "memory")
         pr = meshlayer.dataProvider()
         pr.addAttributes([QgsField(config.relationName, QVariant.LongLong),
                             QgsField(config.cfName,  QVariant.String)])
@@ -76,17 +78,11 @@ class DirectRouteNetworklayer(DigiRadLayer):
     def _createRenderer(self, categoryField: str) -> QgsCategorizedSymbolRenderer:
         renderer = QgsCategorizedSymbolRenderer(categoryField)
 
-        categories = [
-            [ConnectivityFunction.VFS_2.asStr(), Colors.II, 0.7],
-            [ConnectivityFunction.VFS_3.asStr(), Colors.III, 0.5],
-            [ConnectivityFunction.VFS_4.asStr(), Colors.IV, 0.2],
-        ]
-
-        for category in categories:
+        for cf in [ConnectivityFunction.VFS_2, ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]:
             symbol = QgsLineSymbol.createSimple({'line_style':'dash'})
-            symbol.setColor(category[1])
-            symbol.setWidth(category[2])
-            cat = QgsRendererCategory(category[0], symbol, category[0])
+            symbol.setColor(Style.getColorForCF(cf))
+            symbol.setWidth(Style.getSizeForCF(cf))
+            cat = QgsRendererCategory(cf.asStr(), symbol, cf.asStr())
 
             renderer.addCategory(cat)
         

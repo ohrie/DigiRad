@@ -20,12 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Self, List, Dict
+from typing import Self, List, Dict, Optional
 from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
     QgsCategorizedSymbolRenderer,
-    QgsMarkerSymbol,
     QgsRendererCategory,
     QgsFeatureRequest,
     QgsPoint,
@@ -38,7 +37,7 @@ from qgis.core import (
 
 from .layer import DigiRadLayer
 from ..network import LevelOfCentrality
-from ..styling import Colors
+from ..styling import Colors, Style
 
 class CenterLayerFeatureConfig:
     def __init__(self, locName: str = "loc", nameName: str = "name"):
@@ -55,12 +54,10 @@ class CenterLayerFeature:
     @staticmethod
     def featuresFromLayer(layer: 'CenterLayer') -> Dict[LevelOfCentrality, List[Self]]:
         qgsLayer = layer.qgsLayer()
-        features = {
-            LevelOfCentrality.IV: [],
-            LevelOfCentrality.III: [],
-            LevelOfCentrality.II: [],
-        }
-        
+        features = {}
+        for loc in LevelOfCentrality:
+            features[loc] = []
+
         nameIdx = qgsLayer.fields().indexFromName(layer.config.nameName)
         locIdx = qgsLayer.fields().indexFromName(layer.config.locName)
         request = QgsFeatureRequest()
@@ -83,27 +80,31 @@ class CenterLayerFeature:
         return features
 
 class CenterLayer(DigiRadLayer):
-    def __init__(self, layer, config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
+    LayerName = "Zentren"
+
+    def __init__(self, layer, availableLOCs: List[LevelOfCentrality], config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
         super().__init__(layer)
         self.config = config
+        self.availableLOCs = availableLOCs
         renderer = self._createRenderer()
         formConfig = self._createFormConfig()
+        filter = self._createFeatureFilter()
         layer.setEditFormConfig(formConfig)
         layer.setRenderer(renderer)
+        layer.setSubsetString(filter)
         layer.triggerRepaint()
 
         self.locFeatures = CenterLayerFeature.featuresFromLayer(self)
 
-    
     @staticmethod 
-    def createEmpty() -> Self:
-        layer = QgsVectorLayer("Point?crs=EPSG:3857&field=name:string&field=loc:string", "Zentren", "memory")
-        return CenterLayer(layer)
+    def createEmpty(availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults()) -> Self:
+        layer = QgsVectorLayer("Point?crs=EPSG:3857&field=name:string&field=loc:string", CenterLayer.LayerName, "memory")
+        return CenterLayer(layer, availableLOCs)
 
     @staticmethod
-    def loadFromFile(filePath: str, layerName):
-        layer = QgsVectorLayer(filePath, layerName, "ogr")
-        return CenterLayer(layer)
+    def loadFromFile(filePath: str, availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults()):
+        layer = QgsVectorLayer(filePath, CenterLayer.LayerName, "ogr")
+        return CenterLayer(layer, availableLOCs)
     
     def update(self):
         self.locFeatures = CenterLayerFeature.featuresFromLayer(self)
@@ -111,17 +112,11 @@ class CenterLayer(DigiRadLayer):
     def _createRenderer(self) -> QgsCategorizedSymbolRenderer:
         renderer = QgsCategorizedSymbolRenderer(self.config.locName)
 
-        categories = [
-            [LevelOfCentrality.II.asStr(), Colors.II, 4],
-            [LevelOfCentrality.III.asStr(), Colors.III, 3],
-            [LevelOfCentrality.IV.asStr(), Colors.IV, 2],
-        ]
-
-        for category in categories:
+        for loc in self.availableLOCs:
             symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
-            symbol.setColor(category[1])
-            symbol.setSize(category[2])
-            cat = QgsRendererCategory(category[0], symbol, category[0])
+            symbol.setColor(Style.getColorForLOC(loc))
+            symbol.setSize(Style.getSizeForLOC(loc))
+            cat = QgsRendererCategory(loc.asStr(), symbol, loc.asStr())
 
             renderer.addCategory(cat)
         
@@ -139,22 +134,19 @@ class CenterLayer(DigiRadLayer):
             nameElement = QgsAttributeEditorField(self.config.nameName, nameIdx, None)
             root.addChildElement(nameElement)
             
-            # Make it read-only by changing its widget type
             widgetSetup = QgsEditorWidgetSetup('TextEdit', {'IsMultiline': False, 'Readonly': True})
             layer.setEditorWidgetSetup(nameIdx, widgetSetup)
 
-        # 5. Add type field as a combo box with predefined values
         locIdx = fields.indexFromName(self.config.locName)
         if locIdx >= 0:
             locElement = QgsAttributeEditorField(self.config.locName, locIdx, None)
             root.addChildElement(locElement)
+
+            valueMap = {}
+            for loc in self.availableLOCs:
+                loc = loc.asStr()
+                valueMap[loc] = loc
             
-            # Configure as ValueMap (combo box) with predefined values
-            valueMap = {
-                LevelOfCentrality.II.asStr(): LevelOfCentrality.II.asStr(),
-                LevelOfCentrality.III.asStr(): LevelOfCentrality.III.asStr(),
-                LevelOfCentrality.IV.asStr(): LevelOfCentrality.IV.asStr(),
-            }
             widgetSetup = QgsEditorWidgetSetup('ValueMap', {
                 'map': valueMap,
                 'AllowMulti': False,
@@ -164,3 +156,6 @@ class CenterLayer(DigiRadLayer):
         
         return formConfig
     
+    def _createFeatureFilter(self) -> str:
+        locs = ", ".join(map(lambda loc: '"{}"'.format(loc.asStr()), self.availableLOCs))
+        return "{} in ({})".format(self.config.locName, locs)
