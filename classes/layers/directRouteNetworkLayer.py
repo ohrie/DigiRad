@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 from typing import Self, List, Dict
 
 from PyQt5.QtCore import QVariant
@@ -32,6 +33,7 @@ from qgis.core import (
     QgsFeature,
     QgsLineSymbol)
 
+from .layer import DigiRadLayer
 from ..network import LevelOfCentrality, ConnectivityFunction
 from ..processing.directRouteNetwork import DirectRouteEntry
 from ..styling import Colors
@@ -41,14 +43,13 @@ class DirectRouteNetworkFeatureConfig:
         self.cfName = cfName
         self.relationName = relationName
 
-class DirectRouteNetworklayer:
+class DirectRouteNetworklayer(DigiRadLayer):
     def __init__(self, routeEntries: List[DirectRouteEntry], config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> Self:
-        layer = DirectRouteNetworklayer._createLayerFromRouteEntries(routeEntries, config)
+        super().__init__(DirectRouteNetworklayer._createLayerFromRouteEntries(routeEntries, config))
         renderer = self._createRenderer(config.cfName)
-        layer.setRenderer(renderer)
-        layer.triggerRepaint()
+        self._qgsLayer.setRenderer(renderer)
+        self._qgsLayer.triggerRepaint()
 
-        self._layer = layer
         self.routeEntries = routeEntries
         self.config = config
 
@@ -90,9 +91,3 @@ class DirectRouteNetworklayer:
             renderer.addCategory(cat)
         
         return renderer
-    
-    def qgsLayer(self) -> QgsVectorLayer:
-        return self._layer
-    
-    def name(self) -> str:
-        return self._layer.name()

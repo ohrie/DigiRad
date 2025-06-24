@@ -33,6 +33,7 @@ from qgis.core import (
     QgsSymbol,
     QgsWkbTypes)
 
+from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
 from ..processing.directRouteNetwork import DirectRouteEntry
 from ..processing.routeNetwork import RouteEntry
@@ -44,14 +45,13 @@ class RouteNetworkFeatureConfig:
         self.relationName = relationName
         self.detourName = detourName
 
-class RouteNetworklayer:
+class RouteNetworklayer(DigiRadLayer):
     def __init__(self, routeEntries: List[DirectRouteEntry], config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> Self:
-        layer = RouteNetworklayer._createLayerFromRouteEntries(routeEntries, config)
+        super().__init__(RouteNetworklayer._createLayerFromRouteEntries(routeEntries, config))
         renderer = self._createRenderer(config.cfName)
-        layer.setRenderer(renderer)
-        layer.triggerRepaint()
+        self._qgsLayer.setRenderer(renderer)
+        self._qgsLayer.triggerRepaint()
 
-        self._layer = layer
         self.routeEntries = routeEntries
         self.config = config
     
@@ -101,9 +101,3 @@ class RouteNetworklayer:
             renderer.addCategory(cat)
         
         return renderer
-    
-    def qgsLayer(self) -> QgsVectorLayer:
-        return self._layer
-    
-    def name(self) -> str:
-        return self._layer.name()

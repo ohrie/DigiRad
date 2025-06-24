@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict, Any, Optional, Set, Callable, List
 from abc import ABC, abstractmethod
 
-from qgis.core import QgsVectorLayer
+from qgis.core import QgsVectorLayer, QgsMessageLog
 
 from .classes.network import LevelOfCentrality, ConnectivityFunction
 from .classes.layers.centerLayer import CenterLayer
@@ -101,6 +101,7 @@ class CenterPointsHandler(StateHandler):
     KCenterLayer = "center.CenterLayer"
     KGenerateMethod = "center.GenerateMethod"
     KLOCs = "center.LOCs"
+    LayerKeys = [KCenterLayer]
 
     def __init__(self):
         super().__init__("CenterPoints")
@@ -133,6 +134,7 @@ class CenterPointsHandler(StateHandler):
         return self.context.get(CenterPointsHandler.KCenterLayer)
     
     def setCenterLayer(self, value: CenterLayer) -> Optional[CenterLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.CENTERPOINTS, "LayerKeys")
         return self.context.updateValue(CenterPointsHandler.KCenterLayer, value)
     
     def getGenerateMethod(self) -> DirectRouteGenerateMethod:
@@ -153,9 +155,14 @@ class CenterPointsEditHandler(StateHandler):
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
         self.handleUi()
-    
+
     def onExit(self, nextState: Optional['DialogState'] = None):
-        pass
+        centerLayer = DialogState.CENTERPOINTS.value.getCenterLayer()
+        if not centerLayer:
+            return
+        
+        centerLayer.qgsLayer().commitChanges()
+        centerLayer.update()
     
     def handleUi(self):
         if self.ui:
@@ -166,6 +173,7 @@ class CenterPointsEditHandler(StateHandler):
 
 class AirlineHandler(StateHandler):
     KDirectRouteLayer = "airline.DirectRouteLayer"
+    LayerKeys = [KDirectRouteLayer]
 
     def __init__(self):
         super().__init__("Airline")
@@ -187,6 +195,7 @@ class AirlineHandler(StateHandler):
         return self.context.getOrSetDefault(AirlineHandler.KDirectRouteLayer)
     
     def setDirectRouteLayer(self, value: DirectRouteNetworklayer) -> DirectRouteNetworklayer:
+        DialogState.deleteValuesAfterContext(DialogState.AIRLINE, "LayerKeys")
         return self.context.updateValue(AirlineHandler.KDirectRouteLayer, value)
     
     def hasDirectRouteLayer(self) -> bool:
@@ -216,6 +225,8 @@ class ReprojectHandler(StateHandler):
     KNetworkLayer = "reproject.Networklayer"
     KPathfinder = "reproject.Pathfinder"
     KRouteLayer = "reproject.RouteLayer"
+
+    LayerKeys = [KNetworkLayer, KRouteLayer]
 
     def __init__(self):
         super().__init__("Airline")
@@ -258,6 +269,7 @@ class ReprojectHandler(StateHandler):
         return self.context.get(ReprojectHandler.KNetworkLayer)
     
     def setNetworklayer(self, value: QgsVectorLayer) -> QgsVectorLayer:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
         return self.context.updateValue(ReprojectHandler.KNetworkLayer, value)
     
     def getPathfinder(self) -> NetworkPathFinder:
@@ -270,6 +282,7 @@ class ReprojectHandler(StateHandler):
         return self.context.get(ReprojectHandler.KRouteLayer)
     
     def setRouteLayer(self, value: RouteNetworklayer) -> RouteNetworklayer:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
         return self.context.updateValue(ReprojectHandler.KRouteLayer, value)
     
     def hasRouteLayer(self) -> bool:
@@ -311,6 +324,37 @@ class DialogState(Enum):
     @staticmethod
     def context() -> 'DialogStateContext':
         return DialogState.WELCOME.value.getContext()
+    
+    @staticmethod
+    def deleteValuesAfterContext(currentState: 'DialogState', keyAttributesName: str):
+        kvs = DialogState.getValuesAfterContext(currentState, keyAttributesName)
+    
+        context = DialogState.context()
+        for key in kvs.keys():
+            context.delete(key)
+
+    def getValuesAfterContext(currentState: 'DialogState', keyAttributesName: str) -> Dict[str, Any]:
+        kvs = dict()
+        states = list(DialogState)
+        nextState = -1
+        for (i, state) in enumerate(states):
+            if state == currentState:
+                nextState = i + 1
+                break
+        
+        if nextState < 0:
+            return kvs
+        
+        context = DialogState.context()
+        for resetState in states[nextState:]:
+            if hasattr(resetState.value, keyAttributesName):
+                resetAttributeValues = getattr(resetState.value, keyAttributesName)
+                for resetAttributevalue in resetAttributeValues:
+                    value = context.get(resetAttributevalue)
+                    if value:
+                        kvs[resetAttributevalue] = value
+        
+        return kvs
     
     @property
     def name(self) -> str:
@@ -361,6 +405,9 @@ class DialogStateContext:
             return value
         else:
             return None
+    
+    def values(self):
+        return self._store.values()
 
 class DialogStateMachine:
     """State machine controller"""

@@ -20,12 +20,18 @@
  *                                                                         *
  ***************************************************************************/
 """
+from typing import Type, Optional
 
-from qgis.core import QgsMessageLog, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
+from qgis.core import (
+    QgsMessageLog,
+    QgsProject,
+    QgsRasterLayer,
+    QgsMapLayer,
+    QgsCoordinateReferenceSystem
+)
 
-from .layers.centerLayer import CenterLayer
-from .layers.directRouteNetworkLayer import DirectRouteNetworklayer
-from .layers.routeNetworkLayer import RouteNetworklayer
+from ..dialogstate import DialogStateContext
+from .layers.layer import DigiRadLayer
 
 class LayerManager:
     def __init__(self, projectName: str, showBaseMap: bool = True):
@@ -43,6 +49,11 @@ class LayerManager:
         self.centerLayer = None
         self.directRouteLayer = None
         self.routeLayer = None
+        self.layers = {}
+        self.contextRef = None
+    
+    def setContextRef(self, contextRef: DialogStateContext):
+        self.contextRef = contextRef
     
     def _createBaseLayer(self):
         tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=15"
@@ -56,20 +67,32 @@ class LayerManager:
         self._ensureLayer(root, group, self.centerLayer)
         self._ensureLayer(root, group, self.directRouteLayer)
     
+    def update(self):
+        if not self.contextRef:
+            return
+        
+        updatedLayers = set()
+        for value in self.contextRef.values():
+            if isinstance(value, DigiRadLayer):
+                self.updateLayer(value)
+                updatedLayers.add(value.name())
+        
+        (root, group) = self._getGroup()
+        for layer in self.layers.values():
+            if layer.name() not in updatedLayers:
+                self._removeLayer(group, layer.qgsLayer())
+    
     def _getGroup(self):
         root = QgsProject.instance().layerTreeRoot()
         group = root.findGroup(self.projectName)
         if not group:
             group = root.addGroup(self.projectName)
+        
         return (root, group)
     
-    def _ensureLayer(self, root, group, layer):
+    def _ensureLayer(self, root, group, layer: QgsMapLayer):
         if layer:
-            try:
-                name = layer.name()
-            except:
-                pass
-            if name and not group.findLayer(name):
+            if not group.findLayer(layer):
                 # Add the layer via the `addMapLayer` fn to the root
                 # and then move it to the group 
                 QgsProject.instance().addMapLayer(layer)
@@ -80,9 +103,8 @@ class LayerManager:
 
     
     def _removeLayer(self, group, layer):
-        if layer:
-            if group.findLayer(layer.name()):
-                group.removeLayer(layer)
+        if layer and group.findLayer(layer):
+            group.removeLayer(layer)
     
     def _moveToTop(self, group, layer):
         layerNode = group.findLayer(layer.id())
@@ -92,42 +114,30 @@ class LayerManager:
         parent.removeChildNode(layerNode)
         group.insertChildNode(0, cloned_node)
 
-
-    def updateCenterLayer(self, centerLayer: CenterLayer):
+    def updateLayer(self, layer: DigiRadLayer):
+        layerName = layer.name()
         (root, group) = self._getGroup()
 
-        if self.centerLayer:
-            self._removeLayer(group, self.centerLayer.qgsLayer())
-        
-        self._ensureLayer(root, group, centerLayer.qgsLayer())
-        # self._moveToTop(group, centerLayer.qgsLayer())
+        if layerName in self.layers:
+            originalLayer = self.layers[layerName]
+            if originalLayer.isQgsLayerPresent():
+                if originalLayer.id() != layer.id():
+                    self._removeLayer(group, originalLayer.qgsLayer())
+                    self.layers[layerName] = layer
+            else:
+                self.layers[layerName] = layer
+        else:
+            self.layers[layerName] = layer
 
-        self.centerLayer = centerLayer
-        self.iface.layerTreeView().refreshLayerSymbology(centerLayer.qgsLayer().id())
-
-    def updateDirectRouteLayer(self, directRouteLayer: DirectRouteNetworklayer):
-        (root, group) = self._getGroup()
-
-        if self.directRouteLayer:
-            self._removeLayer(group, self.directRouteLayer.qgsLayer())
-        
-        self._ensureLayer(root, group, directRouteLayer.qgsLayer())
-        # self._moveToTop(group, directRouteLayer.qgsLayer())
-
-        self.directRouteLayer = directRouteLayer
-        self.iface.layerTreeView().refreshLayerSymbology(directRouteLayer.qgsLayer().id())
+        self._ensureLayer(root, group, layer.qgsLayer())
+        self.iface.layerTreeView().refreshLayerSymbology(layer.id())
     
-    def updateRouteLayer(self, routeLayer: RouteNetworklayer):
-        (root, group) = self._getGroup()
-
-        if self.routeLayer:
-            self._removeLayer(group, self.routeLayer.qgsLayer())
+    def getLayer(self, layerType: Type) -> Optional[DigiRadLayer]:
+        for layer in self.layers:
+            if isinstance(layer, layerType):
+                return layer
         
-        self._ensureLayer(root, group, routeLayer.qgsLayer())
-        # self._moveToTop(group, routeLayer.qgsLayer())
-
-        self.routeLayer = routeLayer
-        self.iface.layerTreeView().refreshLayerSymbology(routeLayer.qgsLayer().id())
+        return None
 
     def updateProjectName(self, newName: str):
         root = QgsProject.instance().layerTreeRoot()

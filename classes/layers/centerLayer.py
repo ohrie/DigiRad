@@ -30,9 +30,13 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsPoint,
     QgsSymbol,
-    QgsWkbTypes
+    QgsWkbTypes,
+    QgsEditFormConfig,
+    QgsAttributeEditorField,
+    QgsEditorWidgetSetup
 )
 
+from .layer import DigiRadLayer
 from ..network import LevelOfCentrality
 from ..styling import Colors
 
@@ -49,7 +53,7 @@ class CenterLayerFeature:
         self.geom = geom
 
     @staticmethod
-    def featuresFromLayer(layer) -> Dict[LevelOfCentrality, List[Self]]:
+    def featuresFromLayer(layer: 'CenterLayer') -> Dict[LevelOfCentrality, List[Self]]:
         qgsLayer = layer.qgsLayer()
         features = {
             LevelOfCentrality.IV: [],
@@ -69,29 +73,43 @@ class CenterLayerFeature:
             except Exception as e:
                 QgsMessageLog.logMessage(f"Unable to get level of centrality for feature {feat.id()} ({name}): {e}")
                 continue
-            geom = feat.geometry().asPoint()
+            geom = feat.geometry()
+            if not geom:
+                continue
+            geom = geom.asPoint()
             geom = QgsPoint(geom.x(), geom.y())
             features[loc].append(CenterLayerFeature(feat.id(), name, loc, geom))
 
         return features
 
-class CenterLayer():
+class CenterLayer(DigiRadLayer):
     def __init__(self, layer, config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
-        renderer = self._createRenderer(config.locName)
+        super().__init__(layer)
+        self.config = config
+        renderer = self._createRenderer()
+        formConfig = self._createFormConfig()
+        layer.setEditFormConfig(formConfig)
         layer.setRenderer(renderer)
         layer.triggerRepaint()
 
-        self._layer = layer
-        self.config = config
         self.locFeatures = CenterLayerFeature.featuresFromLayer(self)
+
     
+    @staticmethod 
+    def createEmpty() -> Self:
+        layer = QgsVectorLayer("Point?crs=EPSG:3857&field=name:string&field=loc:string", "Zentren", "memory")
+        return CenterLayer(layer)
+
     @staticmethod
     def loadFromFile(filePath: str, layerName):
         layer = QgsVectorLayer(filePath, layerName, "ogr")
         return CenterLayer(layer)
     
-    def _createRenderer(self, categoryField: str) -> QgsCategorizedSymbolRenderer:
-        renderer = QgsCategorizedSymbolRenderer(categoryField)
+    def update(self):
+        self.locFeatures = CenterLayerFeature.featuresFromLayer(self)
+    
+    def _createRenderer(self) -> QgsCategorizedSymbolRenderer:
+        renderer = QgsCategorizedSymbolRenderer(self.config.locName)
 
         categories = [
             [LevelOfCentrality.II.asStr(), Colors.II, 4],
@@ -109,9 +127,40 @@ class CenterLayer():
         
         return renderer
     
+    def _createFormConfig(self):
+        formConfig = QgsEditFormConfig()
+        formConfig.setLayout(QgsEditFormConfig.TabLayout)
+        root = formConfig.invisibleRootContainer()
+        layer = self.qgsLayer()
+        fields = layer.fields()
 
-    def qgsLayer(self) -> QgsVectorLayer:
-        return self._layer
+        nameIdx = fields.indexFromName(self.config.nameName)
+        if nameIdx >= 0:
+            nameElement = QgsAttributeEditorField(self.config.nameName, nameIdx, None)
+            root.addChildElement(nameElement)
+            
+            # Make it read-only by changing its widget type
+            widgetSetup = QgsEditorWidgetSetup('TextEdit', {'IsMultiline': False, 'Readonly': True})
+            layer.setEditorWidgetSetup(nameIdx, widgetSetup)
+
+        # 5. Add type field as a combo box with predefined values
+        locIdx = fields.indexFromName(self.config.locName)
+        if locIdx >= 0:
+            locElement = QgsAttributeEditorField(self.config.locName, locIdx, None)
+            root.addChildElement(locElement)
+            
+            # Configure as ValueMap (combo box) with predefined values
+            valueMap = {
+                LevelOfCentrality.II.asStr(): LevelOfCentrality.II.asStr(),
+                LevelOfCentrality.III.asStr(): LevelOfCentrality.III.asStr(),
+                LevelOfCentrality.IV.asStr(): LevelOfCentrality.IV.asStr(),
+            }
+            widgetSetup = QgsEditorWidgetSetup('ValueMap', {
+                'map': valueMap,
+                'AllowMulti': False,
+                'AllowNull': False
+            })
+            layer.setEditorWidgetSetup(locIdx, widgetSetup)
+        
+        return formConfig
     
-    def name(self) -> str:
-        return self._layer.name()

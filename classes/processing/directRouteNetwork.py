@@ -29,7 +29,7 @@ from qgis.core import QgsMessageLog, QgsPoint, QgsMesh, QgsGeometry
 from qgis.analysis import QgsMeshTriangulation
 
 from ..helper import createPointHash, createDoublePointHash
-from ..network import LevelOfCentrality
+from ..network import LevelOfCentrality, ConnectivityFunction
 from ..layers.centerLayer import CenterLayer, CenterLayerFeature
 
 class DirectRouteGenerateMethod(Enum):
@@ -41,12 +41,16 @@ class DirectRouteGenerateMethod(Enum):
         return DirectRouteGenerateMethod.AUTO
 
 class DirectRouteEntry:
-    def __init__(self, relationId: int, p1: QgsPoint, p2: QgsPoint, centerFeatureP1: CenterLayerFeature, centerFeatureP2: CenterLayerFeature):
+    def __init__(self, relationId: int, p1: QgsPoint, p2: QgsPoint, cf: ConnectivityFunction):
         self.relationId = relationId
         self.p1 = p1
         self.p2 = p2
-        self.cf = LevelOfCentrality.getUpperLoc(centerFeatureP1.loc, centerFeatureP2.loc).toConnectivityFunction()
+        self.cf = cf
         self._geom = None
+    
+    @staticmethod
+    def entryFromCenterFeatures(relationId: int, p1: QgsPoint, p2: QgsPoint, centerFeatureP1: CenterLayerFeature, centerFeatureP2: CenterLayerFeature) -> Self:
+        return DirectRouteEntry(relationId, p1, p2, LevelOfCentrality.getUpperLoc(centerFeatureP1.loc, centerFeatureP2.loc).toConnectivityFunction())
     
     @staticmethod
     def entriesFromMeshFace(mesh: QgsMesh, face: int, pointIndex: Dict[QgsPoint, CenterLayerFeature]) -> List[Self]:
@@ -61,20 +65,24 @@ class DirectRouteEntry:
 
         entries = []
         relationId = createDoublePointHash(p1, p2)
-        entries.append(DirectRouteEntry(relationId, p1, p2, featP1, featP2))
+
+        entries.append(DirectRouteEntry.entryFromCenterFeatures(relationId, p1, p2, featP1, featP2))
         relationId = createDoublePointHash(p1, p3)
-        entries.append(DirectRouteEntry(relationId, p1, p3, featP1, featP3))
+        entries.append(DirectRouteEntry.entryFromCenterFeatures(relationId, p1, p3, featP1, featP3))
         relationId = createDoublePointHash(p2, p3)
-        entries.append(DirectRouteEntry(relationId, p2, p3, featP2, featP3))
+        entries.append(DirectRouteEntry.entryFromCenterFeatures(relationId, p2, p3, featP2, featP3))
 
         return entries
+    
+    def upgradeToMultipath(self, multiPath: QgsGeometry):
+        self._geom = multiPath
     
     def geometry(self) -> QgsGeometry:
         if not self._geom:
             self._geom = QgsGeometry.fromPolyline([self.p1, self.p2])
         
         return self._geom
-
+    
 class DirectRouteNetwork:
     def __init__(self, centerLayer: CenterLayer):
         self.centerLayer = centerLayer
@@ -139,3 +147,4 @@ class MeshCalculator:
         
         mesh = meshCalc.triangulatedMesh()
         return mesh
+    

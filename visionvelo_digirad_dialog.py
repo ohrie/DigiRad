@@ -30,6 +30,7 @@ from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import QgsMapLayerProxyModel, QgsMessageLog, QgsProject, QgsPointXY
 
+from .qtHelpers import QtHelper
 from .dialogstate import DialogStateMachine, DialogState
 from .classes.layers.centerLayer import CenterLayer
 from .classes.network import LevelOfCentrality, ConnectivityFunction
@@ -63,6 +64,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.postSetupUi()
         
         self.stateMachine = DialogStateMachine(DialogState.WELCOME, self)
+
+        LAYER_MANAGER.setContextRef(self.stateMachine.context)
 
         self.setupConnections()
 
@@ -141,7 +144,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         
         if state in self.tabs:
             self.tabWidget.setCurrentWidget(self.tabs[state])
-    
+
     ### STATE TRANSITIONS
     def showWelcomePage(self):
         self.selectTab(DialogState.WELCOME)
@@ -161,6 +164,19 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.selectTab(DialogState.CENTERPOINTS)
     
     def showCenterPointsEditPage(self):
+        centerLayer = DialogState.CENTERPOINTS.value.getCenterLayer()
+
+        if not centerLayer:
+            if DialogState.CENTERPOINTS.value.getGenerateMethod() == DirectRouteGenerateMethod.MANUEL:
+                centerLayer = CenterLayer.createEmpty()
+                DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
+                LAYER_MANAGER.update()
+            else:
+                return
+
+        centerLayer.qgsLayer().startEditing()
+        self.iface.setActiveLayer(centerLayer.qgsLayer())
+
         self.selectTab(DialogState.CENTERPOINTSEDIT)
     
     def showAirlinePage(self):
@@ -188,6 +204,13 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.selectTab(DialogState.REPROJECT)
 
     ### SIGNALS
+
+    ## HELPERS
+
+    def guardLayerRegeneration(self, state: DialogState) -> bool:
+        if DialogState.getValuesAfterContext(state, "LayerKeys"):
+            return not QtHelper.askForLayerDeletion()
+        return False
 
     ## WELCOME PAGE
     def onWelcomeNextButton(self):
@@ -247,10 +270,14 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
 
     def onCentralGenerateButton(self):
+        # TODO: Replace with non dummy center values
+        if self.guardLayerRegeneration(DialogState.CENTERPOINTS):
+            return
+
         centerLayer = CenterLayer.loadFromFile(DUMMY_CENTER_OGR_PATH + "|layername=dresden_zentren", "Zentren")
         if centerLayer:
-            LAYER_MANAGER.updateCenterLayer(centerLayer)
             DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
+            LAYER_MANAGER.update()
             self.showCenterPointsPage()
 
     def onCenterAutoRadioButton(self):
@@ -263,10 +290,33 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     
     ## CENTER EDIT PAGE
     def onCenterEditBackButton(self):
+        self.onCenterEditLeave()
         self.stateMachine.transitionTo(DialogState.CENTERPOINTS)
     
     def onCenterEditContinueButton(self):
+        self.onCenterEditLeave()
         self.stateMachine.transitionTo(DialogState.AIRLINE)
+    
+    def onCenterEditLeave(self):
+        centerLayer = DialogState.CENTERPOINTS.value.getCenterLayer()
+        if not centerLayer:
+            return
+        
+        editBuffer = centerLayer.qgsLayer().editBuffer()
+        if not editBuffer:
+            return
+        
+        if editBuffer.isModified():
+            if self.guardLayerRegeneration(DialogState.CENTERPOINTS):
+                centerLayer.qgsLayer().rollback()
+                return
+            else:
+                centerLayer.qgsLayer().commitChanges()
+                centerLayer.update()
+                DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
+                LAYER_MANAGER.update()
+        else:
+            centerLayer.qgsLayer().commitChanges()
 
     ## AIRLINE PAGE
     def onAirlineBackButton(self):
@@ -276,7 +326,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.stateMachine.transitionTo(DialogState.AIRLINEEDIT)
 
     def onAirlineGenerateButton(self):
-        centerLayer = LAYER_MANAGER.centerLayer
+        if self.guardLayerRegeneration(DialogState.AIRLINE):
+            return
+        
+        centerLayer = DialogState.CENTERPOINTS.value.getCenterLayer()
 
         if not centerLayer:
             return
@@ -286,7 +339,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         directRouteLayer = DirectRouteNetworklayer(routeEntries)
         if directRouteLayer:
             DialogState.AIRLINE.value.setDirectRouteLayer(directRouteLayer)
-            LAYER_MANAGER.updateDirectRouteLayer(directRouteLayer)
+            LAYER_MANAGER.update()
             self.showAirlinePage()
 
     ## AIRLINE EDIT PAGE
@@ -304,7 +357,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         pass
 
     def onReprojectGenerateButton(self):
-        directRouteLayer = LAYER_MANAGER.directRouteLayer
+        if self.guardLayerRegeneration(DialogState.REPROJECT):
+            return
+        
+        directRouteLayer = DialogState.AIRLINE.value.getDirectRouteLayer()
 
         if not directRouteLayer:
             return
@@ -333,7 +389,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if sucees:
             routeLayer = RouteNetworklayer(result)
             DialogState.REPROJECT.value.setRouteLayer(routeLayer)
-            LAYER_MANAGER.updateRouteLayer(routeLayer)
+            LAYER_MANAGER.update()
         else:
             QgsMessageLog.logMessage(f"Error while processing: {result}")
     
