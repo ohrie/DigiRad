@@ -31,13 +31,14 @@ from qgis.core import (
     QgsField,
     QgsFeature,
     QgsSymbol,
-    QgsWkbTypes)
+    QgsWkbTypes,
+    QgsFeatureRequest
+    )
 
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
-from ..processing.directRouteNetwork import DirectRouteEntry
 from ..processing.routeNetwork import RouteEntry
-from ..styling import Colors
+from ..styling import Style
 
 class RouteNetworkFeatureConfig:
     def __init__(self, cfName: str = "Verbindungsfunktionsstufe", relationName: str = "relation", detourName: str = "Umwegefaktor"):
@@ -46,14 +47,19 @@ class RouteNetworkFeatureConfig:
         self.detourName = detourName
 
 class RouteNetworklayer(DigiRadLayer):
-    def __init__(self, routeEntries: List[DirectRouteEntry], config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> Self:
-        super().__init__(RouteNetworklayer._createLayerFromRouteEntries(routeEntries, config))
-        renderer = self._createRenderer(config.cfName)
-        self._qgsLayer.setRenderer(renderer)
-        self._qgsLayer.triggerRepaint()
-
+    def __init__(self, routeEntries: List[RouteEntry], config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> Self:
+        super().__init__(
+            RouteNetworklayer._createLayerFromRouteEntries(routeEntries, config),
+            "Umlegung",
+            expanded=False,
+            visible=False)
+        
         self.routeEntries = routeEntries
         self.config = config
+        
+        renderer = self._createRenderer()
+        self._qgsLayer.setRenderer(renderer)
+        self._qgsLayer.triggerRepaint()
     
     def _createLayerFromRouteEntries(routeEntries: List[RouteEntry], config: RouteNetworkFeatureConfig) -> QgsVectorLayer:
         routeLayer = QgsVectorLayer("LineString?crs=EPSG:3857", 
@@ -83,21 +89,19 @@ class RouteNetworklayer(DigiRadLayer):
 
         return routeLayer
     
-    def _createRenderer(self, categoryField: str) -> QgsCategorizedSymbolRenderer:
-        renderer = QgsCategorizedSymbolRenderer(categoryField)
+    def _createRenderer(self) -> QgsCategorizedSymbolRenderer:
+        renderer = QgsCategorizedSymbolRenderer(self.config.cfName)
 
-        categories = [
-            [ConnectivityFunction.VFS_2.asStr(), Colors.II, 0.7],
-            [ConnectivityFunction.VFS_3.asStr(), Colors.III, 0.5],
-            [ConnectivityFunction.VFS_4.asStr(), Colors.IV, 0.4],
-        ]
-
-        for category in categories:
+        for cf in [ConnectivityFunction.VFS_2, ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]:
             symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.LineGeometry)
-            symbol.setColor(category[1])
-            symbol.setWidth(category[2])
-            cat = QgsRendererCategory(category[0], symbol, category[0])
+            symbol.setColor(Style.getColorForCF(cf))
+            symbol.setWidth(Style.getSizeForCF(cf))
+            cat = QgsRendererCategory(cf.asStr(), symbol, cf.asStr())
 
             renderer.addCategory(cat)
+        
+        orderBy = QgsFeatureRequest.OrderBy([QgsFeatureRequest.OrderByClause(self.config.cfName, False)])
+        renderer.setOrderByEnabled(True)
+        renderer.setOrderBy(orderBy)
         
         return renderer

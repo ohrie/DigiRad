@@ -39,8 +39,6 @@ class RouteNetworkTask(QgsTask):
         options = RouteGenerationOptions(detourTolerance)
 
         task = RouteNetworkTask(networkLayer, directRouteLayer, options, pathFinder)
-
-        QgsMessageLog.logMessage(f"Context: {context}")
         
         if resultCallback:
             task.resultReady.connect(resultCallback)
@@ -81,10 +79,12 @@ class RouteNetworkTask(QgsTask):
             # Step 1: Build the graph
             self.setProgress(5)
             self.progressChanged.emit(5)
-            if not self.pathFinder:
-                self.pathFinder = NetworkPathFinder(self.networkLayer, self.options)
-                QgsMessageLog.logMessage("Building graph..")
-                self.pathFinder.buildGraph(entries)
+            # if not self.pathFinder:
+            self.pathFinder = NetworkPathFinder(self.networkLayer, self.options)
+            QgsMessageLog.logMessage("Building graph..")
+            self.pathFinder.buildGraph(entries)
+            # else:
+            #     self.pathFinder.cleanUp()
             self.setProgress(40)
             self.progressChanged.emit(40)
             # Check if task was cancelled
@@ -106,10 +106,10 @@ class RouteNetworkTask(QgsTask):
                 QgsMessageLog.logMessage("Optimized routing..")
                 resultEntries = self._findRouteEntries(sortedEntries, False, len(entries), relationsLen, 60)
             
-            QgsMessageLog.logMessage("Cleaning up..")
-            self.pathFinder.cleanUp()
+            # QgsMessageLog.logMessage("Cleaning up..")
+            # self.pathFinder.cleanUp()
             QgsMessageLog.logMessage("Done.")
-            self.result = resultEntries
+            self.result = RouteNetworkTaskResult(resultEntries, self.pathFinder)
             self.setProgress(100)
             self.progressChanged.emit(100)
 
@@ -176,3 +176,8 @@ class RouteNetworkTask(QgsTask):
         QgsMessageLog.logMessage('Task cancelled by user', 
                                'DigiRad', Qgis.Info)
         super().cancel()
+
+class RouteNetworkTaskResult:
+    def __init__(self, routeEntries: List[RouteEntry], pathFinder: NetworkPathFinder):
+      self.routeEntries = routeEntries
+      self.pathFinder = pathFinder

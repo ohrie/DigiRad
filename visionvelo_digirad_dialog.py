@@ -25,20 +25,23 @@ import os
 
 from typing import Tuple
 
+
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsMapLayerProxyModel, QgsMessageLog, QgsProject, QgsPointXY
+from qgis.core import QgsMapLayerProxyModel, QgsMessageLog, QgsPointXY
 
 from .qtHelpers import QtHelper
 from .dialogstate import DialogStateMachine, DialogState
 from .classes.layers.centerLayer import CenterLayer
-from .classes.network import LevelOfCentrality, ConnectivityFunction
+from .classes.network import LevelOfCentrality
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from .classes.processing.directRouteNetwork import DirectRouteNetwork, DirectRouteGenerateMethod
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
-from .classes.processing.routeNetwork import RouteGenerationOptions
-from .classes.processing.routeNetworkTask import RouteNetworkTask
+from .classes.layers.analysisLayers import SupplyNetworkElementLayer, SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
+from .classes.processing.routeNetworkTask import RouteNetworkTask, RouteNetworkTaskResult
+from .classes.processing.routeNetworkAnalyser import RouteNetworkAnalyser
+from .classes.interaction.centerEdit import CenterEditFeatureHandler, CenterEditToolType
 from .statics import ARS_INDEX, PROCESSING_CONFIG, LAYER_MANAGER, DUMMY_CENTER_OGR_PATH
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -83,9 +86,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             DialogState.CENTERPOINTS: self.centerTab,
             DialogState.CENTERPOINTSEDIT: self.centerEditTab,
             DialogState.AIRLINE: self.airlineTab,
-            DialogState.AIRLINEEDIT: self.airlineEditTab,
             DialogState.REPROJECT: self.reprojectTab,
         }
+
+        self.centerEditTool = None
     
     def setupConnections(self):
         # Connect signals and slots
@@ -111,14 +115,15 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.centerEditBackButton.clicked.connect(self.onCenterEditBackButton)
         self.centerEditContinueButton.clicked.connect(self.onCenterEditContinueButton)
 
+        self.centerEditAddutton.clicked.connect(self.onCenterEditAddutton)
+        self.centerEditPropertiesButton.clicked.connect(self.onCenterEditPropertiesButton)
+        self.centerEditGeometryButton.clicked.connect(self.onCenterEditGeometryButton)
+        self.centerEditDeleteButton.clicked.connect(self.onCenterEditDeleteButton)
+
         # Airline page
         self.airlineBackButton.clicked.connect(self.onAirlineBackButton)
         self.airlineContinueButton.clicked.connect(self.onAirlineContinueButton)
         self.airlineGenerateButton.clicked.connect(self.onAirlineGenerateButton)
-
-        # Airline edit page
-        self.airlineEditBackButton.clicked.connect(self.onAirlineEditBackButton)
-        self.airlineEditContinueButton.clicked.connect(self.onAirlineEditContinueButton)
 
         # Route page
         self.reprojectBackButton.clicked.connect(self.onReprojectBackButton)
@@ -177,14 +182,13 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         centerLayer.qgsLayer().startEditing()
         self.iface.setActiveLayer(centerLayer.qgsLayer())
 
+        self.centerEditTool = CenterEditFeatureHandler(self.iface, centerLayer.qgsLayer())
+
         self.selectTab(DialogState.CENTERPOINTSEDIT)
     
     def showAirlinePage(self):
         self.airlineContinueButton.setEnabled(DialogState.AIRLINE.value.hasDirectRouteLayer())
         self.selectTab(DialogState.AIRLINE)
-    
-    def showAirlineEditPage(self):
-        self.selectTab(DialogState.AIRLINEEDIT)
     
     def showReprojectPage(self):
         if DialogState.REPROJECT.value.isProcessing():
@@ -300,6 +304,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     # HELPERS
     def onCenterEditLeave(self):
+        self.centerEditTool.restore()
+
         centerLayer = DialogState.CENTERPOINTS.value.getCenterLayer()
         if not centerLayer:
             return
@@ -310,7 +316,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         
         if editBuffer.isModified():
             if self.guardLayerRegeneration(DialogState.CENTERPOINTS):
-                centerLayer.qgsLayer().rollback()
+                centerLayer.qgsLayer().rollBack()
                 return
             else:
                 centerLayer.qgsLayer().commitChanges()
@@ -328,13 +334,29 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def onCenterEditContinueButton(self):
         self.onCenterEditLeave()
         self.stateMachine.transitionTo(DialogState.AIRLINE)
+    
+    def onCenterEditAddutton(self):
+        if self.centerEditTool:
+            self.centerEditTool.setTool(CenterEditToolType.AddFeature)
+
+    def onCenterEditPropertiesButton(self):
+        if self.centerEditTool:
+            self.centerEditTool.setTool(CenterEditToolType.PropertyEdit)
+
+    def onCenterEditGeometryButton(self):
+        if self.centerEditTool:
+            self.centerEditTool.setTool(CenterEditToolType.MoveGeometry)
+
+    def onCenterEditDeleteButton(self):
+        if self.centerEditTool:
+            self.centerEditTool.setTool(CenterEditToolType.DeleteFeature)
 
     ## AIRLINE PAGE
     def onAirlineBackButton(self):
         self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
     
     def onAirlineContinueButton(self):
-        self.stateMachine.transitionTo(DialogState.AIRLINEEDIT)
+        self.stateMachine.transitionTo(DialogState.REPROJECT)
 
     def onAirlineGenerateButton(self):
         if self.guardLayerRegeneration(DialogState.AIRLINE):
@@ -353,16 +375,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             LAYER_MANAGER.update()
             self.showAirlinePage()
 
-    ## AIRLINE EDIT PAGE
-    def onAirlineEditBackButton(self):
-        self.stateMachine.transitionTo(DialogState.AIRLINE)
-
-    def onAirlineEditContinueButton(self):
-        self.stateMachine.transitionTo(DialogState.REPROJECT)
-
     # REPROJECT PAGE
     def onReprojectBackButton(self):
-        self.stateMachine.transitionTo(DialogState.AIRLINEEDIT)
+        self.stateMachine.transitionTo(DialogState.AIRLINE)
 
     def onReprojectContinueButton(self):
         pass
@@ -391,18 +406,29 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         DialogState.REPROJECT.value.setProcessing(task)
         self.showReprojectPage()
     
-    def onReprojectGenerateResult(self, result: Tuple[bool, any]):
-        sucees, result = result
+    def onReprojectGenerateResult(self, result: Tuple[bool, RouteNetworkTaskResult]):
+        sucees, taskResult = result
 
         DialogState.REPROJECT.value.setProcessing(None)
+
         self.showReprojectPage()
 
         if sucees:
-            routeLayer = RouteNetworklayer(result)
+            routeLayer = RouteNetworklayer(taskResult.routeEntries)
             DialogState.REPROJECT.value.setRouteLayer(routeLayer)
+            DialogState.REPROJECT.value.setPathfinder(taskResult.pathFinder)
+            networkAnalyser = RouteNetworkAnalyser(taskResult.pathFinder.graph, routeLayer.routeEntries, routeLayer.config)
+            networkElements = networkAnalyser.createNetworkElements()
+            (aggregatedElements, breakingPoints) = networkAnalyser.aggregateElements(networkElements)
+            supplyNetworkLayer = SupplyNetworkElementLayer(networkElements)
+            supplyAggregatedNetworkLayer = SupplyAggregatedNetworkElementLayer(aggregatedElements)
+            breakingPointsNetworkLayer = BreakingPointsNetworkLayer(breakingPoints)
+            DialogState.REPROJECT.value.setSupplyNetworkLayer(supplyNetworkLayer)
+            DialogState.REPROJECT.value.setAggregatedSupplyNetworkLayer(supplyAggregatedNetworkLayer)
+            DialogState.REPROJECT.value.setBreakingPointsNetworkLayer(breakingPointsNetworkLayer)
             LAYER_MANAGER.update()
         else:
-            QgsMessageLog.logMessage(f"Error while processing: {result}")
+            QgsMessageLog.logMessage(f"Error while processing: {taskResult}")
     
     def onReprojectGenerateProgressChanged(self, progress):
         oldValue = DialogState.REPROJECT.value.setProgress(int(progress))

@@ -27,11 +27,13 @@ from qgis.core import (
     QgsProject,
     QgsRasterLayer,
     QgsMapLayer,
-    QgsCoordinateReferenceSystem
+    QgsCoordinateReferenceSystem,
+    QgsLayerTreeGroup
 )
 
 from ..dialogstate import DialogStateContext
 from .layers.layer import DigiRadLayer
+from .layers.baseLayer import BaseLayer
 
 class LayerManager:
     def __init__(self, projectName: str, showBaseMap: bool = True):
@@ -42,30 +44,21 @@ class LayerManager:
         self.projectName = projectName
 
         if showBaseMap:
-            self.baseLayer = self._createBaseLayer()
+            self.baseLayer = BaseLayer.create()
         else:
             self.baseLayer = None
 
-        self.centerLayer = None
-        self.directRouteLayer = None
-        self.routeLayer = None
         self.layers = {}
         self.contextRef = None
     
     def setContextRef(self, contextRef: DialogStateContext):
         self.contextRef = contextRef
     
-    def _createBaseLayer(self):
-        tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=15"
-        layer = QgsRasterLayer(tms, "Hintergrundkarte", "wms")
-        return layer
-    
     def show(self):
         (root, group) = self._getGroup()
         
-        self._ensureLayer(root, group, self.baseLayer)
-        self._ensureLayer(root, group, self.centerLayer)
-        self._ensureLayer(root, group, self.directRouteLayer)
+        self._ensureLayer(self.baseLayer)
+        self.update()
     
     def update(self):
         if not self.contextRef:
@@ -77,59 +70,87 @@ class LayerManager:
                 self.updateLayer(value)
                 updatedLayers.add(value.name())
         
-        (root, group) = self._getGroup()
-        for layer in self.layers.values():
+        layersToRemove = []
+        for (layerId, layer) in self.layers.items():
             if layer.name() not in updatedLayers:
-                self._removeLayer(group, layer.qgsLayer())
+                self._removeLayer(layer)
+                layersToRemove.append(layerId)
+        
+        for layerId in layersToRemove:
+            del self.layers[layerId]
     
-    def _getGroup(self):
+    def _getGroup(self, layer: Optional[DigiRadLayer] = None):
         root = QgsProject.instance().layerTreeRoot()
         group = root.findGroup(self.projectName)
         if not group:
             group = root.addGroup(self.projectName)
         
+        if layer and layer.groupName:
+            subgroup = group.findGroup(layer.groupName)
+            if subgroup:
+                group = subgroup
+            else:
+                subgroup = group.addGroup(layer.groupName)
+                group = self._moveGroupToTop(group, layer.groupName)
+
         return (root, group)
     
-    def _ensureLayer(self, root, group, layer: QgsMapLayer):
-        if layer:
-            if not group.findLayer(layer):
+    def _ensureLayer(self, layer: DigiRadLayer):
+        if layer and layer.isQgsLayerPresent():
+            (root, group) = self._getGroup(layer)
+            qgsLayer = layer.qgsLayer()
+            layerNode = group.findLayer(qgsLayer)
+            if not layerNode:
                 # Add the layer via the `addMapLayer` fn to the root
                 # and then move it to the group 
-                QgsProject.instance().addMapLayer(layer)
-                layer = root.findLayer(layer.id())
-                clone = layer.clone()
+                QgsProject.instance().addMapLayer(qgsLayer)
+                layerNode = root.findLayer(qgsLayer.id())
+                clone = layerNode.clone()
                 group.insertChildNode(0, clone)
-                layer.parent().removeChildNode(layer)
+                layerNode.parent().removeChildNode(layerNode)
+                if clone:
+                    clone.setItemVisibilityChecked(layer.visible)
+                    clone.setExpanded(layer.expanded)
 
+    def _removeLayer(self, layer: DigiRadLayer):
+        if layer and layer.isQgsLayerPresent():
+            (root, group) = self._getGroup(layer)
+            if group.findLayer(layer.qgsLayer()):
+                group.removeLayer(layer.qgsLayer())
     
-    def _removeLayer(self, group, layer):
-        if layer and group.findLayer(layer):
-            group.removeLayer(layer)
-    
-    def _moveToTop(self, group, layer):
-        layerNode = group.findLayer(layer.id())
+    def _moveToTop(self, layer: DigiRadLayer):
+        if layer and layer.isQgsLayerPresent():
+            (root, group) = self._getGroup(layer)
+            layerNode = group.findLayer(layer.id())
 
-        cloned_node = layerNode.clone()
-        parent = layerNode.parent()
-        parent.removeChildNode(layerNode)
-        group.insertChildNode(0, cloned_node)
+            clonedNode = layerNode.clone()
+            parent = layerNode.parent()
+            parent.removeChildNode(layerNode)
+            group.insertChildNode(0, clonedNode)
+        
+    def _moveGroupToTop(self, group: QgsLayerTreeGroup, childGroupName: str):
+        subGroupNode = group.findGroup(childGroupName)
+
+        clonedNode = subGroupNode.clone()
+        group.removeChildNode(subGroupNode)
+        group.insertChildNode(0, clonedNode)
+        return group.findGroup(childGroupName)
 
     def updateLayer(self, layer: DigiRadLayer):
         layerName = layer.name()
-        (root, group) = self._getGroup()
 
         if layerName in self.layers:
             originalLayer = self.layers[layerName]
             if originalLayer.isQgsLayerPresent():
                 if originalLayer.id() != layer.id():
-                    self._removeLayer(group, originalLayer.qgsLayer())
+                    self._removeLayer(originalLayer)
                     self.layers[layerName] = layer
             else:
                 self.layers[layerName] = layer
         else:
             self.layers[layerName] = layer
 
-        self._ensureLayer(root, group, layer.qgsLayer())
+        self._ensureLayer(layer)
         self.iface.layerTreeView().refreshLayerSymbology(layer.id())
     
     def getLayer(self, layerType: Type) -> Optional[DigiRadLayer]:

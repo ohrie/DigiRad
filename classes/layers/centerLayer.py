@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 from typing import Self, List, Dict, Optional
 from qgis.core import (
     QgsMessageLog,
@@ -37,7 +38,7 @@ from qgis.core import (
 
 from .layer import DigiRadLayer
 from ..network import LevelOfCentrality
-from ..styling import Colors, Style
+from ..styling import Style
 
 class CenterLayerFeatureConfig:
     def __init__(self, locName: str = "loc", nameName: str = "name"):
@@ -57,7 +58,7 @@ class CenterLayerFeature:
         features = {}
         for loc in LevelOfCentrality:
             features[loc] = []
-
+        
         nameIdx = qgsLayer.fields().indexFromName(layer.config.nameName)
         locIdx = qgsLayer.fields().indexFromName(layer.config.locName)
         request = QgsFeatureRequest()
@@ -111,7 +112,7 @@ class CenterLayer(DigiRadLayer):
     
     def _createRenderer(self) -> QgsCategorizedSymbolRenderer:
         renderer = QgsCategorizedSymbolRenderer(self.config.locName)
-
+        
         for loc in self.availableLOCs:
             symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
             symbol.setColor(Style.getColorForLOC(loc))
@@ -119,7 +120,7 @@ class CenterLayer(DigiRadLayer):
             cat = QgsRendererCategory(loc.asStr(), symbol, loc.asStr())
 
             renderer.addCategory(cat)
-        
+
         return renderer
     
     def _createFormConfig(self):

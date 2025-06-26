@@ -24,7 +24,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="welcomeTab">
        <property name="enabled">
@@ -491,6 +491,58 @@
          </widget>
         </item>
         <item>
+         <widget class="Line" name="line_9">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Wählen Sie ein Tool für die Bearbeitung aus.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QPushButton" name="centerEditAddutton">
+            <property name="text">
+             <string>➕ Hinzufügen</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="centerEditPropertiesButton">
+            <property name="text">
+             <string>🗓 Eigenschaften</string>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="centerEditGeometryButton">
+            <property name="text">
+             <string>↔️ Geometrie</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="centerEditDeleteButton">
+            <property name="text">
+             <string>❌ Löschen</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <spacer name="verticalSpacer_4">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -538,7 +590,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Luftliniennetz erstellen&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Auf Grundlage der festgelegten zentralen Orte wird nun ein Luftliniennetz erstellt.&lt;/p&gt;&lt;p&gt;...&lt;/p&gt;&lt;p&gt;Sobald Sie damit fertig sind, drücken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Luftliniennetz erstellen&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Auf Grundlage der festgelegten zentralen Orte wird nun ein Luftliniennetz erstellt.&lt;/p&gt;&lt;p&gt;Sobald Sie damit fertig sind, drücken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -599,67 +651,6 @@
             <property name="enabled">
              <bool>false</bool>
             </property>
-            <property name="text">
-             <string>Weiter</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="airlineEditTab">
-       <attribute name="title">
-        <string>Luftliniennetz [Anpassung]</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_8">
-        <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Luftliniennetz bearbeiten&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Hier können Sie das erstellte Luftliniennetz mit Hilfe der Digitalisierungswerkzeuge von QGIS bearbeiten.&lt;/p&gt;&lt;p&gt;Sie können Verbindungen &lt;span style=&quot; font-style:italic;&quot;&gt;hinzufügen&lt;/span&gt;, &lt;span style=&quot; font-style:italic;&quot;&gt;verschieben&lt;/span&gt;, &lt;span style=&quot; font-style:italic;&quot;&gt;löschen&lt;/span&gt; und ihre Verbindungsfunktionsstufe anpassen.&lt;/p&gt;&lt;p&gt;Sobald Sie damit fertig sind, drücken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::RichText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer_6">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="Line" name="line_9">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_9">
-          <item>
-           <widget class="QPushButton" name="airlineEditBackButton">
-            <property name="text">
-             <string>Zurück</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="airlineEditContinueButton">
             <property name="text">
              <string>Weiter</string>
             </property>
@@ -767,7 +758,7 @@
                 <number>5</number>
                </property>
                <property name="value">
-                <number>30</number>
+                <number>35</number>
                </property>
               </widget>
              </item>

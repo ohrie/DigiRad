@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- DigiRadLayer
+ DigiRad
                                  A QGIS plugin
  Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
                              -------------------
         begin                : 2025-05-13
-        git sha              : $Format:%H$
         copyright            : (C) 2025 by Vision Velo UG (haftungsbeschränkt)
         email                : info@vision-velo.de
+        git sha              : $Format:%H$
  ***************************************************************************/
 
 /***************************************************************************
@@ -20,36 +20,3 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-from abc import ABC
-from typing import Optional
-from qgis.core import QgsVectorLayer, QgsMessageLog
-
-class DigiRadLayer(ABC):
-    """Base class for digirad layers"""
-
-    def __init__(self, qgslayer: QgsVectorLayer, groupName: str = None, visible: bool = True, expanded: bool = True):
-        self._qgsLayer = qgslayer
-        self.groupName = groupName
-        self.visible = visible
-        self.expanded = expanded
-    
-    def qgsLayer(self) -> Optional[QgsVectorLayer]:
-        return self._qgsLayer
-    
-    def name(self) -> Optional[str]:
-        try:
-            id = self._qgsLayer.name()
-        except:
-            return None
-        return id
-    
-    def id(self) -> Optional[int]:
-        try:
-            id = self._qgsLayer.id()
-        except:
-            return None
-        return id
-    
-    def isQgsLayerPresent(self) -> bool:
-        return self.id() is not None

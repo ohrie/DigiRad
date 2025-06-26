@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- DigiRadLayer
+ BaseLayer
                                  A QGIS plugin
  Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
                              -------------------
@@ -21,35 +21,22 @@
  ***************************************************************************/
 """
 
-from abc import ABC
-from typing import Optional
-from qgis.core import QgsVectorLayer, QgsMessageLog
+from typing import Self
 
-class DigiRadLayer(ABC):
-    """Base class for digirad layers"""
+from qgis.core import (
+    QgsMessageLog,
+    QgsRasterLayer,
+)
 
-    def __init__(self, qgslayer: QgsVectorLayer, groupName: str = None, visible: bool = True, expanded: bool = True):
-        self._qgsLayer = qgslayer
-        self.groupName = groupName
-        self.visible = visible
-        self.expanded = expanded
-    
-    def qgsLayer(self) -> Optional[QgsVectorLayer]:
-        return self._qgsLayer
-    
-    def name(self) -> Optional[str]:
-        try:
-            id = self._qgsLayer.name()
-        except:
-            return None
-        return id
-    
-    def id(self) -> Optional[int]:
-        try:
-            id = self._qgsLayer.id()
-        except:
-            return None
-        return id
-    
-    def isQgsLayerPresent(self) -> bool:
-        return self.id() is not None
+from .layer import DigiRadLayer
+
+class BaseLayer(DigiRadLayer):
+    LayerName = "Hintergrundkarte"
+
+    def __init__(self, wmsLayer: QgsRasterLayer):
+        super().__init__(wmsLayer)
+
+    def create() -> Self:
+        tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=16"
+        layer = QgsRasterLayer(tms, BaseLayer.LayerName, "wms")
+        return BaseLayer(layer)

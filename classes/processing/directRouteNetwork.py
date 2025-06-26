@@ -89,9 +89,7 @@ class DirectRouteNetwork:
     
     def createNetwork(self) -> List[DirectRouteEntry]:
         meshCalc = MeshCalculator()
-
-
-
+        
         routesAll = meshCalc.extractDirectRoutes(self._getLocBasedFeatures(list(LevelOfCentrality)))
         routesIII_II_S = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.Singular]))
         routesII = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II]))

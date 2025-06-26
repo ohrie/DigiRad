@@ -47,11 +47,30 @@ class ConnectivityFunction(Enum):
             case ConnectivityFunction.VFS_5:
                 return "Verbindungsfunktionsstufe V"
     
+    def asStrShort(self) -> str:
+        match self:
+            case ConnectivityFunction.VFS_1:
+                return "VFS I"
+            case ConnectivityFunction.VFS_2:
+                return "VFS II"
+            case ConnectivityFunction.VFS_3:
+                return "VFS III"
+            case ConnectivityFunction.VFS_4:
+                return "VFS IV"
+            case ConnectivityFunction.VFS_5:
+                return "VFS V"
+    
     def isLowerEq(self, other: Self) -> bool:
         return self.value <= other.value
     
     def isHigherEq(self, other: Self) -> bool:
         return self.value >= other.value
+    
+    def getLowerCF(value1: Self, value2: Self) -> Self:
+        return ConnectivityFunction(min(value1.value, value2.value))
+    
+    def getUpperCF(value1: Self, value2: Self) -> Self:
+        return ConnectivityFunction(max(value1.value, value2.value))
 
 class LevelOfCentrality(Enum):
     II = 2

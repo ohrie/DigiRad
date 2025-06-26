@@ -25,9 +25,9 @@ from typing import List, Tuple
 from copy import deepcopy
 
 from qgis.core import QgsMessageLog
-from qgis.analysis import (
-    QgsGraph,
-)
+from qgis.analysis import QgsGraph
+
+from ...helper import createDoublePointHash
 
 class GraphkModifier:
     def __init__(self, graph: QgsGraph, modificationFactor: int):
@@ -37,18 +37,21 @@ class GraphkModifier:
         self._modifiedEdges = set()
         self.changeLog = dict()
     
-    def modifyEdgeCostsBasedOnChangelog(self, minBound: float = 0.5, multiplier: float = 0.05):
+    def modifyEdgeCostsBasedOnChangelog(self, minBound: float = 0.55, multiplier: float = 0.02):
         changelog = deepcopy(self.changeLog)
 
+        fwRevEdgeIdMap = self._createFwRevEdgeIdMap()
+
         countSortedChangelog = dict()
-        for (edgeId, count) in changelog.items():
+        for (edgeId1, edgeId2, count) in fwRevEdgeIdMap.values():
             if count == 1:
                 continue
             
             if count in countSortedChangelog:
-                countSortedChangelog[count].append(edgeId)
+                countSortedChangelog[count].append(edgeId1)
+                countSortedChangelog[count].append(edgeId2)
             else:
-                countSortedChangelog[count] = [edgeId]
+                countSortedChangelog[count] = [edgeId1, edgeId2]
         
         for (count, edgeIds) in countSortedChangelog.items():
             modificationFactor = max(minBound, self.modificationFactor - (count * multiplier))
@@ -56,6 +59,23 @@ class GraphkModifier:
             self._modifyEdgeCostInner(edgeIds, modificationFactor)
         
         self.changeLog = changelog
+    
+    def _createFwRevEdgeIdMap(self):
+        fwRevEdgeIdMap = {}
+        for (edgeId, count) in self.changeLog.items():
+            oppositeEdge = self.graph.findOppositeEdge(edgeId)
+            edge = self.graph.edge(edgeId)
+            v1 = self.graph.vertex(edge.fromVertex()).point()
+            v2 = self.graph.vertex(edge.toVertex()).point()
+            edgeKey = createDoublePointHash(v1, v2)
+            if edgeKey in fwRevEdgeIdMap:
+                n = fwRevEdgeIdMap[edgeKey][2] + count
+            else:
+                n = count
+            fwRevEdgeIdMap[edgeKey] = (edgeId, oppositeEdge, n)
+        
+        return fwRevEdgeIdMap
+
 
     def modifyEdgeCosts(self, edgeIds: List[int]):
         if self.modificationFactor == 1:

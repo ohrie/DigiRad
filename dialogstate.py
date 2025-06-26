@@ -8,6 +8,7 @@ from .classes.network import LevelOfCentrality, ConnectivityFunction
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
+from .classes.layers.analysisLayers import SupplyNetworkElementLayer, SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
 from .classes.processing.directRouteNetwork import DirectRouteGenerateMethod
 from .classes.processing.routeNetwork import NetworkPathFinder
 
@@ -189,10 +190,10 @@ class AirlineHandler(StateHandler):
             self.ui.showAirlinePage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.CENTERPOINTSEDIT, DialogState.AIRLINEEDIT]
+        return targetState in [DialogState.CENTERPOINTSEDIT, DialogState.REPROJECT]
     
-    def getDirectRouteLayer(self) -> DirectRouteNetworklayer:
-        return self.context.getOrSetDefault(AirlineHandler.KDirectRouteLayer)
+    def getDirectRouteLayer(self) -> Optional[DirectRouteNetworklayer]:
+        return self.context.get(AirlineHandler.KDirectRouteLayer)
     
     def setDirectRouteLayer(self, value: DirectRouteNetworklayer) -> DirectRouteNetworklayer:
         DialogState.deleteValuesAfterContext(DialogState.AIRLINE, "LayerKeys")
@@ -201,23 +202,6 @@ class AirlineHandler(StateHandler):
     def hasDirectRouteLayer(self) -> bool:
         return self.context.has(AirlineHandler.KDirectRouteLayer)
 
-class AirlineEditHandler(StateHandler):
-    def __init__(self):
-        super().__init__("Airline")
-    
-    def onEnter(self, previousState: Optional['DialogState'] = None):
-        self.handleUi()
-    
-    def onExit(self, nextState: Optional['DialogState'] = None):
-        pass
-    
-    def handleUi(self):
-        if self.ui:
-            self.ui.showAirlineEditPage()
-    
-    def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.AIRLINE, DialogState.REPROJECT]
-
 class ReprojectHandler(StateHandler):
     KProcessing = "reproject.Processing"
     KProgress = "reproject.Progress"
@@ -225,11 +209,20 @@ class ReprojectHandler(StateHandler):
     KNetworkLayer = "reproject.Networklayer"
     KPathfinder = "reproject.Pathfinder"
     KRouteLayer = "reproject.RouteLayer"
+    KSupplyNetworkLayer = "reproject.SupplyNetworkLayer"
+    KAggregatedSupplyNetworkLayer = "reproject.KAggregatedSupplyNetworkLayer"
+    KBreakingPointsNetworkLayer = "reproject.KBreakingPointsNetworkLayer"
 
-    LayerKeys = [KNetworkLayer, KRouteLayer]
+    LayerKeys = [
+        KNetworkLayer,
+        KRouteLayer,
+        KSupplyNetworkLayer,
+        KAggregatedSupplyNetworkLayer,
+        KBreakingPointsNetworkLayer
+        ]
 
     def __init__(self):
-        super().__init__("Airline")
+        super().__init__("Reproject")
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
         self.handleUi()
@@ -242,7 +235,7 @@ class ReprojectHandler(StateHandler):
             self.ui.showReprojectPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.AIRLINEEDIT]
+        return targetState in [DialogState.AIRLINE]
     
     def isProcessing(self) -> bool:
         return self.context.has(ReprojectHandler.KProcessing)
@@ -265,29 +258,46 @@ class ReprojectHandler(StateHandler):
     def setDetourTolerance(self, value: float) -> float:
         return self.context.updateValue(ReprojectHandler.KDetourTolerance, value)
     
-    def getNetworklayer(self) -> QgsVectorLayer:
+    def getNetworklayer(self) -> Optional[QgsVectorLayer]:
         return self.context.get(ReprojectHandler.KNetworkLayer)
     
     def setNetworklayer(self, value: QgsVectorLayer) -> QgsVectorLayer:
         DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
         return self.context.updateValue(ReprojectHandler.KNetworkLayer, value)
     
-    def getPathfinder(self) -> NetworkPathFinder:
+    def getPathfinder(self) -> Optional[NetworkPathFinder]:
         return self.context.get(ReprojectHandler.KPathfinder)
     
-    def setPathfinder(self, value: NetworkPathFinder) -> NetworkPathFinder:
+    def setPathfinder(self, value: NetworkPathFinder) -> Optional[NetworkPathFinder]:
         return self.context.updateValue(ReprojectHandler.KPathfinder, value)
     
-    def getRouteLayer(self) -> RouteNetworklayer:
+    def getRouteLayer(self) -> Optional[RouteNetworklayer]:
         return self.context.get(ReprojectHandler.KRouteLayer)
     
-    def setRouteLayer(self, value: RouteNetworklayer) -> RouteNetworklayer:
+    def setRouteLayer(self, value: RouteNetworklayer) -> Optional[RouteNetworklayer]:
         DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
         return self.context.updateValue(ReprojectHandler.KRouteLayer, value)
     
     def hasRouteLayer(self) -> bool:
         return self.context.has(ReprojectHandler.KRouteLayer)
-
+    
+    def getSupplyNetworkLayer(self) -> Optional[SupplyNetworkElementLayer]:
+        return self.context.get(ReprojectHandler.KSupplyNetworkLayer)
+    
+    def setSupplyNetworkLayer(self, value: SupplyNetworkElementLayer) -> Optional[SupplyNetworkElementLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
+        return self.context.updateValue(ReprojectHandler.KSupplyNetworkLayer, value)
+    
+    def hasSupplyNetworkLayer(self) -> bool:
+        return self.context.has(ReprojectHandler.KSupplyNetworkLayer)
+    
+    def setAggregatedSupplyNetworkLayer(self, value: SupplyAggregatedNetworkElementLayer) -> Optional[SupplyAggregatedNetworkElementLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
+        return self.context.updateValue(ReprojectHandler.KAggregatedSupplyNetworkLayer, value)
+    
+    def setBreakingPointsNetworkLayer(self, value: BreakingPointsNetworkLayer) -> Optional[BreakingPointsNetworkLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
+        return self.context.updateValue(ReprojectHandler.KBreakingPointsNetworkLayer, value)
 
 class DialogState(Enum):
     """State machine enum with handlers"""
@@ -296,7 +306,6 @@ class DialogState(Enum):
     CENTERPOINTS = CenterPointsHandler()
     CENTERPOINTSEDIT = CenterPointsEditHandler()
     AIRLINE = AirlineHandler()
-    AIRLINEEDIT = AirlineEditHandler()
     REPROJECT = ReprojectHandler()
     
     def __init__(self, handler: StateHandler):

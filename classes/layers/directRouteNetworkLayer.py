@@ -31,12 +31,14 @@ from qgis.core import (
     QgsRendererCategory,
     QgsField,
     QgsFeature,
-    QgsLineSymbol)
+    QgsLineSymbol,
+    QgsFeatureRequest
+    )
 
 from .layer import DigiRadLayer
-from ..network import LevelOfCentrality, ConnectivityFunction
+from ..network import ConnectivityFunction
 from ..processing.directRouteNetwork import DirectRouteEntry
-from ..styling import Colors, Style
+from ..styling import Style
 
 class DirectRouteNetworkFeatureConfig:
     def __init__(self, cfName: str = "Verbindungsfunktionsstufe", relationName: str = "relation"):
@@ -48,12 +50,13 @@ class DirectRouteNetworklayer(DigiRadLayer):
 
     def __init__(self, routeEntries: List[DirectRouteEntry], config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> Self:
         super().__init__(DirectRouteNetworklayer._createLayerFromRouteEntries(routeEntries, config))
+        
+        self.routeEntries = routeEntries
+        self.config = config
+
         renderer = self._createRenderer(config.cfName)
         self._qgsLayer.setRenderer(renderer)
         self._qgsLayer.triggerRepaint()
-
-        self.routeEntries = routeEntries
-        self.config = config
 
     @staticmethod
     def _createLayerFromRouteEntries(routeEntries: DirectRouteEntry, config: DirectRouteNetworkFeatureConfig) -> Self:
@@ -86,4 +89,8 @@ class DirectRouteNetworklayer(DigiRadLayer):
 
             renderer.addCategory(cat)
         
+        orderBy = QgsFeatureRequest.OrderBy([QgsFeatureRequest.OrderByClause(self.config.cfName, False)])
+        renderer.setOrderByEnabled(True)
+        renderer.setOrderBy(orderBy)
+
         return renderer
