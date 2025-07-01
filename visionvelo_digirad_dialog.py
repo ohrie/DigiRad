@@ -286,7 +286,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         
         self.centerUpdateContextLocsFromUi()
 
-        centerLayer = CenterLayer.loadFromFile(DUMMY_CENTER_OGR_PATH + "|layername=dresden_zentren", DialogState.CENTERPOINTS.value.getLOCS())
+        centerLayer = CenterLayer.loadFromFile(DUMMY_CENTER_OGR_PATH, DialogState.CENTERPOINTS.value.getLOCS())
         if centerLayer:
             DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
             LAYER_MANAGER.update()

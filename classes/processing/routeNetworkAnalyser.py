@@ -59,6 +59,8 @@ class RouteNetworkAnalyser:
                 self.cfs.append(cf)
 
         for entry in self.routeEntries:
+            if not entry.routeResult:
+                continue
             for edgeId in entry.routeResult.edgeIds:
                 edge = self.graph.edge(edgeId)
                 v1 = self.graph.vertex(edge.fromVertex()).point()
