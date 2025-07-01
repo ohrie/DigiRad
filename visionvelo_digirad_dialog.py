@@ -29,7 +29,7 @@ from typing import Tuple
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsMapLayerProxyModel, QgsMessageLog, QgsPointXY
+from qgis.core import QgsMapLayerProxyModel, QgsFieldProxyModel, QgsMessageLog, QgsPointXY
 
 from .qtHelpers import QtHelper
 from .dialogstate import DialogStateMachine, DialogState
@@ -79,6 +79,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def postSetupUi(self):
         # self.centersMapLayerSelection.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.reprojectSelectLayer.setFilters(QgsMapLayerProxyModel.LineLayer)
+        self.reprojectDemandSelectLayer.setFilters(QgsMapLayerProxyModel.LineLayer)
+        self.reprojectDemandSelectField.setFilters(QgsFieldProxyModel.Filter.Numeric)
 
         self.tabs = {
             DialogState.WELCOME: self.welcomeTab,
@@ -87,6 +89,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             DialogState.CENTERPOINTSEDIT: self.centerEditTab,
             DialogState.AIRLINE: self.airlineTab,
             DialogState.REPROJECT: self.reprojectTab,
+            DialogState.REPROJECTDEMAND: self.reprojectDemandTab,
         }
 
         self.centerEditTool = None
@@ -131,6 +134,13 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectGenerateButton.clicked.connect(self.onReprojectGenerateButton)
         self.reprojectCancelGenerateButton.clicked.connect(self.onReprojectCancelGenerateButton)
         self.reprojectDetourToleranceCheckbox.clicked.connect(self.onReprojectDetourToleranceCheckbox)
+
+        # Reproject demand page
+        self.reprojectDemandBackButton.clicked.connect(self.onReprojectDemandBackButton)
+        self.reprojectDemandContinueButton.clicked.connect(self.onReprojectDemandContinueButton)
+        self.reprojectDemandGenerateButton.clicked.connect(self.onReprojectDemandGenerateButton)
+        self.reprojectDemandCancelGenerateButton.clicked.connect(self.onReprojectDemandCancelGenerateButton)
+        self.reprojectDemandSelectLayer.layerChanged.connect(self.onReprojectDemandSelectLayerChanged)
     
     def setupMapView(self):
         # Setup map canvas
@@ -203,9 +213,31 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectProgressBar.hide()
             self.reprojectCancelGenerateButton.hide()
             self.reprojectBackButton.setEnabled(True)
-            self.reprojectContinueButton.setEnabled(False)
+            self.reprojectContinueButton.setEnabled(True)
 
         self.selectTab(DialogState.REPROJECT)
+    
+    def showReprojectDemandPage(self):
+        if DialogState.REPROJECTDEMAND.value.isProcessing():
+            self.reprojectDemandGenerateButton.hide()
+            self.reprojectDemandProgressBar.show()
+            self.reprojectDemandCancelGenerateButton.show()
+            self.reprojectDemandBackButton.setEnabled(False)
+            self.reprojectDemandContinueButton.setEnabled(False)
+            self.reprojectDemandProgressBar.setValue(DialogState.REPROJECTDEMAND.value.getProgress())
+        else:
+            self.reprojectDemandGenerateButton.show()
+            self.reprojectDemandProgressBar.hide()
+            self.reprojectDemandCancelGenerateButton.hide()
+            self.reprojectDemandBackButton.setEnabled(True)
+            self.reprojectDemandContinueButton.setEnabled(False)
+
+            if not self.reprojectDemandSelectLayer.currentLayer():
+                networkLayer = self.reprojectSelectLayer.currentLayer()
+                if networkLayer:
+                    self.reprojectDemandSelectLayer.setLayer(networkLayer)
+
+        self.selectTab(DialogState.REPROJECTDEMAND)
 
     ### SIGNALS
 
@@ -380,7 +412,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.stateMachine.transitionTo(DialogState.AIRLINE)
 
     def onReprojectContinueButton(self):
-        pass
+        self.stateMachine.transitionTo(DialogState.REPROJECTDEMAND)
 
     def onReprojectGenerateButton(self):
         if self.guardLayerRegeneration(DialogState.REPROJECT):
@@ -443,6 +475,73 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def onReprojectDetourToleranceCheckbox(self):
         self.reprojectDetourToleranceSpinbox.setEnabled(self.reprojectDetourToleranceCheckbox.isChecked())
 
+    
+    # REPROJECT DEMAND PAGE
+    def onReprojectDemandBackButton(self):
+        self.stateMachine.transitionTo(DialogState.REPROJECT)
+
+    def onReprojectDemandContinueButton(self):
+        pass
+
+    def onReprojectDemandGenerateButton(self):
+        if self.guardLayerRegeneration(DialogState.REPROJECTDEMAND):
+            return
         
+        directRouteLayer = DialogState.AIRLINE.value.getDirectRouteLayer()
+
+        if not directRouteLayer:
+            return
+        networkLayer = self.reprojectDemandSelectLayer.currentLayer()
+        if not networkLayer:
+            return
+        
+        DialogState.REPROJECTDEMAND.value.setNetworklayer(networkLayer)
+
+
+        task = RouteNetworkTask.createAndRunFromContextStateHandler(DialogState.context(), self.onReprojectDemandGenerateResult, self.onReprojectDemandGenerateProgressChanged)
+        # Save the task into the context, so it does not get garbage collected
+        DialogState.REPROJECTDEMAND.value.setProcessing(task)
+        self.showReprojectPage()
+    
+    def onReprojectDemandSelectLayerChanged(self):
+        networkLayer = self.reprojectDemandSelectLayer.currentLayer()
+        if not networkLayer:
+            return
+        
+        self.reprojectDemandSelectField.setLayer(networkLayer)
+    
+    def onReprojectDemandGenerateResult(self, result: Tuple[bool, RouteNetworkTaskResult]):
+        sucees, taskResult = result
+
+        DialogState.REPROJECTDEMAND.value.setProcessing(None)
+
+        self.showReprojectPage()
+
+        if sucees:
+            routeLayer = RouteNetworklayer(taskResult.routeEntries)
+            DialogState.REPROJECTDEMAND.value.setRouteLayer(routeLayer)
+            DialogState.REPROJECTDEMAND.value.setPathfinder(taskResult.pathFinder)
+            networkAnalyser = RouteNetworkAnalyser(taskResult.pathFinder.graph, routeLayer.routeEntries, routeLayer.config)
+            networkElements = networkAnalyser.createNetworkElements()
+            (aggregatedElements, breakingPoints) = networkAnalyser.aggregateElements(networkElements)
+            supplyNetworkLayer = SupplyNetworkElementLayer(networkElements)
+            supplyAggregatedNetworkLayer = SupplyAggregatedNetworkElementLayer(aggregatedElements)
+            breakingPointsNetworkLayer = BreakingPointsNetworkLayer(breakingPoints)
+            DialogState.REPROJECTDEMAND.value.setSupplyNetworkLayer(supplyNetworkLayer)
+            DialogState.REPROJECTDEMAND.value.setAggregatedSupplyNetworkLayer(supplyAggregatedNetworkLayer)
+            DialogState.REPROJECTDEMAND.value.setBreakingPointsNetworkLayer(breakingPointsNetworkLayer)
+            LAYER_MANAGER.update()
+        else:
+            QgsMessageLog.logMessage(f"Error while processing: {taskResult}")
+    
+    def onReprojectDemandGenerateProgressChanged(self, progress):
+        oldValue = DialogState.REPROJECTDEMAND.value.setProgress(int(progress))
+        if oldValue != progress:
+            self.showReprojectDemandPage()
+    
+    def onReprojectDemandCancelGenerateButton(self):
+        task = DialogState.REPROJECTDEMAND.value.getProcessing()
+        if task:
+            task.cancel()
     
     

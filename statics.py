@@ -31,6 +31,7 @@ PLUGIN_PATH = os.path.dirname(os.path.realpath(__file__))
 DAT_PATH = os.path.join(PLUGIN_PATH, "dat")
 
 DUMMY_CENTER_OGR_PATH = os.path.join("C:/Users/Lindemann/Documents/Arbeit/VV/Projekte/2025/2_DigiRad/4_Daten/Kommunen", "Dummy_Dresden_Zentren.gpkg")
+#DUMMY_CENTER_OGR_PATH = os.path.join("C:/Users/Lindemann/Downloads", "Marburg_Dummy_Zentren.gpkg")
 
 ARS_INDEX = ARSIndex(os.path.join(DAT_PATH, "ARS_Zentren_VG_Kreise.csv"))
 PROCESSING_CONFIG = ProcessingConfig()

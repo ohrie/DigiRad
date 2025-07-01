@@ -235,7 +235,7 @@ class ReprojectHandler(StateHandler):
             self.ui.showReprojectPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.AIRLINE]
+        return targetState in [DialogState.AIRLINE, DialogState.REPROJECTDEMAND]
     
     def isProcessing(self) -> bool:
         return self.context.has(ReprojectHandler.KProcessing)
@@ -299,6 +299,97 @@ class ReprojectHandler(StateHandler):
         DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
         return self.context.updateValue(ReprojectHandler.KBreakingPointsNetworkLayer, value)
 
+class ReprojectDemandHandler(StateHandler):
+    KProcessing = "reprojectDemand.Processing"
+    KProgress = "reprojectDemand.Progress"
+    # KDetourTolerance = "reprojectDemand.DetourTolerance"
+    KNetworkLayer = "reprojectDemand.Networklayer"
+    KPathfinder = "reprojectDemand.Pathfinder"
+    KRouteLayer = "reprojectDemand.RouteLayer"
+    KSupplyNetworkLayer = "reprojectDemand.SupplyNetworkLayer"
+    KAggregatedSupplyNetworkLayer = "reprojectDemand.KAggregatedSupplyNetworkLayer"
+    KBreakingPointsNetworkLayer = "reprojectDemand.KBreakingPointsNetworkLayer"
+
+    LayerKeys = [
+        KNetworkLayer,
+        KRouteLayer,
+        KSupplyNetworkLayer,
+        KAggregatedSupplyNetworkLayer,
+        KBreakingPointsNetworkLayer
+        ]
+
+    def __init__(self):
+        super().__init__("ReprojectDemand")
+    
+    def onEnter(self, previousState: Optional['DialogState'] = None):
+        self.handleUi()
+    
+    def onExit(self, nextState: Optional['DialogState'] = None):
+        pass
+    
+    def handleUi(self):
+        if self.ui:
+            self.ui.showReprojectDemandPage()
+    
+    def canTransitionTo(self, targetState: 'DialogState') -> bool:
+        return targetState in [DialogState.REPROJECT]
+    
+    def isProcessing(self) -> bool:
+        return self.context.has(ReprojectDemandHandler.KProcessing)
+    
+    def getProcessing(self) -> Optional[Any]:
+        return self.context.get(ReprojectDemandHandler.KProcessing)
+    
+    def setProcessing(self, value: Optional[Any]):
+        self.context.set(ReprojectDemandHandler.KProcessing, value)
+    
+    def getProgress(self) -> int:
+        return self.context.get(ReprojectDemandHandler.KProgress, 0)
+    
+    def setProgress(self, value: int) -> int:
+        return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=0)
+    
+    def getNetworklayer(self) -> Optional[QgsVectorLayer]:
+        return self.context.get(ReprojectDemandHandler.KNetworkLayer)
+    
+    def setNetworklayer(self, value: QgsVectorLayer) -> QgsVectorLayer:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECTDEMAND, "LayerKeys")
+        return self.context.updateValue(ReprojectDemandHandler.KNetworkLayer, value)
+    
+    def getPathfinder(self) -> Optional[NetworkPathFinder]:
+        return self.context.get(ReprojectDemandHandler.KPathfinder)
+    
+    def setPathfinder(self, value: NetworkPathFinder) -> Optional[NetworkPathFinder]:
+        return self.context.updateValue(ReprojectDemandHandler.KPathfinder, value)
+    
+    def getRouteLayer(self) -> Optional[RouteNetworklayer]:
+        return self.context.get(ReprojectDemandHandler.KRouteLayer)
+    
+    def setRouteLayer(self, value: RouteNetworklayer) -> Optional[RouteNetworklayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECTDEMAND, "LayerKeys")
+        return self.context.updateValue(ReprojectDemandHandler.KRouteLayer, value)
+    
+    def hasRouteLayer(self) -> bool:
+        return self.context.has(ReprojectDemandHandler.KRouteLayer)
+    
+    def getSupplyNetworkLayer(self) -> Optional[SupplyNetworkElementLayer]:
+        return self.context.get(ReprojectDemandHandler.KSupplyNetworkLayer)
+    
+    def setSupplyNetworkLayer(self, value: SupplyNetworkElementLayer) -> Optional[SupplyNetworkElementLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECTDEMAND, "LayerKeys")
+        return self.context.updateValue(ReprojectDemandHandler.KSupplyNetworkLayer, value)
+    
+    def hasSupplyNetworkLayer(self) -> bool:
+        return self.context.has(ReprojectDemandHandler.KSupplyNetworkLayer)
+    
+    def setAggregatedSupplyNetworkLayer(self, value: SupplyAggregatedNetworkElementLayer) -> Optional[SupplyAggregatedNetworkElementLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECTDEMAND, "LayerKeys")
+        return self.context.updateValue(ReprojectDemandHandler.KAggregatedSupplyNetworkLayer, value)
+    
+    def setBreakingPointsNetworkLayer(self, value: BreakingPointsNetworkLayer) -> Optional[BreakingPointsNetworkLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECTDEMAND, "LayerKeys")
+        return self.context.updateValue(ReprojectDemandHandler.KBreakingPointsNetworkLayer, value)
+
 class DialogState(Enum):
     """State machine enum with handlers"""
     WELCOME = WelcomeHandler()
@@ -307,6 +398,7 @@ class DialogState(Enum):
     CENTERPOINTSEDIT = CenterPointsEditHandler()
     AIRLINE = AirlineHandler()
     REPROJECT = ReprojectHandler()
+    REPROJECTDEMAND = ReprojectDemandHandler()
     
     def __init__(self, handler: StateHandler):
         self.handler = handler

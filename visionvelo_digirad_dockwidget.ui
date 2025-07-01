@@ -24,7 +24,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="welcomeTab">
        <property name="enabled">
@@ -830,6 +830,118 @@
           <item>
            <widget class="QPushButton" name="reprojectContinueButton">
             <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Weiter</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="reprojectDemandTab">
+       <attribute name="title">
+        <string>Nachfrageumlegung</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Netzumlegung anhand der Nachfrage&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Basierend auf dem Luftliniennetz und Nachfragedaten wird nun eine Umlegung auf ein bestehendes Verkehrsnetz vorgenommen.&lt;/p&gt;&lt;p&gt;Dafür muss ein digitales Verkehrsnetz für die ausgewählte Region geladen werden, welches auch über Nachfragedaten verfügt. Hierfür bieten sich die Verkehrsmengen aus der STADTRADELN-Kampagne an.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::RichText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Line" name="line_12">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Verkehrsnetz mit Nachfragedaten</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="1" column="0">
+            <widget class="QgsFieldComboBox" name="reprojectDemandSelectField">
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QgsMapLayerComboBox" name="reprojectDemandSelectLayer"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="reprojectDemandGenerateButton">
+          <property name="text">
+           <string>Umlegung generieren</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_13">
+          <item>
+           <widget class="QProgressBar" name="reprojectDemandProgressBar">
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="reprojectDemandCancelGenerateButton">
+            <property name="text">
+             <string>Abbrechen</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line_13">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_12">
+          <item>
+           <widget class="QPushButton" name="reprojectDemandBackButton">
+            <property name="text">
+             <string>Zurück</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="reprojectDemandContinueButton">
+            <property name="enabled">
              <bool>false</bool>
             </property>
             <property name="text">
@@ -847,6 +959,11 @@
   </widget>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>QgsFieldComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsfieldcombobox.h</header>
+  </customwidget>
   <customwidget>
    <class>QgsMapLayerComboBox</class>
    <extends>QComboBox</extends>
