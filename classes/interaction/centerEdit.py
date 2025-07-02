@@ -42,10 +42,9 @@ class CenterEditFeatureHandler:
         if not self.toolType:
             return
         
-        match self.toolType:
-            case CenterEditToolType.PropertyEdit:
-                self.openAttributeDialog(feature)
-            case CenterEditToolType.DeleteFeature:
+        if self.toolType == CenterEditToolType.PropertyEdit:
+            self.openAttributeDialog(feature)
+        elif self.toolType == CenterEditToolType.DeleteFeature:
                 self.deleteFeature(feature)
         
     def openAttributeDialog(self, feature):

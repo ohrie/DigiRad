@@ -1,4 +1,3 @@
-from typing import Self
 from qgis.PyQt.QtGui import QColor
 
 from .network import LevelOfCentrality, ConnectivityFunction
@@ -12,57 +11,53 @@ class Colors:
 
 class Style:
     @staticmethod
-    def getColorForLOC(loc: LevelOfCentrality) -> QColor:
-        match loc:
-            case LevelOfCentrality.II:
-                return Colors.II
-            case LevelOfCentrality.III:
-                return Colors.III
-            case LevelOfCentrality.IV:
-                return Colors.IV
-            case LevelOfCentrality.Singular:
-                return Colors.Extra
-            case _:
-                return Colors.Default
+    def getColorForLOC(loc: LevelOfCentrality):
+        if loc == LevelOfCentrality.II:
+            return Colors.II
+        elif loc == LevelOfCentrality.III:
+            return Colors.III
+        elif loc == LevelOfCentrality.IV:
+            return Colors.IV
+        elif loc == LevelOfCentrality.Singular:
+            return Colors.Extra
+        else:
+            return Colors.Default
     
     @staticmethod
-    def getColorForCF(cf: ConnectivityFunction) -> QColor:
-        match cf:
-            case ConnectivityFunction.VFS_2:
-                return Colors.II
-            case ConnectivityFunction.VFS_3:
-                return Colors.III
-            case ConnectivityFunction.VFS_4:
-                return Colors.IV
-            case ConnectivityFunction.VFS_5:
-                return Colors.Extra
-            case _:
-                return Colors.Default
+    def getColorForCF(cf: ConnectivityFunction):
+        if cf == ConnectivityFunction.VFS_2:
+            return Colors.II
+        elif cf == ConnectivityFunction.VFS_3:
+            return Colors.III
+        elif cf == ConnectivityFunction.VFS_4:
+            return Colors.IV
+        elif cf == ConnectivityFunction.VFS_5:
+            return Colors.Extra
+        else:
+            return Colors.Default
     
     @staticmethod
-    def getSizeForLOC(loc: LevelOfCentrality) -> int:
-        match loc:
-            case LevelOfCentrality.II:
-                return 4
-            case LevelOfCentrality.III:
-                return 3
-            case LevelOfCentrality.IV:
-                return 2
-            case LevelOfCentrality.Singular:
-                return 3
-            case _:
-                return 1
+    def getSizeForLOC(loc: LevelOfCentrality):
+        if loc == LevelOfCentrality.II:
+            return 4
+        elif loc == LevelOfCentrality.III:
+            return 3
+        elif loc == LevelOfCentrality.IV:
+            return 2
+        elif loc == LevelOfCentrality.Singular:
+            return 3
+        else:
+            return 1
     
     @staticmethod
-    def getSizeForCF(cf: ConnectivityFunction) -> int:
-        match cf:
-            case ConnectivityFunction.VFS_2:
-                return 0.7
-            case ConnectivityFunction.VFS_3:
-                return 0.5
-            case ConnectivityFunction.VFS_4:
-                return 0.2
-            case ConnectivityFunction.VFS_5:
-                return 0.2
-            case _:
-                return 0.2
+    def getSizeForCF(cf: ConnectivityFunction):
+        if cf == ConnectivityFunction.VFS_2:
+            return 0.7
+        elif cf == ConnectivityFunction.VFS_3:
+            return 0.5
+        elif cf == ConnectivityFunction.VFS_4:
+            return 0.2
+        elif cf == ConnectivityFunction.VFS_5:
+            return 0.2
+        else:
+            return 0.2

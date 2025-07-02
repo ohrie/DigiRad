@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 
-from typing import Self, List, Dict
+from typing import List, Dict
 
 from PyQt5.QtCore import QVariant
 from qgis.core import (
@@ -48,7 +48,7 @@ class DirectRouteNetworkFeatureConfig:
 class DirectRouteNetworklayer(DigiRadLayer):
     LayerName = "Luftliniennetz"
 
-    def __init__(self, routeEntries: List[DirectRouteEntry], config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> Self:
+    def __init__(self, routeEntries: List[DirectRouteEntry], config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> 'DirectRouteNetworklayer':
         super().__init__(DirectRouteNetworklayer._createLayerFromRouteEntries(routeEntries, config))
         
         self.routeEntries = routeEntries
@@ -59,7 +59,7 @@ class DirectRouteNetworklayer(DigiRadLayer):
         self._qgsLayer.triggerRepaint()
 
     @staticmethod
-    def _createLayerFromRouteEntries(routeEntries: DirectRouteEntry, config: DirectRouteNetworkFeatureConfig) -> Self:
+    def _createLayerFromRouteEntries(routeEntries: DirectRouteEntry, config: DirectRouteNetworkFeatureConfig) -> 'DirectRouteNetworklayer':
         meshlayer = QgsVectorLayer("LineString?crs=EPSG:3857", DirectRouteNetworklayer.LayerName, "memory")
         pr = meshlayer.dataProvider()
         pr.addAttributes([QgsField(config.relationName, QVariant.LongLong),

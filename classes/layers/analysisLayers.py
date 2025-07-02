@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Self, List, Dict
+from typing import List
 
 from PyQt5.QtCore import QVariant
 from qgis.core import (
@@ -41,7 +41,7 @@ from ..processing.routeNetworkAnalyser import NetworkElement, AggregatedNetworkE
 from ..styling import Style
 
 class SupplyNetworkElemenFeatureConfig:
-    def __init__(self, edgeIdName: str = "KantenId", cfName: str = "Verbindungsfunktionsstufe", occupancyName: str = "Belegung") -> Self:
+    def __init__(self, edgeIdName: str = "KantenId", cfName: str = "Verbindungsfunktionsstufe", occupancyName: str = "Belegung") -> 'SupplyNetworkElemenFeatureConfig':
         self.edgeIdName = edgeIdName
         self.cfName = cfName
         self.occupancyName = occupancyName
@@ -52,7 +52,7 @@ class SupplyNetworkElemenFeatureConfig:
 class SupplyNetworkElementLayer(DigiRadLayer):
     LayerName = "Angebotsnetz"
 
-    def __init__(self, networkElements: List[NetworkElement], config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> Self:
+    def __init__(self, networkElements: List[NetworkElement], config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyNetworkElementLayer':
         super().__init__(
             SupplyNetworkElementLayer._createLayerFromNetworkElements(networkElements, config),
             "Umlegung",
@@ -110,7 +110,7 @@ class SupplyNetworkElementLayer(DigiRadLayer):
 class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
     LayerName = "Angebotsnetz (aggregiert)"
 
-    def __init__(self, networkElements: List[AggregatedNetworkElement], config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> Self:
+    def __init__(self, networkElements: List[AggregatedNetworkElement], config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyAggregatedNetworkElementLayer':
         super().__init__(SupplyAggregatedNetworkElementLayer._createLayerFromNetworkElements(networkElements, config), "Umlegung")
 
         self.networkElements = networkElements
@@ -160,7 +160,7 @@ class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
         return renderer
 
 class BreakingPointsNetworkFeatureeConfig:
-    def __init__(self, cfName: str = "Verbindungsfunktionsstufe", occupancyName: str = "Belegung") -> Self:
+    def __init__(self, cfName: str = "Verbindungsfunktionsstufe", occupancyName: str = "Belegung") -> 'BreakingPointsNetworkFeatureeConfig':
         self.cfName = cfName
         self.occupancyName = occupancyName
         self.occupancyNameCF2 = "{} {}".format(occupancyName, ConnectivityFunction.VFS_2.asStrShort())
@@ -170,7 +170,7 @@ class BreakingPointsNetworkFeatureeConfig:
 class BreakingPointsNetworkLayer(DigiRadLayer):
     LayerName = "Netzaufteilung"
 
-    def __init__(self, breakingElements: List[BreakingElement], config: BreakingPointsNetworkFeatureeConfig = BreakingPointsNetworkFeatureeConfig()) -> Self:
+    def __init__(self, breakingElements: List[BreakingElement], config: BreakingPointsNetworkFeatureeConfig = BreakingPointsNetworkFeatureeConfig()) -> 'BreakingPointsNetworkLayer':
         super().__init__(
             BreakingPointsNetworkLayer._createLayer(breakingElements, config),
             "Umlegung",
@@ -209,7 +209,7 @@ class BreakingPointsNetworkLayer(DigiRadLayer):
         renderer = QgsCategorizedSymbolRenderer(self.config.cfName)
 
         for cf in [ConnectivityFunction.VFS_2, ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]:
-            symbol = QgsMarkerSymbol.createSimple({'name': 'star_diamond'})
+            symbol = QgsMarkerSymbol.createSimple({'name': 'triangle'})
             symbol.setColor(Style.getColorForCF(cf))
             symbol.setSize(3.6)
             cat = QgsRendererCategory(cf.asStrShort(), symbol, cf.asStr())

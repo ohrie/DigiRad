@@ -21,7 +21,7 @@ RouteNetwork
  ***************************************************************************/
 """
 
-from typing import Self, List, Tuple, Optional
+from typing import List, Tuple, Optional
 from collections import OrderedDict
 
 from qgis.core import (
@@ -53,7 +53,7 @@ class RouteGenerationOptions:
         return self.detourTolerance != 0.0
 
 class RouteEntry:
-    def __init__(self, directRouteEntry: DirectRouteEntry, routeResult: 'RouteResult') -> Self:
+    def __init__(self, directRouteEntry: DirectRouteEntry, routeResult: 'RouteResult') -> 'RouteEntry':
         self.directRouteEntry = directRouteEntry
         self.routeResult = routeResult
         self.validation = Networkvalidator().validate(self)

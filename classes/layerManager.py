@@ -25,8 +25,6 @@ from typing import Type, Optional
 from qgis.core import (
     QgsMessageLog,
     QgsProject,
-    QgsRasterLayer,
-    QgsMapLayer,
     QgsCoordinateReferenceSystem,
     QgsLayerTreeGroup
 )

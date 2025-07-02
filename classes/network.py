@@ -20,8 +20,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Self, List
+
+from typing import List, TypeVar
 from enum import Enum
+
+CF = TypeVar('CF', bound='ConnectivityFunction')
+LOC = TypeVar('LOC', bound='LevelOfCentrality')
 
 class ConnectivityFunction(Enum):
     VFS_1 = 1
@@ -31,45 +35,45 @@ class ConnectivityFunction(Enum):
     VFS_5 = 5
 
     @staticmethod
-    def defaults() -> List[Self]:
+    def defaults() -> List['ConnectivityFunction']:
         return [ConnectivityFunction.VFS_2, ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]
     
     def asStr(self) -> str:
-        match self:
-            case ConnectivityFunction.VFS_1:
-                return "Verbindungsfunktionsstufe I"
-            case ConnectivityFunction.VFS_2:
-                return "Verbindungsfunktionsstufe II"
-            case ConnectivityFunction.VFS_3:
-                return "Verbindungsfunktionsstufe III"
-            case ConnectivityFunction.VFS_4:
-                return "Verbindungsfunktionsstufe IV"
-            case ConnectivityFunction.VFS_5:
-                return "Verbindungsfunktionsstufe V"
+        if self == ConnectivityFunction.VFS_1:
+            return "Verbindungsfunktionsstufe I"
+        elif self == ConnectivityFunction.VFS_2:
+            return "Verbindungsfunktionsstufe II"
+        elif self == ConnectivityFunction.VFS_3:
+            return "Verbindungsfunktionsstufe III"
+        elif self == ConnectivityFunction.VFS_4:
+            return "Verbindungsfunktionsstufe IV"
+        elif self == ConnectivityFunction.VFS_5:
+            return "Verbindungsfunktionsstufe V"
     
     def asStrShort(self) -> str:
-        match self:
-            case ConnectivityFunction.VFS_1:
-                return "VFS I"
-            case ConnectivityFunction.VFS_2:
-                return "VFS II"
-            case ConnectivityFunction.VFS_3:
-                return "VFS III"
-            case ConnectivityFunction.VFS_4:
-                return "VFS IV"
-            case ConnectivityFunction.VFS_5:
-                return "VFS V"
+        if self == ConnectivityFunction.VFS_1:
+            return "VFS I"
+        elif self == ConnectivityFunction.VFS_2:
+            return "VFS II"
+        elif self == ConnectivityFunction.VFS_3:
+            return "VFS III"
+        elif self == ConnectivityFunction.VFS_4:
+            return "VFS IV"
+        elif self == ConnectivityFunction.VFS_5:
+            return "VFS V"
     
-    def isLowerEq(self, other: Self) -> bool:
+    def isLowerEq(self, other: 'ConnectivityFunction') -> bool:
         return self.value <= other.value
     
-    def isHigherEq(self, other: Self) -> bool:
+    def isHigherEq(self, other: 'ConnectivityFunction') -> bool:
         return self.value >= other.value
     
-    def getLowerCF(value1: Self, value2: Self) -> Self:
+    @staticmethod
+    def getLowerCF(value1: 'ConnectivityFunction', value2: 'ConnectivityFunction') -> 'ConnectivityFunction':
         return ConnectivityFunction(min(value1.value, value2.value))
     
-    def getUpperCF(value1: Self, value2: Self) -> Self:
+    @staticmethod
+    def getUpperCF(value1: 'ConnectivityFunction', value2: 'ConnectivityFunction') -> 'ConnectivityFunction':
         return ConnectivityFunction(max(value1.value, value2.value))
 
 class LevelOfCentrality(Enum):
@@ -79,10 +83,11 @@ class LevelOfCentrality(Enum):
     Singular = 10
 
     @staticmethod
-    def defaults() -> List[Self]:
+    def defaults() -> List['LevelOfCentrality']:
         return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular]
 
-    def fromStr(value: str) -> Self:
+    @staticmethod
+    def fromStr(value: str) -> 'LevelOfCentrality':
         value = value.lower()
         if value == "zentralitätsstufe ii":
             return LevelOfCentrality.II
@@ -96,37 +101,37 @@ class LevelOfCentrality(Enum):
             raise ValueError(f"'{value}' is not a valid level of centrality")
     
     def asStr(self) -> str:
-        match self:
-            case LevelOfCentrality.II:
-                return "Zentralitätsstufe II"
-            case LevelOfCentrality.III:
-                return "Zentralitätsstufe III"
-            case LevelOfCentrality.IV:
-                return "Zentralitätsstufe IV"
-            case LevelOfCentrality.Singular:
-                return "Singulärer Erzeuger"
+        if self == LevelOfCentrality.II:
+            return "Zentralitätsstufe II"
+        elif self == LevelOfCentrality.III:
+            return "Zentralitätsstufe III"
+        elif self == LevelOfCentrality.IV:
+            return "Zentralitätsstufe IV"
+        elif self == LevelOfCentrality.Singular:
+            return "Singulärer Erzeuger"
     
-    def isLowerEq(self, other: Self) -> bool:
+    def isLowerEq(self, other: 'LevelOfCentrality') -> bool:
         return self.value <= other.value
     
-    def isHigherEq(self, other: Self) -> bool:
+    def isHigherEq(self, other: 'LevelOfCentrality') -> bool:
         return self.value >= other.value
     
-    def getLowerLoc(value1: Self, value2: Self) -> Self:
+    @staticmethod
+    def getLowerLoc(value1: 'LevelOfCentrality', value2: 'LevelOfCentrality') -> 'LevelOfCentrality':
         return LevelOfCentrality(min(value1.value, value2.value))
     
-    def getUpperLoc(value1: Self, value2: Self) -> Self:
+    @staticmethod
+    def getUpperLoc(value1: 'LevelOfCentrality', value2: 'LevelOfCentrality') -> 'LevelOfCentrality':
         return LevelOfCentrality(max(value1.value, value2.value))
     
     def toConnectivityFunction(self) -> ConnectivityFunction:
-        match self:
-            case LevelOfCentrality.II:
-                return ConnectivityFunction.VFS_2
-            case LevelOfCentrality.III:
-                return ConnectivityFunction.VFS_3
-            case LevelOfCentrality.IV:
-                return ConnectivityFunction.VFS_4
-            case LevelOfCentrality.Singular:
-                return ConnectivityFunction.VFS_3
+        if self == LevelOfCentrality.II:
+            return ConnectivityFunction.VFS_2
+        elif self == LevelOfCentrality.III:
+            return ConnectivityFunction.VFS_3
+        elif self == LevelOfCentrality.IV:
+            return ConnectivityFunction.VFS_4
+        elif self == LevelOfCentrality.Singular:
+            return ConnectivityFunction.VFS_3
 
-    
+

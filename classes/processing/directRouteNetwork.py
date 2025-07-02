@@ -23,9 +23,9 @@
 
 import copy
 from enum import Enum
-from typing import List, Dict, Self
+from typing import List, Dict
 
-from qgis.core import QgsMessageLog, QgsPoint, QgsMesh, QgsGeometry
+from qgis.core import QgsMessageLog, QgsPoint, QgsMesh, QgsGeometry, QgsFeature, QgsPointXY, QgsVectorLayer, QgsCoordinateTransform
 from qgis.analysis import QgsMeshTriangulation
 
 from ..helper import createPointHash, createDoublePointHash
@@ -37,7 +37,7 @@ class DirectRouteGenerateMethod(Enum):
     MANUEL = 2
 
     @staticmethod
-    def default() -> Self:
+    def default() -> 'DirectRouteGenerateMethod':
         return DirectRouteGenerateMethod.AUTO
 
 class DirectRouteEntry:
@@ -49,11 +49,11 @@ class DirectRouteEntry:
         self._geom = None
     
     @staticmethod
-    def entryFromCenterFeatures(relationId: int, p1: QgsPoint, p2: QgsPoint, centerFeatureP1: CenterLayerFeature, centerFeatureP2: CenterLayerFeature) -> Self:
+    def entryFromCenterFeatures(relationId: int, p1: QgsPoint, p2: QgsPoint, centerFeatureP1: CenterLayerFeature, centerFeatureP2: CenterLayerFeature) -> 'DirectRouteEntry':
         return DirectRouteEntry(relationId, p1, p2, LevelOfCentrality.getUpperLoc(centerFeatureP1.loc, centerFeatureP2.loc).toConnectivityFunction())
     
     @staticmethod
-    def entriesFromMeshFace(mesh: QgsMesh, face: int, pointIndex: Dict[QgsPoint, CenterLayerFeature]) -> List[Self]:
+    def entriesFromMeshFace(mesh: QgsMesh, face: int, pointIndex: Dict[QgsPoint, CenterLayerFeature]) -> List['DirectRouteEntry']:
         (i1, i2, i3) = mesh.face(face)
         p1 = mesh.vertex(i1)
         p2 = mesh.vertex(i2)
@@ -144,10 +144,36 @@ class MeshCalculator:
         return index
 
     def _calculateMeshForFeatures(self, centerFeatures: List[CenterLayerFeature]):
-        meshCalc = QgsMeshTriangulation()
+        # For PyQGIS 3.16: We do not have the .addVertex fn, so instead, we need to create a feature iterator and call
+        # .addVertices
+        
+        features = []
         for feat in centerFeatures:
-            meshCalc.addVertex(feat.geom)
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(feat.geom.x(), feat.geom.y())))
+            features.append(feature)
+
+        featureIterator = SimpleFeatureIterator(features)
+        meshCalc = QgsMeshTriangulation()
+        meshCalc.addVertices(featureIterator.getFeatures(), -1, QgsCoordinateTransform())
         
         mesh = meshCalc.triangulatedMesh()
         return mesh
     
+
+
+
+class SimpleFeatureIterator:
+    def __init__(self, features):
+        layer = QgsVectorLayer(
+            "Point?crs=EPSG:3857",
+            "temp_points",
+            "memory"
+        )
+        provider = layer.dataProvider()
+        provider.addFeatures(features)
+
+        self.layer = layer
+    
+    def getFeatures(self):
+        return self.layer.getFeatures()

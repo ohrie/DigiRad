@@ -20,17 +20,15 @@ RouteNetworkAnalyser
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Self, List, Set, Dict, Tuple, Optional
+
+from typing import List, Set, Dict, Tuple, Optional
 from collections import defaultdict, deque
 
-from PyQt5.QtCore import QVariant
 from qgis.core import (
     QgsMessageLog,
     QgsGeometry,
     QgsPointXY,
     QgsFeature,
-    QgsVectorLayer,
-    QgsField,
 )
 from qgis.analysis import QgsGraph
 
@@ -87,7 +85,7 @@ class RouteNetworkAnalyser:
 
 
 class NetworkElement:
-    def __init__(self, graph: QgsGraph, edgeKey: int, edgeId: int, cfs: List[ConnectivityFunction]) -> Self:
+    def __init__(self, graph: QgsGraph, edgeKey: int, edgeId: int, cfs: List[ConnectivityFunction]) -> 'NetworkElement':
       self.edgeKey = edgeKey
       self.edgeId = edgeId
       self.cf = min(cfs, key=lambda cf: cf.value)
@@ -520,7 +518,7 @@ class BreakingElement:
         return feat
 
 class SealedBreakingElement:
-    def __init__(self, breakingElement: BreakingElement) -> Self:
+    def __init__(self, breakingElement: BreakingElement) -> 'SealedBreakingElement':
         self.n = breakingElement.n
         self.cf = breakingElement.cf
         self.cfMap = breakingElement.cfMap

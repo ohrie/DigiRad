@@ -63,7 +63,7 @@ class GraphkModifier:
     def _createFwRevEdgeIdMap(self):
         fwRevEdgeIdMap = {}
         for (edgeId, count) in self.changeLog.items():
-            oppositeEdge = self.graph.findOppositeEdge(edgeId)
+            oppositeEdge = self._findOppositeEdgeId(edgeId)
             edge = self.graph.edge(edgeId)
             v1 = self.graph.vertex(edge.fromVertex()).point()
             v2 = self.graph.vertex(edge.toVertex()).point()
@@ -103,7 +103,7 @@ class GraphkModifier:
             oldEdgeIds.add(edgeId)
 
 
-            revEdgeId = self.graph.findOppositeEdge(edgeId)
+            revEdgeId = self._findOppositeEdgeId(edgeId)
             revEdge = self.graph.edge(revEdgeId)
             baseCost = revEdge.cost(0)
             newRevEdgeId = self.graph.addEdge(
@@ -125,6 +125,37 @@ class GraphkModifier:
             self.changeLog[newEdgeId] = count + 1
         else:
             self.changeLog[newEdgeId] = 1
+    
+    def _findOppositeEdgeId(self, edgeId: int) -> int:
+        # Get the edge at the given index
+        edge = self.graph.edge(edgeId)
+        
+        # Get the from and to vertices of this edge
+        from_vertex = edge.fromVertex()
+        to_vertex = edge.toVertex()
+        
+        # Get the vertex at the 'to' position
+        if to_vertex < 0 or to_vertex >= self.graph.vertexCount():
+            return -1
+            
+        vertex = self.graph.vertex(to_vertex)
+        
+        # Get outgoing edges from the 'to' vertex
+        outgoing_edges = vertex.outgoingEdges()
+        
+        # Look for edges which start at toVertex and end at fromVertex
+        for candidate_index in outgoing_edges:
+            if candidate_index < 0 or candidate_index >= self.graph.edgeCount():
+                continue
+                
+            candidate_edge = self.graph.edge(candidate_index)
+            
+            # Check if this candidate edge goes back to the original fromVertex
+            if candidate_edge.toVertex() == from_vertex:
+                return candidate_index
+        
+        # No opposite edge found
+        return -1
     
     def removeOldEdges(self):
         for edgeId in self._oldEdges:

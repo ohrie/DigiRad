@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-RouteNetworkTask
+RouteDemandNetworkTask
                                  A QGIS plugin
  Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
                              -------------------
@@ -39,13 +39,13 @@ from .routeNetwork import NetworkPathFinder, RouteEntry, RouteGenerationOptions
 from ..network import ConnectivityFunction
 from ...dialogstate import DialogStateContext, ReprojectHandler, AirlineHandler
 
-class RouteNetworkTask(QgsTask):
+class RouteDemandNetworkTask(QgsTask):
     # Signals for communication
     progressChanged = pyqtSignal(int)
     resultReady = pyqtSignal(object)
     
-    def __init__(self, networkLayer: QgsVectorLayer, directRouteLayer: DirectRouteNetworklayer, options: RouteGenerationOptions, pathFinder: NetworkPathFinder = None):
-        super().__init__("Luftlinienrouten auf Verkehrsnetz projizieren", QgsTask.CanCancel)
+    def __init__(self, networkLayer: QgsVectorLayer, directRouteLayer: DirectRouteNetworklayer, options: RouteDemandGenerationOptions, pathFinder: NetworkPathFinder = None):
+        super().__init__("Luftlinienrouten auf Verkehrsnetz mit Nachfragedaten projizieren", QgsTask.CanCancel)
         self.networkLayer = networkLayer
         self.directRouteLayer = directRouteLayer
         self.pathFinder = pathFinder
@@ -54,7 +54,7 @@ class RouteNetworkTask(QgsTask):
         self.exception = None
     
     @staticmethod
-    def createAndRunFromContextStateHandler(context: DialogStateContext, resultCallback = None, progressCallback = None) -> 'RouteNetworkTask':
+    def createAndRunFromContextStateHandler(context: DialogStateContext, resultCallback = None, progressCallback = None) -> 'RouteDemandNetworkTask':
         directRouteLayer = context.get(AirlineHandler.KDirectRouteLayer)
         networkLayer = context.get(ReprojectHandler.KNetworkLayer)
         pathFinder = context.get(ReprojectHandler.KPathfinder)
@@ -75,7 +75,7 @@ class RouteNetworkTask(QgsTask):
         return task
     
     @staticmethod
-    def createAndRunTask(networkLayer: QgsVectorLayer, directRouteLayer: DirectRouteNetworklayer, options: RouteGenerationOptions, resultCallback = None, progressCallback = None) -> 'RouteNetworkTask':
+    def createAndRunTask(networkLayer: QgsVectorLayer, directRouteLayer: DirectRouteNetworklayer, options: RouteGenerationOptions, resultCallback = None, progressCallback = None) -> 'RouteDemandNetworkTask':
         task = RouteNetworkTask(networkLayer, directRouteLayer, options, pathFinder=None)
         if resultCallback:
             task.resultReady.connect(resultCallback)
@@ -89,59 +89,59 @@ class RouteNetworkTask(QgsTask):
         
     def run(self):
         """This method runs in the background thread"""
-        # try:
-        self.result = None
-        entries = list(self.directRouteLayer.routeEntries)[0:]
+        try:
+            self.result = None
+            entries = list(self.directRouteLayer.routeEntries)[0:]
 
-        sortedEntries = {}
-        for entry in entries:
-            if entry.cf in sortedEntries:
-                sortedEntries[entry.cf].append(entry)
-            else:
-                sortedEntries[entry.cf] = [entry]
+            sortedEntries = {}
+            for entry in entries:
+                if entry.cf in sortedEntries:
+                    sortedEntries[entry.cf].append(entry)
+                else:
+                    sortedEntries[entry.cf] = [entry]
 
-        # Step 1: Build the graph
-        self.setProgress(5)
-        self.progressChanged.emit(5)
-        # if not self.pathFinder:
-        self.pathFinder = NetworkPathFinder(self.networkLayer, self.options)
-        QgsMessageLog.logMessage("Building graph..")
-        self.pathFinder.buildGraph(entries)
-        # else:
-        #     self.pathFinder.cleanUp()
-        self.setProgress(40)
-        self.progressChanged.emit(40)
-        # Check if task was cancelled
-        if self.isCanceled():
-            return False
-        
-        # Step 2: 1st Route between the relation start and end points
-        QgsMessageLog.logMessage("First routing..")
-        if self.options.isDetourActive():
-            relationsLen = len(entries) * 2
-        else:
-            relationsLen = len(entries)
-
-        resultEntries = self._findRouteEntries(sortedEntries, self.options.isDetourActive(), 0, relationsLen, 60)
-        self.pathFinder.graphModifier.modifyEdgeCostsBasedOnChangelog()
-
-        # Step 3: 2nd/last Route between the relation start and end points
-        if self.options.isDetourActive():
-            QgsMessageLog.logMessage("Optimized routing..")
-            resultEntries = self._findRouteEntries(sortedEntries, False, len(entries), relationsLen, 60)
-        
-        # QgsMessageLog.logMessage("Cleaning up..")
-        # self.pathFinder.cleanUp()
-        QgsMessageLog.logMessage("Done.")
-        self.result = RouteNetworkTaskResult(resultEntries, self.pathFinder)
-        self.setProgress(100)
-        self.progressChanged.emit(100)
-
-        return True
+            # Step 1: Build the graph
+            self.setProgress(5)
+            self.progressChanged.emit(5)
+            # if not self.pathFinder:
+            self.pathFinder = NetworkPathFinder(self.networkLayer, self.options)
+            QgsMessageLog.logMessage("Building graph..")
+            self.pathFinder.buildGraph(entries)
+            # else:
+            #     self.pathFinder.cleanUp()
+            self.setProgress(40)
+            self.progressChanged.emit(40)
+            # Check if task was cancelled
+            if self.isCanceled():
+                return False
             
-        # except Exception as e:
-        #     self.exception = e
-        #     return False
+            # Step 2: 1st Route between the relation start and end points
+            QgsMessageLog.logMessage("First routing..")
+            if self.options.isDetourActive():
+                relationsLen = len(entries) * 2
+            else:
+                relationsLen = len(entries)
+
+            resultEntries = self._findRouteEntries(sortedEntries, self.options.isDetourActive(), 0, relationsLen, 60)
+            self.pathFinder.graphModifier.modifyEdgeCostsBasedOnChangelog()
+
+            # Step 3: 2nd/last Route between the relation start and end points
+            if self.options.isDetourActive():
+                QgsMessageLog.logMessage("Optimized routing..")
+                resultEntries = self._findRouteEntries(sortedEntries, False, len(entries), relationsLen, 60)
+            
+            # QgsMessageLog.logMessage("Cleaning up..")
+            # self.pathFinder.cleanUp()
+            QgsMessageLog.logMessage("Done.")
+            self.result = RouteNetworkTaskResult(resultEntries, self.pathFinder)
+            self.setProgress(100)
+            self.progressChanged.emit(100)
+
+            return True
+            
+        except Exception as e:
+            self.exception = e
+            return False
     
     def _findRouteEntries(
             self,

@@ -21,8 +21,6 @@
  ***************************************************************************/
 """
 
-from typing import Self
-
 from qgis.core import (
     QgsMessageLog,
     QgsRasterLayer,
@@ -36,7 +34,7 @@ class BaseLayer(DigiRadLayer):
     def __init__(self, wmsLayer: QgsRasterLayer):
         super().__init__(wmsLayer)
 
-    def create() -> Self:
+    def create() -> 'BaseLayer':
         tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=16"
         layer = QgsRasterLayer(tms, BaseLayer.LayerName, "wms")
         return BaseLayer(layer)

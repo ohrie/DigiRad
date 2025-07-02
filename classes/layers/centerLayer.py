@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 
-from typing import Self, List, Dict, Optional
+from typing import List, Dict, Optional
 from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
@@ -46,14 +46,14 @@ class CenterLayerFeatureConfig:
         self.nameName = nameName
 
 class CenterLayerFeature:
-    def __init__(self, featureId, name: str, loc: LevelOfCentrality, geom: QgsPoint) -> Self:
+    def __init__(self, featureId, name: str, loc: LevelOfCentrality, geom: QgsPoint) -> 'CenterLayerFeature':
         self.featureId = featureId
         self.name = name
         self.loc = loc
         self.geom = geom
 
     @staticmethod
-    def featuresFromLayer(layer: 'CenterLayer') -> Dict[LevelOfCentrality, List[Self]]:
+    def featuresFromLayer(layer: 'CenterLayer') -> Dict[LevelOfCentrality, List['CenterLayerFeature']]:
         qgsLayer = layer.qgsLayer()
         features = {}
         for loc in LevelOfCentrality:
@@ -98,7 +98,7 @@ class CenterLayer(DigiRadLayer):
         self.locFeatures = CenterLayerFeature.featuresFromLayer(self)
 
     @staticmethod 
-    def createEmpty(availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults()) -> Self:
+    def createEmpty(availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults()) -> 'CenterLayer':
         layer = QgsVectorLayer("Point?crs=EPSG:3857&field=name:string&field=loc:string", CenterLayer.LayerName, "memory")
         return CenterLayer(layer, availableLOCs)
 

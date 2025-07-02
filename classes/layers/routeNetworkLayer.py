@@ -20,7 +20,7 @@ RouteNetworklayer
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Self, List, Dict
+from typing import List
 
 from PyQt5.QtCore import QVariant
 from qgis.core import (
@@ -47,7 +47,7 @@ class RouteNetworkFeatureConfig:
         self.detourName = detourName
 
 class RouteNetworklayer(DigiRadLayer):
-    def __init__(self, routeEntries: List[RouteEntry], config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> Self:
+    def __init__(self, routeEntries: List[RouteEntry], config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> 'RouteNetworklayer':
         super().__init__(
             RouteNetworklayer._createLayerFromRouteEntries(routeEntries, config),
             "Umlegung",

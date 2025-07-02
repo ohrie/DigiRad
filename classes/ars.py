@@ -23,7 +23,6 @@
 
 from typing import List, Tuple
 import csv
-from fuzzywuzzy import fuzz
 
 from qgis.core import QgsMessageLog, QgsPointXY
 
@@ -94,7 +93,7 @@ class ARSIndex:
         
         self.arsCodes = arsCodes
     
-    def searchByName(self, searchName: str, threshold: int = 70, maxResults: int = 10) -> List[Tuple[ARSCode, int]]:
+    def searchByName(self, searchName: str, threshold: float = 0.7, maxResults: int = 10) -> List[Tuple[ARSCode, int]]:
         """
         Search ARSCode entries based on name using fuzzy matching
         
@@ -110,9 +109,7 @@ class ARSIndex:
         results = []
 
         for arsCode in self.arsCodes.values():
-            # Get similarity score using fuzzywuzzy's token sort ratio
-            # This works well for names that might have words in different orders
-            similarity = fuzz.token_sort_ratio(arsCode.name.lower(), searchName)
+            similarity = self.similarity(arsCode.name.lower(), searchName)
 
             # Only include results above the threshold
             if similarity >= threshold:
@@ -123,6 +120,55 @@ class ARSIndex:
         limit = min(len(results), maxResults)
 
         return results[0:limit]
+    
+    def similarity(self, name1, name2):
+        """
+        Calculate similarity between two names using Levenshtein distance.
+        
+        Args:
+            name1 (str): First name (lowercase)
+            name2 (str): Second name (lowercase)
+        
+        Returns:
+            float: Similarity score between 0.0 (no similarity) and 1.0 (identical)
+        """
+        
+        def levenshtein_distance(s1, s2):
+            """Calculate Levenshtein distance between two strings."""
+            if len(s1) < len(s2):
+                return levenshtein_distance(s2, s1)
+            
+            if len(s2) == 0:
+                return len(s1)
+            
+            # Create a matrix to store distances
+            previous_row = list(range(len(s2) + 1))
+            for i, c1 in enumerate(s1):
+                current_row = [i + 1]
+                for j, c2 in enumerate(s2):
+                    # Cost of insertions, deletions, and substitutions
+                    insertions = previous_row[j + 1] + 1
+                    deletions = current_row[j] + 1
+                    substitutions = previous_row[j] + (c1 != c2)
+                    current_row.append(min(insertions, deletions, substitutions))
+                previous_row = current_row
+            
+            return previous_row[-1]
+        
+        # Handle empty inputs
+        if not name1 and not name2:
+            return 1.0
+        if not name1 or not name2:
+            return 0.0
+        
+        # Calculate Levenshtein distance
+        distance = levenshtein_distance(name1, name2)
+        
+        # Convert distance to similarity score (0-1 scale)
+        max_length = max(len(name1), len(name2))
+        similarity = 1.0 - (distance / max_length) if max_length > 0 else 1.0
+        
+        return round(similarity, 3)
     
     def getARSCodeByName(self, name: str) -> ARSCode:
         for code in self.arsCodes.values():

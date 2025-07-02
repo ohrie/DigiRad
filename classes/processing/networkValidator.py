@@ -20,7 +20,6 @@ NetworkValidator
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Self
 
 from qgis.core import QgsDistanceArea, QgsCoordinateReferenceSystem, QgsCoordinateTransformContext
 
@@ -29,7 +28,7 @@ class ValidationEntry:
         self.detourFactor = detourFactor
     
     @staticmethod
-    def empty() -> Self:
+    def empty() -> 'ValidationEntry':
         ValidationEntry(0)
     
     def isEmpty(self) -> bool:
