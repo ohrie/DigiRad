@@ -37,15 +37,13 @@ from .routeNetwork import RouteEntry
 from ..layers.routeNetworkLayer import RouteNetworkFeatureConfig
 from ..helper import createDoublePointHash
 
-
-
 class RouteNetworkAnalyser:
     def __init__(self, graph: QgsGraph, routeEntries: List[RouteEntry], config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()):
         self.graph = graph
         self.routeEntries = routeEntries
         self.config = config
     
-    def createNetworkElements(self) -> List['AggregatedNetworkElement']:
+    def createNetworkElements(self) -> List['NetworkElement']:
         collectedEntries = {}
 
         class CollectedEntryItem:

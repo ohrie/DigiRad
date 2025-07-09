@@ -22,24 +22,29 @@
 """
 from typing import Type, Optional
 
+from PyQt5.QtCore import QTimer
+
 from qgis.core import (
     QgsMessageLog,
     QgsProject,
     QgsCoordinateReferenceSystem,
-    QgsLayerTreeGroup
+    QgsLayerTreeGroup,
+    QgsPointXY
 )
 
+from ..constants import CRS_STR
 from ..dialogstate import DialogStateContext
 from .layers.layer import DigiRadLayer
 from .layers.baseLayer import BaseLayer
 
 class LayerManager:
     def __init__(self, projectName: str, showBaseMap: bool = True):
-        self._crs = QgsCoordinateReferenceSystem("EPSG:3857")
+        self._crs = QgsCoordinateReferenceSystem(CRS_STR)
         QgsProject.instance().setCrs(self._crs)
 
         self.iface = None
         self.projectName = projectName
+        self.showBaseMap = showBaseMap
 
         if showBaseMap:
             self.baseLayer = BaseLayer.create()
@@ -48,16 +53,56 @@ class LayerManager:
 
         self.layers = {}
         self.contextRef = None
+        self.center = None
     
     def setContextRef(self, contextRef: DialogStateContext):
         self.contextRef = contextRef
     
-    def show(self):
-        (root, group) = self._getGroup()
-        
+    def removeAll(self):
+        root = QgsProject.instance().layerTreeRoot()
+        group = root.findGroup(self.projectName)
+        if not group:
+            return
+        root.removeChildNode(group)
+        self.layers = {}
+        if self.showBaseMap:
+            self.baseLayer = BaseLayer.create()
+        else:
+            self.baseLayer = None
+    
+    def show(self, center: Optional[QgsPointXY] = None):
+        # If no layer is on the map, QGIS updates the CRS and extent
+        # based on the first added layer.
+        # As we already set the crs and extent in the location view
+        # these settings are overwritten when the base map is added.
+        # So we have to reset the crs and extent
+        self.center = center
+        project = QgsProject.instance()
+        canvas = self.iface.mapCanvas()
+
+        canvas.freeze(True)
+        project.setCrs(self._crs)
+        canvas.setDestinationCrs(self._crs)
+
         self._ensureLayer(self.baseLayer)
+        canvas.freeze(False)
+
+        # See https://gis.stackexchange.com/questions/303704/project-crs-not-being-respected-by-qgis/303710#303710
+        QTimer.singleShot(20, self._setProjectCrsAndCenter)
+
         self.update()
     
+    def _setProjectCrsAndCenter(self):
+        QgsProject.instance().setCrs(self._crs)
+        canvas = self.iface.mapCanvas()
+        canvas.freeze(True)
+        canvas.setDestinationCrs(self._crs)
+        canvas.zoomScale(150000)
+        if self.center:
+            canvas.setCenter(self.center)
+        
+        canvas.freeze(False)
+
     def update(self):
         if not self.contextRef:
             return

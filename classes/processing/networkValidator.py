@@ -23,6 +23,8 @@ NetworkValidator
 
 from qgis.core import QgsDistanceArea, QgsCoordinateReferenceSystem, QgsCoordinateTransformContext
 
+from ...constants import CRS_STR
+
 class ValidationEntry:
     def __init__(self, detourFactor):
         self.detourFactor = detourFactor
@@ -50,7 +52,7 @@ class NetworkvalidatorMeta(type):
 class Networkvalidator(metaclass=NetworkvalidatorMeta):
     def __init__(self):
         distCalc = QgsDistanceArea()
-        distCalc.setSourceCrs(QgsCoordinateReferenceSystem("EPSG:3857"), QgsCoordinateTransformContext())
+        distCalc.setSourceCrs(QgsCoordinateReferenceSystem(CRS_STR), QgsCoordinateTransformContext())
         distCalc.setEllipsoid('WGS84')
         
         self.distCalc = distCalc

@@ -35,6 +35,7 @@ from qgis.core import (
     QgsFeatureRequest,
     )
 
+from ...constants import CRS_STR
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
 from ..processing.routeNetworkAnalyser import NetworkElement, AggregatedNetworkElement, BreakingElement
@@ -50,12 +51,10 @@ class SupplyNetworkElemenFeatureConfig:
         self.occupancyNameCF4 = "{} {}".format(occupancyName, ConnectivityFunction.VFS_4.asStrShort())
 
 class SupplyNetworkElementLayer(DigiRadLayer):
-    LayerName = "Angebotsnetz"
-
-    def __init__(self, networkElements: List[NetworkElement], config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyNetworkElementLayer':
+    def __init__(self, networkElements: List[NetworkElement], layerName: str = "Angebotsnetz", groupName: str = "Umlegung", config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyNetworkElementLayer':
         super().__init__(
-            SupplyNetworkElementLayer._createLayerFromNetworkElements(networkElements, config),
-            "Umlegung",
+            SupplyNetworkElementLayer._createLayerFromNetworkElements(networkElements, layerName, config),
+            groupName,
             expanded=False,
             visible=False
         )
@@ -68,9 +67,9 @@ class SupplyNetworkElementLayer(DigiRadLayer):
         self._qgsLayer.triggerRepaint()
 
     @staticmethod
-    def _createLayerFromNetworkElements(networkElements: List[NetworkElement], config: SupplyNetworkElemenFeatureConfig) -> QgsVectorLayer:
-        routeLayer = QgsVectorLayer("LineString?crs=EPSG:3857", 
-                             SupplyNetworkElementLayer.LayerName, "memory")
+    def _createLayerFromNetworkElements(networkElements: List[NetworkElement], layerName: str, config: SupplyNetworkElemenFeatureConfig) -> QgsVectorLayer:
+        routeLayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), 
+                             layerName, "memory")
         pr = routeLayer.dataProvider()
         pr.addAttributes([
             QgsField(config.edgeIdName, QVariant.LongLong),
@@ -110,8 +109,8 @@ class SupplyNetworkElementLayer(DigiRadLayer):
 class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
     LayerName = "Angebotsnetz (aggregiert)"
 
-    def __init__(self, networkElements: List[AggregatedNetworkElement], config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyAggregatedNetworkElementLayer':
-        super().__init__(SupplyAggregatedNetworkElementLayer._createLayerFromNetworkElements(networkElements, config), "Umlegung")
+    def __init__(self, networkElements: List[AggregatedNetworkElement], layerName: str = "Angebotsnetz (aggregiert)", groupName: str = "Umlegung", config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyAggregatedNetworkElementLayer':
+        super().__init__(SupplyAggregatedNetworkElementLayer._createLayerFromNetworkElements(networkElements, layerName, config), groupName)
 
         self.networkElements = networkElements
         self.config = config
@@ -121,9 +120,9 @@ class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
         self._qgsLayer.triggerRepaint()
 
     @staticmethod
-    def _createLayerFromNetworkElements(networkElements: List[AggregatedNetworkElement], config: SupplyNetworkElemenFeatureConfig) -> QgsVectorLayer:
-        routeLayer = QgsVectorLayer("LineString?crs=EPSG:3857", 
-                             SupplyAggregatedNetworkElementLayer.LayerName, "memory")
+    def _createLayerFromNetworkElements(networkElements: List[AggregatedNetworkElement], layerName: str, config: SupplyNetworkElemenFeatureConfig) -> QgsVectorLayer:
+        routeLayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), 
+                             layerName, "memory")
         pr = routeLayer.dataProvider()
         pr.addAttributes([
             QgsField(config.cfName, QVariant.String),
@@ -168,12 +167,10 @@ class BreakingPointsNetworkFeatureeConfig:
         self.occupancyNameCF4 = "{} {}".format(occupancyName, ConnectivityFunction.VFS_4.asStrShort())
 
 class BreakingPointsNetworkLayer(DigiRadLayer):
-    LayerName = "Netzaufteilung"
-
-    def __init__(self, breakingElements: List[BreakingElement], config: BreakingPointsNetworkFeatureeConfig = BreakingPointsNetworkFeatureeConfig()) -> 'BreakingPointsNetworkLayer':
+    def __init__(self, breakingElements: List[BreakingElement], layerName: str = "Netzaufteilung", groupName: str = "Umlegung", config: BreakingPointsNetworkFeatureeConfig = BreakingPointsNetworkFeatureeConfig()) -> 'BreakingPointsNetworkLayer':
         super().__init__(
-            BreakingPointsNetworkLayer._createLayer(breakingElements, config),
-            "Umlegung",
+            BreakingPointsNetworkLayer._createLayer(breakingElements, layerName, config),
+            groupName,
             expanded=False)
 
         self.breakingElements = breakingElements
@@ -184,9 +181,9 @@ class BreakingPointsNetworkLayer(DigiRadLayer):
         self._qgsLayer.triggerRepaint()
 
     @staticmethod
-    def _createLayer(breakingElements: List[BreakingElement], config: BreakingPointsNetworkFeatureeConfig) -> QgsVectorLayer:
-        layer = QgsVectorLayer("Point?crs=EPSG:3857", 
-                             BreakingPointsNetworkLayer.LayerName, "memory")
+    def _createLayer(breakingElements: List[BreakingElement], layerName: str, config: BreakingPointsNetworkFeatureeConfig) -> QgsVectorLayer:
+        layer = QgsVectorLayer("Point?crs={}".format(CRS_STR), 
+                             layerName, "memory")
         pr = layer.dataProvider()
         pr.addAttributes([
             QgsField(config.cfName, QVariant.String),

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- BaseLayer
+ Constants
                                  A QGIS plugin
  Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
                              -------------------
@@ -21,23 +21,12 @@
  ***************************************************************************/
 """
 
-from qgis.core import (
-    QgsMessageLog,
-    QgsRasterLayer,
-    QgsCoordinateReferenceSystem,
-)
+import os
 
-from ...constants import CRS_STR
-from .layer import DigiRadLayer
+PLUGIN_PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PLUGIN_PATH, "dat")
 
-class BaseLayer(DigiRadLayer):
-    LayerName = "Hintergrundkarte"
+AUTO_CENTER_POINTS_PATH = os.path.join(DAT_PATH, "DigiRadAutoZentren.gpkg")
 
-    def __init__(self, wmsLayer: QgsRasterLayer):
-        super().__init__(wmsLayer)
-
-    def create() -> 'BaseLayer':
-        tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        layer = QgsRasterLayer(tms, BaseLayer.LayerName, "wms")
-        layer.setCrs(QgsCoordinateReferenceSystem("EPSG:3857"))
-        return BaseLayer(layer)
+EPSG_CODE = "25832"
+CRS_STR = "EPSG:{}".format(EPSG_CODE)

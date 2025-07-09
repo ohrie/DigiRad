@@ -89,13 +89,13 @@ class LevelOfCentrality(Enum):
     @staticmethod
     def fromStr(value: str) -> 'LevelOfCentrality':
         value = value.lower()
-        if value == "zentralitätsstufe ii":
+        if value == "zentralitätsstufe ii" or value == "z ii":
             return LevelOfCentrality.II
-        elif value == "zentralitätsstufe iii":
+        elif value == "zentralitätsstufe iii" or value == "z iii":
             return LevelOfCentrality.III
-        elif value == "zentralitätsstufe iv":
+        elif value == "zentralitätsstufe iv" or value == "z iv":
             return LevelOfCentrality.IV
-        elif value == "singulärer erzeuger":
+        elif value == "singulärer erzeuger" or value == "s":
             return LevelOfCentrality.Singular
         else:
             raise ValueError(f"'{value}' is not a valid level of centrality")
@@ -110,6 +110,16 @@ class LevelOfCentrality(Enum):
         elif self == LevelOfCentrality.Singular:
             return "Singulärer Erzeuger"
     
+    def asStrShort(self) -> str:
+        if self == LevelOfCentrality.II:
+            return "Z II"
+        elif self == LevelOfCentrality.III:
+            return "Z III"
+        elif self == LevelOfCentrality.IV:
+            return "Z IV"
+        elif self == LevelOfCentrality.Singular:
+            return "S"
+
     def isLowerEq(self, other: 'LevelOfCentrality') -> bool:
         return self.value <= other.value
     

@@ -21,16 +21,22 @@
  ***************************************************************************/
 """
 
+from typing import Optional
 from datetime import datetime
 
 from .ars import ARSCode
 
 class ProcessingConfig:
+    DefaultProjectName = "DigiRad"
+
     def __init__(self):
-        self.projectName = "DigiRad"
+        self.projectName = ProcessingConfig.DefaultProjectName
         self.arsCode = None
     
-    def setARSCode(self, arsCode: ARSCode):
+    def setARSCode(self, arsCode: Optional[ARSCode]):
         self.arsCode = arsCode
         dt = datetime.today().strftime('%Y-%m-%d')
-        self.projectName = f"{arsCode.name}_{dt}"
+        if not arsCode:
+            self.projectName = f"{ProcessingConfig.DefaultProjectName}_{dt}"
+        else:
+            self.projectName = f"{arsCode.name}_{dt}"

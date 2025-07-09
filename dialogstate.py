@@ -11,6 +11,7 @@ from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from .classes.layers.analysisLayers import SupplyNetworkElementLayer, SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
 from .classes.processing.directRouteNetwork import DirectRouteGenerateMethod
 from .classes.processing.routeNetwork import NetworkPathFinder
+from .classes.processing.routeNetworkTaskHelpers import RouteNetworkTaskProgress
 
 class StateHandler(ABC):
     """Base class for state handlers"""
@@ -55,16 +56,10 @@ class WelcomeHandler(StateHandler):
         super().__init__("Welcome")
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
-        # print(f"[LOGIN] Entering login state")
-        # if previousState:
-        #     print(f"[LOGIN] Coming from: {previousState.name}")
-        # self.context['login_attempts'] = self.context.get('login_attempts', 0)
         self.handleUi()
     
     def onExit(self, nextState: Optional['DialogState'] = None):
-        print(f"[LOGIN] Exiting login state")
-        if nextState:
-            print(f"[LOGIN] Going to: {nextState.name}")
+        pass
     
     def handleUi(self):
         if self.ui:
@@ -78,18 +73,14 @@ class LocationSelectHandler(StateHandler):
         super().__init__("LocationSelect")
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
-        # print(f"[DASHBOARD] Entering dashboard state")
-        # if 'username' not in context:
-        #     print("[DASHBOARD] Warning: No user logged in!")
-        # else:
-        #     print(f"[DASHBOARD] Welcome, {context['username']}!")
+        # Clear the context state, if we do not come from the welcome state,
+        # because we most likely want to restart the project
+        if previousState != DialogState.WELCOME:
+            self.context.clear()
         self.handleUi()
     
     def onExit(self, nextState: Optional['DialogState'] = None):
         pass
-        # print(f"[DASHBOARD] Exiting dashboard state")
-        # # Store dashboard state
-        # context['last_dashboard_action'] = context.get('current_action', 'none')
     
     def handleUi(self):
         if self.ui:
@@ -108,18 +99,10 @@ class CenterPointsHandler(StateHandler):
         super().__init__("CenterPoints")
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
-        # print(f"[WORK] Entering work area")
-        # context['workSessionStart'] = context.get('currentTime', 'unknown')
-        # # Transfer data from previous state
-        # if previousState and hasattr(previousState.value, 'context_data'):
-        #     context.update(previousState.value.context_data)
         self.handleUi()
     
     def onExit(self, nextState: Optional['DialogState'] = None):
         pass
-        # print(f"[WORK] Exiting work area")
-        # # Save work progress
-        # context['work_progress'] = context.get('tasksCompleted', 0)
     
     def handleUi(self):
         if self.ui:
@@ -190,7 +173,7 @@ class AirlineHandler(StateHandler):
             self.ui.showAirlinePage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.CENTERPOINTSEDIT, DialogState.REPROJECT]
+        return targetState in [DialogState.CENTERPOINTSEDIT, DialogState.REPROJECT, DialogState.REPROJECTDEMAND]
     
     def getDirectRouteLayer(self) -> Optional[DirectRouteNetworklayer]:
         return self.context.get(AirlineHandler.KDirectRouteLayer)
@@ -246,11 +229,11 @@ class ReprojectHandler(StateHandler):
     def setProcessing(self, value: Optional[Any]):
         self.context.set(ReprojectHandler.KProcessing, value)
     
-    def getProgress(self) -> int:
-        return self.context.get(ReprojectHandler.KProgress, 0)
+    def getProgress(self) -> RouteNetworkTaskProgress:
+        return self.context.get(ReprojectHandler.KProgress, RouteNetworkTaskProgress(0))
     
-    def setProgress(self, value: int) -> int:
-        return self.context.updateValue(ReprojectHandler.KProgress, value, default=0)
+    def setProgress(self, value: RouteNetworkTaskProgress) -> RouteNetworkTaskProgress:
+        return self.context.updateValue(ReprojectHandler.KProgress, value, default=RouteNetworkTaskProgress(0))
     
     def getDetourTolerance(self) -> float:
         return self.context.get(ReprojectHandler.KDetourTolerance, 1)
@@ -302,7 +285,8 @@ class ReprojectHandler(StateHandler):
 class ReprojectDemandHandler(StateHandler):
     KProcessing = "reprojectDemand.Processing"
     KProgress = "reprojectDemand.Progress"
-    # KDetourTolerance = "reprojectDemand.DetourTolerance"
+    KDetourTolerance = "reprojectDemand.DetourTolerance"
+    KDemandFieldName = "reprojectDemand.DemandFieldName"
     KNetworkLayer = "reprojectDemand.Networklayer"
     KPathfinder = "reprojectDemand.Pathfinder"
     KRouteLayer = "reprojectDemand.RouteLayer"
@@ -343,12 +327,24 @@ class ReprojectDemandHandler(StateHandler):
     def setProcessing(self, value: Optional[Any]):
         self.context.set(ReprojectDemandHandler.KProcessing, value)
     
-    def getProgress(self) -> int:
-        return self.context.get(ReprojectDemandHandler.KProgress, 0)
+    def getProgress(self) -> 'RouteNetworkTaskProgress':
+        return self.context.get(ReprojectDemandHandler.KProgress, RouteNetworkTaskProgress(0))
     
-    def setProgress(self, value: int) -> int:
-        return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=0)
+    def setProgress(self, value: RouteNetworkTaskProgress) -> RouteNetworkTaskProgress:
+        return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=RouteNetworkTaskProgress(0))
     
+    def getDetourTolerance(self) -> float:
+        return self.context.get(ReprojectDemandHandler.KDetourTolerance, 1)
+    
+    def setDetourTolerance(self, value: float) -> float:
+        return self.context.updateValue(ReprojectDemandHandler.KDetourTolerance, value)
+    
+    def getDemandFieldName(self) -> str:
+        return self.context.get(ReprojectDemandHandler.KDemandFieldName, "")
+    
+    def setDemandFieldName(self, value: str) -> str:
+        return self.context.updateValue(ReprojectDemandHandler.KDemandFieldName, value)
+
     def getNetworklayer(self) -> Optional[QgsVectorLayer]:
         return self.context.get(ReprojectDemandHandler.KNetworkLayer)
     
@@ -462,8 +458,15 @@ class DialogState(Enum):
         return self.handler.name
 
 class DialogStateContext:
-    def __init__(self):
+    def __init__(self, initialState = DialogState.WELCOME):
         self._store = dict()
+        self.currentState = initialState
+    
+    def setCurrentState(self, state: DialogState):
+        self.currentState = state
+    
+    def clear(self):
+        self._store.clear()
     
     def inner(self) -> Dict[str, Any]:
         return self._store
@@ -552,6 +555,7 @@ class DialogStateMachine:
         self.stateHistory.append(targetState)
         
         # Enter new state
+        self.context.setCurrentState(targetState)
         self.currentState.enter(previousState)
         
         # Call transition callback if exists

@@ -35,6 +35,7 @@ from qgis.core import (
     QgsFeatureRequest
     )
 
+from ...constants import CRS_STR
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
 from ..processing.directRouteNetwork import DirectRouteEntry
@@ -60,7 +61,7 @@ class DirectRouteNetworklayer(DigiRadLayer):
 
     @staticmethod
     def _createLayerFromRouteEntries(routeEntries: DirectRouteEntry, config: DirectRouteNetworkFeatureConfig) -> 'DirectRouteNetworklayer':
-        meshlayer = QgsVectorLayer("LineString?crs=EPSG:3857", DirectRouteNetworklayer.LayerName, "memory")
+        meshlayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), DirectRouteNetworklayer.LayerName, "memory")
         pr = meshlayer.dataProvider()
         pr.addAttributes([QgsField(config.relationName, QVariant.LongLong),
                             QgsField(config.cfName,  QVariant.String)])

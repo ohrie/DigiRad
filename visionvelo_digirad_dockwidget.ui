@@ -24,7 +24,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="welcomeTab">
        <property name="enabled">
@@ -138,21 +138,10 @@
           <item>
            <widget class="QLineEdit" name="locationLineEdit">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ortssuche&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="placeholderText">
              <string>z.B. Dresden, Wetterau, etc.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="locationSearchButton">
-            <property name="text">
-             <string>Suchen</string>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>:/plugins/verkehrsnetz_generator/icons/search.png</normaloff>:/plugins/verkehrsnetz_generator/icons/search.png</iconset>
             </property>
            </widget>
           </item>
@@ -358,7 +347,7 @@
              <item>
               <widget class="QRadioButton" name="centerManualRadioButton">
                <property name="text">
-                <string>Manuell auf der Karte zeichnen (Weiter)</string>
+                <string>Manuell auf der Karte zeichnen (Weiter im nächsten Schritt)</string>
                </property>
               </widget>
              </item>
@@ -449,9 +438,9 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
           <item>
-           <widget class="QPushButton" name="centralBackButton">
+           <widget class="QPushButton" name="centralRestartButton">
             <property name="text">
-             <string>Zurück</string>
+             <string>Neu beginnen</string>
             </property>
            </widget>
           </item>
@@ -511,6 +500,12 @@
             <property name="text">
              <string>➕ Hinzufügen</string>
             </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -519,9 +514,12 @@
              <string>🗓 Eigenschaften</string>
             </property>
             <property name="checkable">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="autoExclusive">
              <bool>false</bool>
             </property>
            </widget>
@@ -531,12 +529,21 @@
             <property name="text">
              <string>↔️ Geometrie</string>
             </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="centerEditDeleteButton">
             <property name="text">
              <string>❌ Löschen</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -788,24 +795,35 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="reprojectProgressLayout">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
           <item>
-           <widget class="QProgressBar" name="reprojectProgressBar">
-            <property name="value">
+           <layout class="QHBoxLayout" name="reprojectProgressLayout">
+            <property name="spacing">
              <number>0</number>
             </property>
-           </widget>
+            <property name="topMargin">
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QProgressBar" name="reprojectProgressBar">
+              <property name="value">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="reprojectCancelGenerateButton">
+              <property name="text">
+               <string>Abbrechen</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="reprojectCancelGenerateButton">
+           <widget class="QLabel" name="reprojectProgressLabel">
             <property name="text">
-             <string>Abbrechen</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -876,11 +894,71 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="1" column="0">
-            <widget class="QgsFieldComboBox" name="reprojectDemandSelectField">
-            </widget>
+            <widget class="QgsFieldComboBox" name="reprojectDemandSelectField"/>
            </item>
            <item row="0" column="0">
             <widget class="QgsMapLayerComboBox" name="reprojectDemandSelectLayer"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="title">
+           <string>Optionen</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_14">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>Umwegetoleranz</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="reprojectDemandDetourToleranceCheckbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Aktiviert</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reprojectDemandDetourToleranceSpinbox">
+               <property name="maximumSize">
+                <size>
+                 <width>55</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="suffix">
+                <string>%</string>
+               </property>
+               <property name="maximum">
+                <number>95</number>
+               </property>
+               <property name="singleStep">
+                <number>5</number>
+               </property>
+               <property name="value">
+                <number>35</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -906,18 +984,29 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <layout class="QVBoxLayout" name="verticalLayout_13">
           <item>
-           <widget class="QProgressBar" name="reprojectDemandProgressBar">
-            <property name="value">
-             <number>0</number>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <item>
+             <widget class="QProgressBar" name="reprojectDemandProgressBar">
+              <property name="value">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="reprojectDemandCancelGenerateButton">
+              <property name="text">
+               <string>Abbrechen</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="reprojectDemandCancelGenerateButton">
+           <widget class="QLabel" name="reprojectDemandProgressLabel">
             <property name="text">
-             <string>Abbrechen</string>
+             <string/>
             </property>
            </widget>
           </item>

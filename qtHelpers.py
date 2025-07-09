@@ -36,3 +36,15 @@ class QtHelper:
         )
         
         return reply == QMessageBox.Yes
+    
+    @staticmethod
+    def askForProjectRestart(parent = None) -> bool:
+        reply = QMessageBox.question(
+            parent,
+            "Projekt neustarten",  # Dialog title
+            "Wenn Sie das Projekt neustarten, werden alle schon erzeugten Daten gelöscht. Möchten Sie fortfahren?",  # Dialog message
+            QMessageBox.Yes | QMessageBox.No,  # Buttons
+            QMessageBox.No  # Default button
+        )
+        
+        return reply == QMessageBox.Yes

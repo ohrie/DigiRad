@@ -21,13 +21,62 @@
  ***************************************************************************/
 """
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import csv
 
 from qgis.core import QgsMessageLog, QgsPointXY
 
+class ARSCodeStr:
+    def __init__(self, code: str) -> 'ARSCodeStr':
+        self.code = code
+    
+    @staticmethod
+    def empty() -> 'ARSCodeStr':
+        return ARSCodeStr("")
+
+    @staticmethod
+    def fromStr(code: str) -> Optional['ARSCodeStr']:
+        if len(code) > 12:
+            return None
+        if not code.isnumeric():
+            return None
+        
+        return ARSCodeStr(code.ljust(12, "0"))
+    
+    def isEmpty(self) -> bool:
+        return self.code == ""
+    
+    def getRelevantPart(self) -> str:
+        if self.isEmpty():
+            return ""
+        
+        sub = 12
+        # Find the right most zero before a non zero
+        for (i, c) in enumerate(reversed(self.code)):
+            if c != "0":
+                sub -= i
+                break
+        
+        return self.code[0:sub]
+    
+    def isWithin(self, other: 'ARSCodeStr') -> bool:
+        if self.isEmpty():
+            return False
+        
+        sub = 12
+        # Find the right most zero before a non zero
+        for (i, c) in enumerate(reversed(other.code)):
+            if c != "0":
+                sub -= i
+                break
+        
+        otherSub = other.getRelevantPart()
+        
+        return self.code[0:len(otherSub)] == otherSub
+
+
 class ARSCode:
-    def __init__(self, code: str, name: str, center: QgsPointXY):
+    def __init__(self, code: ARSCodeStr, name: str, center: QgsPointXY):
         self.code = code
         self.name = name
         self.center = center
@@ -38,14 +87,11 @@ class ARSIndex:
         Load CSV file into ARSCode objects
         
         The CSV has headers:
-        X;Y;GeografischerName_GEN;Bezeichnung;Land;ARS
+        X;Y;Name;ARS
         
-        Where:
-        - X and Y become center
-        - GeografischerName_GEN becomes name
-        - ARS becomes code
         """
         arsCodes = {}
+        arsNamesIndex = {}
 
         try:
             with open(filePath, 'r', encoding='utf-8') as file:
@@ -56,7 +102,7 @@ class ARSIndex:
                 header = next(csvReader)
                 
                 # Verify that the required columns exist
-                requiredColumns = ['X', 'Y', 'GeografischerName_GEN', 'ARS']
+                requiredColumns = ['X', 'Y', 'Name', 'ARS']
                 for column in requiredColumns:
                     if column not in header:
                         raise ValueError(f"Required column '{column}' not found in CSV header")
@@ -64,7 +110,7 @@ class ARSIndex:
                 # Get indices for the columns we need
                 xIndex = header.index('X')
                 yIndex = header.index('Y')
-                nameIndex = header.index('GeografischerName_GEN')
+                nameIndex = header.index('Name')
                 codeIndex = header.index('ARS')
                 
                 # Process each row
@@ -80,9 +126,13 @@ class ARSIndex:
                         # Get name and code
                         name = row[nameIndex]
                         code = row[codeIndex]
+
+                        code = ARSCodeStr.fromStr(code)
                         
                         # Create ARSCode object and add to list
-                        arsCodes[code] = ARSCode(code=code, name=name, center=center)
+                        ars = ARSCode(code=code, name=name, center=center)
+                        arsCodes[code] = ars
+                        arsNamesIndex[name.lower()] = name
                     
                     except (ValueError, IndexError) as e:
                         QgsMessageLog.logMessage(f"Error processing row {row}: {e}")
@@ -92,6 +142,23 @@ class ARSIndex:
             QgsMessageLog.logMessage(f"Error reading CSV file: {e}")
         
         self.arsCodes = arsCodes
+        self.arsNamesIndex = arsNamesIndex
+    
+    def findNamesBySearchName(self, searchName: str, maxResults: int = 10) -> List[str]:
+        searchName = searchName.lower().strip()
+        if not searchName:
+            return []
+        
+        results = []
+
+        for (nameLower, name) in self.arsNamesIndex.items():
+            if nameLower.startswith(searchName):
+                results.append(name)
+                if maxResults > 0 and len(results) > maxResults:
+                    break
+        
+        results.sort()
+        return results
     
     def searchByName(self, searchName: str, threshold: float = 0.7, maxResults: int = 10) -> List[Tuple[ARSCode, int]]:
         """
@@ -99,7 +166,7 @@ class ARSIndex:
         
         Args:
             searchName: Name to search for
-            threshold: Minimum similarity score (0-100) to include in results
+            threshold: Minimum similarity score (0-1.0) to include in results
         
         Returns:
             List of tuples containing (ARSCode, similarity_score) sorted by score descending

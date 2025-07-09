@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- BaseLayer
+RouteNetworkTaskHelpers
                                  A QGIS plugin
  Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
                              -------------------
@@ -20,24 +20,23 @@
  *                                                                         *
  ***************************************************************************/
 """
+from typing import List
 
-from qgis.core import (
-    QgsMessageLog,
-    QgsRasterLayer,
-    QgsCoordinateReferenceSystem,
-)
+from .routeNetwork import NetworkPathFinder, RouteEntry
+from .routeNetworkAnalyser import NetworkElement, AggregatedNetworkElement, BreakingElement
 
-from ...constants import CRS_STR
-from .layer import DigiRadLayer
+class RouteNetworkTaskResult:
+    def __init__(self, routeEntries: List[RouteEntry], networkElements: List[NetworkElement], aggregatedElements: List[AggregatedNetworkElement], breakingPoints: List[BreakingElement], pathFinder: NetworkPathFinder):
+        self.routeEntries = routeEntries
+        self.networkElements = networkElements
+        self.aggregatedElements = aggregatedElements
+        self.breakingPoints = breakingPoints
+        self.pathFinder = pathFinder
 
-class BaseLayer(DigiRadLayer):
-    LayerName = "Hintergrundkarte"
-
-    def __init__(self, wmsLayer: QgsRasterLayer):
-        super().__init__(wmsLayer)
-
-    def create() -> 'BaseLayer':
-        tms = "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        layer = QgsRasterLayer(tms, BaseLayer.LayerName, "wms")
-        layer.setCrs(QgsCoordinateReferenceSystem("EPSG:3857"))
-        return BaseLayer(layer)
+class RouteNetworkTaskProgress():
+    def __init__(self, progress: int, message: str = ""):
+        self.progress = progress
+        self.message = message
+    
+    def isDifferentTo(self, other: 'RouteNetworkTaskProgress') -> bool:
+        return self.progress != other.progress or self.message != other.message

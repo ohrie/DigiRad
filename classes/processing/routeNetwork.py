@@ -33,6 +33,7 @@ from qgis.core import (
 )
 from qgis.analysis import (
     QgsVectorLayerDirector,
+    QgsNetworkStrategy,
     QgsNetworkDistanceStrategy,
     QgsGraphBuilder,
     QgsGraphAnalyzer,
@@ -43,14 +44,16 @@ from ..layers.directRouteNetworkLayer import DirectRouteNetworklayer, DirectRout
 from .routing.cfRouting import GraphkModifier
 
 class RouteGenerationOptions:
-    def __init__(self, detourTolerance: float = 0.0):
+    def __init__(self, detourTolerance: float = 0.0, networkStrategy: QgsNetworkStrategy = QgsNetworkDistanceStrategy()):
         self.detourTolerance = detourTolerance
+        self.networkStrategy = networkStrategy
     
     def detourToModifactionFactor(self) -> float:
         return 1.0 - self.detourTolerance
     
     def isDetourActive(self) -> bool:
         return self.detourTolerance != 0.0
+    
 
 class RouteEntry:
     def __init__(self, directRouteEntry: DirectRouteEntry, routeResult: 'RouteResult') -> 'RouteEntry':
@@ -127,8 +130,8 @@ class NetworkPathFinder:
         self.director = QgsVectorLayerDirector(
             self.networkLayer, -1, '', '', '', self.direction)
         
-        self.director.addStrategy(QgsNetworkDistanceStrategy())
-        self.director.addStrategy(QgsNetworkDistanceStrategy())
+        self.director.addStrategy(self.options.networkStrategy)
+        self.director.addStrategy(self.options.networkStrategy)
     
     def buildGraph(self, routeEntries: List[DirectRouteEntry]):
         """Build a graph including all the provided route entries"""

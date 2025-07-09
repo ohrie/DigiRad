@@ -36,14 +36,17 @@ from qgis.core import (
     QgsEditorWidgetSetup
 )
 
+from ...constants import CRS_STR
+from ..ars import ARSCodeStr
 from .layer import DigiRadLayer
 from ..network import LevelOfCentrality
 from ..styling import Style
 
 class CenterLayerFeatureConfig:
-    def __init__(self, locName: str = "loc", nameName: str = "name"):
+    def __init__(self, locName: str = "Zentralität", nameName: str = "Bemerkung", arsName: str = "ARS"):
         self.locName = locName
         self.nameName = nameName
+        self.arsName = arsName
 
 class CenterLayerFeature:
     def __init__(self, featureId, name: str, loc: LevelOfCentrality, geom: QgsPoint) -> 'CenterLayerFeature':
@@ -98,14 +101,22 @@ class CenterLayer(DigiRadLayer):
         self.locFeatures = CenterLayerFeature.featuresFromLayer(self)
 
     @staticmethod 
-    def createEmpty(availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults()) -> 'CenterLayer':
-        layer = QgsVectorLayer("Point?crs=EPSG:3857&field=name:string&field=loc:string", CenterLayer.LayerName, "memory")
+    def createEmpty(availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()) -> 'CenterLayer':
+        layer = QgsVectorLayer("Point?crs={}&field={}:string&field={}:string".format(config.nameName, config.locName, CRS_STR), CenterLayer.LayerName, "memory")
         return CenterLayer(layer, availableLOCs)
 
     @staticmethod
-    def loadFromFile(filePath: str, availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults()):
+    def loadFromFile(filePath: str, arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
         layer = QgsVectorLayer(filePath, CenterLayer.LayerName, "ogr")
-        return CenterLayer(layer, availableLOCs)
+
+        if arsCodeStr.isEmpty():
+            request = QgsFeatureRequest()
+        else:
+            relevantCodePart = arsCodeStr.getRelevantPart()
+            request = QgsFeatureRequest().setFilterExpression("substr(\"{}\", 1, {}) = '{}'".format(config.arsName, len(relevantCodePart), relevantCodePart))
+        
+        layer = layer.materialize(request)
+        return CenterLayer(layer, availableLOCs, config)
     
     def update(self):
         self.locFeatures = CenterLayerFeature.featuresFromLayer(self)
@@ -117,7 +128,7 @@ class CenterLayer(DigiRadLayer):
             symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
             symbol.setColor(Style.getColorForLOC(loc))
             symbol.setSize(Style.getSizeForLOC(loc))
-            cat = QgsRendererCategory(loc.asStr(), symbol, loc.asStr())
+            cat = QgsRendererCategory(loc.asStrShort(), symbol, loc.asStr())
 
             renderer.addCategory(cat)
 
@@ -145,8 +156,7 @@ class CenterLayer(DigiRadLayer):
 
             valueMap = {}
             for loc in self.availableLOCs:
-                loc = loc.asStr()
-                valueMap[loc] = loc
+                valueMap[loc.asStrShort()] = loc.asStr()
             
             widgetSetup = QgsEditorWidgetSetup('ValueMap', {
                 'map': valueMap,
@@ -158,5 +168,5 @@ class CenterLayer(DigiRadLayer):
         return formConfig
     
     def _createFeatureFilter(self) -> str:
-        locs = ", ".join(map(lambda loc: '"{}"'.format(loc.asStr()), self.availableLOCs))
+        locs = ", ".join(map(lambda loc: "'{}'".format(loc.asStrShort()), self.availableLOCs))
         return "{} in ({})".format(self.config.locName, locs)

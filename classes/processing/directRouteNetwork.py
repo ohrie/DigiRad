@@ -28,6 +28,7 @@ from typing import List, Dict
 from qgis.core import QgsMessageLog, QgsPoint, QgsMesh, QgsGeometry, QgsFeature, QgsPointXY, QgsVectorLayer, QgsCoordinateTransform
 from qgis.analysis import QgsMeshTriangulation
 
+from ...constants import CRS_STR
 from ..helper import createPointHash, createDoublePointHash
 from ..network import LevelOfCentrality, ConnectivityFunction
 from ..layers.centerLayer import CenterLayer, CenterLayerFeature
@@ -166,7 +167,7 @@ class MeshCalculator:
 class SimpleFeatureIterator:
     def __init__(self, features):
         layer = QgsVectorLayer(
-            "Point?crs=EPSG:3857",
+            "Point?crs={}".format(CRS_STR),
             "temp_points",
             "memory"
         )

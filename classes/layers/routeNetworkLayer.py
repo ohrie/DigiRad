@@ -35,6 +35,7 @@ from qgis.core import (
     QgsFeatureRequest
     )
 
+from ...constants import CRS_STR
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
 from ..processing.routeNetwork import RouteEntry
@@ -47,10 +48,12 @@ class RouteNetworkFeatureConfig:
         self.detourName = detourName
 
 class RouteNetworklayer(DigiRadLayer):
-    def __init__(self, routeEntries: List[RouteEntry], config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> 'RouteNetworklayer':
+    LayerName = "Umgelegte Relationen"
+
+    def __init__(self, routeEntries: List[RouteEntry], layerName: str = "Umgelegte Relationen", groupName: str = "Umlegung", config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> 'RouteNetworklayer':
         super().__init__(
-            RouteNetworklayer._createLayerFromRouteEntries(routeEntries, config),
-            "Umlegung",
+            RouteNetworklayer._createLayerFromRouteEntries(routeEntries, layerName, config),
+            groupName,
             expanded=False,
             visible=False)
         
@@ -61,9 +64,9 @@ class RouteNetworklayer(DigiRadLayer):
         self._qgsLayer.setRenderer(renderer)
         self._qgsLayer.triggerRepaint()
     
-    def _createLayerFromRouteEntries(routeEntries: List[RouteEntry], config: RouteNetworkFeatureConfig) -> QgsVectorLayer:
-        routeLayer = QgsVectorLayer("LineString?crs=EPSG:3857", 
-                             "Umgelegtes Netz", "memory")
+    def _createLayerFromRouteEntries(routeEntries: List[RouteEntry], layerName: str, config: RouteNetworkFeatureConfig) -> QgsVectorLayer:
+        routeLayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), 
+                            layerName, "memory")
         pr = routeLayer.dataProvider()
         pr.addAttributes([
             QgsField(config.relationName, QVariant.LongLong),
