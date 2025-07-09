@@ -211,8 +211,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectBackButton.setEnabled(False)
             self.reprojectContinueButton.setEnabled(False)
             progressInfo = DialogState.REPROJECT.value.getProgress()
-            self.reprojectProgressBar.setValue(progressInfo.progress)
-            self.reprojectProgressLabel.setText(progressInfo.message)
+            self.reprojectProgressBar.setValue(progressInfo)
+            # self.reprojectProgressLabel.setText(progressInfo.message)
         else:
             self.reprojectGenerateButton.show()
             self.reprojectProgressBar.hide()
@@ -232,8 +232,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectDemandBackButton.setEnabled(False)
             self.reprojectDemandContinueButton.setEnabled(False)
             progressInfo = DialogState.REPROJECTDEMAND.value.getProgress()
-            self.reprojectDemandProgressBar.setValue(progressInfo.progress)
-            self.reprojectDemandProgressLabel.setText(progressInfo.message)
+            self.reprojectDemandProgressBar.setValue(progressInfo)
+            # self.reprojectDemandProgressLabel.setText(progressInfo.message)
         else:
             self.reprojectDemandGenerateButton.show()
             self.reprojectDemandProgressBar.hide()
@@ -495,9 +495,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         
         self.showReprojectPage()
     
-    def onReprojectGenerateProgressChanged(self, progress: RouteNetworkTaskProgress):
-        oldValue = DialogState.REPROJECT.value.setProgress(progress)
-        if progress.isDifferentTo(oldValue):
+    def onReprojectGenerateProgressChanged(self, progress: int):
+        oldValue = DialogState.REPROJECT.value.setProgress(int(progress))
+        if oldValue != progress:
             self.showReprojectPage()
     
     def onReprojectCancelGenerateButton(self):
@@ -571,9 +571,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         
         self.showReprojectDemandPage()
     
-    def onReprojectDemandGenerateProgressChanged(self, progress: RouteNetworkTaskProgress):
-        oldValue = DialogState.REPROJECTDEMAND.value.setProgress(progress)
-        if progress.isDifferentTo(oldValue):
+    def onReprojectDemandGenerateProgressChanged(self, progress: int):
+        oldValue = DialogState.REPROJECTDEMAND.value.setProgress(int(progress))
+        if oldValue != progress:
             self.showReprojectDemandPage()
     
     def onReprojectDemandCancelGenerateButton(self):

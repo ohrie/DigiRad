@@ -229,11 +229,11 @@ class ReprojectHandler(StateHandler):
     def setProcessing(self, value: Optional[Any]):
         self.context.set(ReprojectHandler.KProcessing, value)
     
-    def getProgress(self) -> RouteNetworkTaskProgress:
-        return self.context.get(ReprojectHandler.KProgress, RouteNetworkTaskProgress(0))
+    def getProgress(self) -> int:
+        return self.context.get(ReprojectHandler.KProgress, 0)
     
-    def setProgress(self, value: RouteNetworkTaskProgress) -> RouteNetworkTaskProgress:
-        return self.context.updateValue(ReprojectHandler.KProgress, value, default=RouteNetworkTaskProgress(0))
+    def setProgress(self, value: int) -> int:
+        return self.context.updateValue(ReprojectHandler.KProgress, value, default=0)
     
     def getDetourTolerance(self) -> float:
         return self.context.get(ReprojectHandler.KDetourTolerance, 1)
@@ -327,11 +327,11 @@ class ReprojectDemandHandler(StateHandler):
     def setProcessing(self, value: Optional[Any]):
         self.context.set(ReprojectDemandHandler.KProcessing, value)
     
-    def getProgress(self) -> 'RouteNetworkTaskProgress':
-        return self.context.get(ReprojectDemandHandler.KProgress, RouteNetworkTaskProgress(0))
+    def getProgress(self) -> int:
+        return self.context.get(ReprojectDemandHandler.KProgress, 0)
     
-    def setProgress(self, value: RouteNetworkTaskProgress) -> RouteNetworkTaskProgress:
-        return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=RouteNetworkTaskProgress(0))
+    def setProgress(self, value: int) -> int:
+        return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=0)
     
     def getDetourTolerance(self) -> float:
         return self.context.get(ReprojectDemandHandler.KDetourTolerance, 1)

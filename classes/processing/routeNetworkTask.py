@@ -30,7 +30,7 @@ from qgis.core import (
     QgsVectorLayer,
     QgsApplication,
 )
-from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import pyqtSignal, QTimer
 
 from ..layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from .directRouteNetwork import DirectRouteEntry
@@ -43,7 +43,7 @@ from .routeNetworkAnalyser import RouteNetworkAnalyser
 
 class RouteNetworkTask(QgsTask):
     # Signals for communication
-    progressChangedUi = pyqtSignal(object)
+    progressChangedUi = pyqtSignal(int)
     resultReady = pyqtSignal(object)
     
     def __init__(self, networkLayer: QgsVectorLayer, directRouteLayer: DirectRouteNetworklayer, options: RouteGenerationOptions, pathFinder: NetworkPathFinder = None):
@@ -54,6 +54,8 @@ class RouteNetworkTask(QgsTask):
         self.options = options
         self.result = None
         self.exception = None
+        # self.graphGenTimer = QTimer()
+        # self.graphGenTimer.timeout.connect(self.onGraphGenTimerTimeout)
     
     @staticmethod
     def createAndRunFromContextStateHandler(context: DialogStateContext, resultCallback = None, progressCallback = None) -> 'RouteNetworkTask':
@@ -113,15 +115,19 @@ class RouteNetworkTask(QgsTask):
 
             # Step 1: Build the graph
             self.setProgress(5)
-            self.progressChangedUi.emit(RouteNetworkTaskProgress(5, "Erzeuge Verkehrsgraph.."))
+            self.progressChangedUi.emit(5)
+            # Start a dummy timer which bumps up the progress to indicate the graph
+            # generation progress to the user
+            # self.graphGenTimer.start(1000)
             # if not self.pathFinder:
             self.pathFinder = NetworkPathFinder(self.networkLayer, self.options)
             QgsMessageLog.logMessage("Building graph..")
             self.pathFinder.buildGraph(entries)
             # else:
             #     self.pathFinder.cleanUp()
+            # self.graphGenTimer.stop()
             self.setProgress(40)
-            self.progressChangedUi.emit(RouteNetworkTaskProgress(40, "Beginne Umlegung.."))
+            self.progressChangedUi.emit(40)
             # Check if task was cancelled
             if self.isCanceled():
                 return False
@@ -142,7 +148,7 @@ class RouteNetworkTask(QgsTask):
                 resultEntries = self._findRouteEntries(sortedEntries, False, len(entries), relationsLen, 55)
             
             # Step 4: Do network analysis
-            self.progressChangedUi.emit(RouteNetworkTaskProgress(95, "Analysiere und aggregiere Netz.."))
+            self.progressChangedUi.emit(95)
             networkAnalyser = RouteNetworkAnalyser(self.pathFinder.graph, resultEntries)
             networkElements = networkAnalyser.createNetworkElements()
             (aggregatedElements, breakingPoints) = networkAnalyser.aggregateElements(networkElements)
@@ -152,7 +158,7 @@ class RouteNetworkTask(QgsTask):
             QgsMessageLog.logMessage("Done.")
             self.result = RouteNetworkTaskResult(resultEntries, networkElements, aggregatedElements, breakingPoints, self.pathFinder)
             self.setProgress(100)
-            self.progressChangedUi.emit(RouteNetworkTaskProgress(100, "Abgeschlossen"))
+            self.progressChangedUi.emit(100)
 
             return True
                 
@@ -188,12 +194,13 @@ class RouteNetworkTask(QgsTask):
                 # Update progress (0-100)
                 progress = 40 + int((progressProcessedStart + 1) / progressProcessMax * progressProcessMultiplier)
                 self.setProgress(progress)
-                self.progressChangedUi.emit(RouteNetworkTaskProgress(progress,
-                                          "[{}] Relation {} von {} (Durchgang {})".format(
-                                              cf.asStrShort(),
-                                              i + 1,
-                                              len(subEntries),
-                                              "1" if modifyGraph else "2")))
+                # self.progressChangedUi.emit(RouteNetworkTaskProgress(progress,
+                #                           "[{}] Relation {} von {} (Durchgang {})".format(
+                #                               cf.asStrShort(),
+                #                               i + 1,
+                #                               len(subEntries),
+                #                               "1" if modifyGraph else "2")))
+                self.progressChangedUi.emit(progress)
                 
                 routeEntries.append(RouteEntry(routeEntry, routeResult))
 
@@ -223,3 +230,11 @@ class RouteNetworkTask(QgsTask):
         QgsMessageLog.logMessage('Task cancelled by user', 
                                'DigiRad', Qgis.Info)
         super().cancel()
+    
+    # def onGraphGenTimerTimeout(self):
+    #     if self.status() != QgsTask.TaskStatus.Running:
+    #         return
+        
+    #     newProgress = self.progress() + 1
+    #     self.setProgress(newProgress)
+    #     self.progressChangedUi.emit(newProgress)

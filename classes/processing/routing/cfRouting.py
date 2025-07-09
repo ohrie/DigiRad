@@ -55,7 +55,6 @@ class GraphkModifier:
         
         for (count, edgeIds) in countSortedChangelog.items():
             modificationFactor = max(minBound, self.modificationFactor - (count * multiplier))
-            QgsMessageLog.logMessage(f"For count {count} {len(edgeIds)} items and modfactor {modificationFactor}")
             self._modifyEdgeCostInner(edgeIds, modificationFactor)
         
         self.changeLog = changelog

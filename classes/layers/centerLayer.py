@@ -141,14 +141,6 @@ class CenterLayer(DigiRadLayer):
         layer = self.qgsLayer()
         fields = layer.fields()
 
-        nameIdx = fields.indexFromName(self.config.nameName)
-        if nameIdx >= 0:
-            nameElement = QgsAttributeEditorField(self.config.nameName, nameIdx, None)
-            root.addChildElement(nameElement)
-            
-            widgetSetup = QgsEditorWidgetSetup('TextEdit', {'IsMultiline': False, 'Readonly': True})
-            layer.setEditorWidgetSetup(nameIdx, widgetSetup)
-
         locIdx = fields.indexFromName(self.config.locName)
         if locIdx >= 0:
             locElement = QgsAttributeEditorField(self.config.locName, locIdx, None)
@@ -156,7 +148,7 @@ class CenterLayer(DigiRadLayer):
 
             valueMap = {}
             for loc in self.availableLOCs:
-                valueMap[loc.asStrShort()] = loc.asStr()
+                valueMap[loc.asStr()] = loc.asStrShort()
             
             widgetSetup = QgsEditorWidgetSetup('ValueMap', {
                 'map': valueMap,
@@ -164,6 +156,14 @@ class CenterLayer(DigiRadLayer):
                 'AllowNull': False
             })
             layer.setEditorWidgetSetup(locIdx, widgetSetup)
+        
+        nameIdx = fields.indexFromName(self.config.nameName)
+        if nameIdx >= 0:
+            nameElement = QgsAttributeEditorField(self.config.nameName, nameIdx, None)
+            root.addChildElement(nameElement)
+            
+            widgetSetup = QgsEditorWidgetSetup('TextEdit', {'IsMultiline': False, 'Readonly': True})
+            layer.setEditorWidgetSetup(nameIdx, widgetSetup)
         
         return formConfig
     
