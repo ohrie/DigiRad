@@ -43,6 +43,17 @@ from .networkValidator import Networkvalidator
 from ..layers.directRouteNetworkLayer import DirectRouteNetworklayer, DirectRouteEntry
 from .routing.cfRouting import GraphkModifier
 
+class InnerPoint:
+    def __init__(self, p: QgsPoint):
+        self._x = p.x()
+        self._y = p.y()
+    
+    def x(self):
+        return self._x
+    
+    def y(self):
+        return self._y
+
 class RouteGenerationOptions:
     def __init__(self, detourTolerance: float = 0.0, networkStrategy: QgsNetworkStrategy = QgsNetworkDistanceStrategy()):
         self.detourTolerance = detourTolerance
@@ -202,7 +213,7 @@ class RouteEntryIndexItem:
         self.idxP2 = idxP2
 
 class RouteEntryIndex:
-    def __init__(self, routeEntries: List[DirectRouteEntry]):
+    def __init__(self, routeEntries: List['InnerDirectRouteEntry']):
         self._index = OrderedDict()
         for (i, entry) in enumerate(routeEntries):
             self._index[entry.relationId] = RouteEntryIndexItem(entry, i * 2, i * 2 + 1)
@@ -222,3 +233,13 @@ class RouteEntryIndex:
             return (entry.idxP1, entry.idxP2)
         else:
             return None
+
+class InnerDirectRouteEntry:
+    def __init__(self, entry: DirectRouteEntry):
+        self.relationId = entry.relationId
+        self.p1 = InnerPoint(entry.p1)
+        self.p2 = InnerPoint(entry.p2)
+        self.cf = entry.cf
+    
+    def geometry(self) -> QgsGeometry:
+        return QgsGeometry.fromPolyline([QgsPoint(self.p1.x(), self.p1.y()), QgsPoint(self.p2.x(), self.p2.y())])

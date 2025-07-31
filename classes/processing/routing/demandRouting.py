@@ -51,6 +51,7 @@ class DemandNetworkStrategy(QgsNetworkDistanceStrategy):
     
     def cost(self, distance: float, f: QgsFeature):
         demand = f.attributes()[self.demandNetworkProperties.demandFieldIdx]
+        demand = int(demand)
         if demand and demand > 0 and self.demandNetworkProperties.dMax > 0:
             excessDemand = demand / self.demandNetworkProperties.dMax
             # Maximal 50% reduction

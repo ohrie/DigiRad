@@ -1,10 +1,10 @@
 from enum import Enum
-from typing import Dict, Any, Optional, Set, Callable, List
+from typing import Dict, Any, Optional, Callable, List
 from abc import ABC, abstractmethod
 
 from qgis.core import QgsVectorLayer, QgsMessageLog
 
-from .classes.network import LevelOfCentrality, ConnectivityFunction
+from .classes.network import LevelOfCentrality
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
@@ -187,6 +187,7 @@ class AirlineHandler(StateHandler):
 
 class ReprojectHandler(StateHandler):
     KProcessing = "reproject.Processing"
+    KIsProcessing = "reproject.Isprocessing"
     KProgress = "reproject.Progress"
     KDetourTolerance = "reproject.DetourTolerance"
     KNetworkLayer = "reproject.Networklayer"
@@ -220,8 +221,11 @@ class ReprojectHandler(StateHandler):
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
         return targetState in [DialogState.AIRLINE, DialogState.REPROJECTDEMAND]
     
+    def setIsProcessing(self, value: bool) -> bool:
+        self.context.set(ReprojectHandler.KIsProcessing, value)
+
     def isProcessing(self) -> bool:
-        return self.context.has(ReprojectHandler.KProcessing)
+        return self.context.get(ReprojectHandler.KIsProcessing, False)
     
     def getProcessing(self) -> Optional[Any]:
         return self.context.get(ReprojectHandler.KProcessing)
@@ -229,11 +233,11 @@ class ReprojectHandler(StateHandler):
     def setProcessing(self, value: Optional[Any]):
         self.context.set(ReprojectHandler.KProcessing, value)
     
-    def getProgress(self) -> int:
-        return self.context.get(ReprojectHandler.KProgress, 0)
+    def getProgress(self) -> RouteNetworkTaskProgress:
+        return self.context.get(ReprojectHandler.KProgress, RouteNetworkTaskProgress(0))
     
-    def setProgress(self, value: int) -> int:
-        return self.context.updateValue(ReprojectHandler.KProgress, value, default=0)
+    def setProgress(self, value: RouteNetworkTaskProgress) -> RouteNetworkTaskProgress:
+        return self.context.updateValue(ReprojectHandler.KProgress, value, default=RouteNetworkTaskProgress(0))
     
     def getDetourTolerance(self) -> float:
         return self.context.get(ReprojectHandler.KDetourTolerance, 1)
@@ -284,6 +288,7 @@ class ReprojectHandler(StateHandler):
 
 class ReprojectDemandHandler(StateHandler):
     KProcessing = "reprojectDemand.Processing"
+    KIsProcessing = "reprojectDemand.Isprocessing"
     KProgress = "reprojectDemand.Progress"
     KDetourTolerance = "reprojectDemand.DetourTolerance"
     KDemandFieldName = "reprojectDemand.DemandFieldName"
@@ -318,8 +323,11 @@ class ReprojectDemandHandler(StateHandler):
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
         return targetState in [DialogState.REPROJECT]
     
+    def setIsProcessing(self, value: bool) -> bool:
+        self.context.set(ReprojectDemandHandler.KIsProcessing, value)
+
     def isProcessing(self) -> bool:
-        return self.context.has(ReprojectDemandHandler.KProcessing)
+        return self.context.get(ReprojectDemandHandler.KIsProcessing, False)
     
     def getProcessing(self) -> Optional[Any]:
         return self.context.get(ReprojectDemandHandler.KProcessing)
@@ -327,11 +335,11 @@ class ReprojectDemandHandler(StateHandler):
     def setProcessing(self, value: Optional[Any]):
         self.context.set(ReprojectDemandHandler.KProcessing, value)
     
-    def getProgress(self) -> int:
-        return self.context.get(ReprojectDemandHandler.KProgress, 0)
+    def getProgress(self) -> RouteNetworkTaskProgress:
+        return self.context.get(ReprojectDemandHandler.KProgress, RouteNetworkTaskProgress(0))
     
-    def setProgress(self, value: int) -> int:
-        return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=0)
+    def setProgress(self, value: RouteNetworkTaskProgress) -> RouteNetworkTaskProgress:
+        return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=RouteNetworkTaskProgress(0))
     
     def getDetourTolerance(self) -> float:
         return self.context.get(ReprojectDemandHandler.KDetourTolerance, 1)

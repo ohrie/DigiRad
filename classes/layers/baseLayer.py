@@ -27,7 +27,6 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
 )
 
-from ...constants import CRS_STR
 from .layer import DigiRadLayer
 
 class BaseLayer(DigiRadLayer):

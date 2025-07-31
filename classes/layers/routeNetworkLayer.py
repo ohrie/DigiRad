@@ -72,7 +72,6 @@ class RouteNetworklayer(DigiRadLayer):
             QgsField(config.relationName, QVariant.LongLong),
             QgsField(config.cfName, QVariant.String),
             QgsField(config.detourName, QVariant.Double),
-            QgsField("cost", QVariant.Double)
         ])
         routeLayer.updateFields()
 
@@ -82,7 +81,7 @@ class RouteNetworklayer(DigiRadLayer):
                 QgsMessageLog.logMessage(f"Route not found {route.directRouteEntry.relationId}")
                 continue
             feat = QgsFeature()
-            feat.setAttributes([route.directRouteEntry.relationId, route.directRouteEntry.cf.asStr(), route.validation.detourFactor, route.routeResult.cost])
+            feat.setAttributes([route.directRouteEntry.relationId, route.directRouteEntry.cf.asStr(), route.validation.detourFactor])
             feat.setGeometry(route.geometry())
             feats.append(feat)
 

@@ -20,18 +20,29 @@ RouteNetworkTaskHelpers
  *                                                                         *
  ***************************************************************************/
 """
-from typing import List
+from typing import List, Optional
 
-from .routeNetwork import NetworkPathFinder, RouteEntry
+from .routeNetwork import RouteEntry
 from .routeNetworkAnalyser import NetworkElement, AggregatedNetworkElement, BreakingElement
 
 class RouteNetworkTaskResult:
-    def __init__(self, routeEntries: List[RouteEntry], networkElements: List[NetworkElement], aggregatedElements: List[AggregatedNetworkElement], breakingPoints: List[BreakingElement], pathFinder: NetworkPathFinder):
+    def __init__(self, routeEntries: Optional[List[RouteEntry]] = None, networkElements: Optional[List[NetworkElement]] = None, aggregatedElements: Optional[List[AggregatedNetworkElement]] = None, breakingPoints:Optional[ List[BreakingElement]] = None, error: str = None):
         self.routeEntries = routeEntries
         self.networkElements = networkElements
         self.aggregatedElements = aggregatedElements
         self.breakingPoints = breakingPoints
-        self.pathFinder = pathFinder
+        self.error = error
+    
+    def isError(self) -> bool:
+        return self.error is not None
+
+    @staticmethod
+    def createSuccess(routeEntries: List[RouteEntry], networkElements: List[NetworkElement], aggregatedElements: List[AggregatedNetworkElement], breakingPoints: List[BreakingElement]) -> 'RouteNetworkTaskResult':
+        return RouteNetworkTaskResult(routeEntries=routeEntries, networkElements=networkElements, aggregatedElements=aggregatedElements, breakingPoints=breakingPoints)
+    
+    @staticmethod
+    def createError(errorMessage: str) -> 'RouteNetworkTaskResult':
+        return RouteNetworkTaskResult(error=errorMessage)
 
 class RouteNetworkTaskProgress():
     def __init__(self, progress: int, message: str = ""):

@@ -23,13 +23,10 @@
 
 import os
 
-from typing import Tuple
-
-
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.core import QgsMapLayerProxyModel, QgsFieldProxyModel, QgsMessageLog, QgsPointXY
+from qgis.core import QgsMapLayerProxyModel, QgsFieldProxyModel, QgsMessageLog
 
 from .qtHelpers import QtHelper
 from .dialogstate import DialogStateMachine, DialogState
@@ -38,13 +35,12 @@ from .classes.network import LevelOfCentrality
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from .classes.processing.directRouteNetwork import DirectRouteNetwork, DirectRouteGenerateMethod
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
-from .classes.layers.analysisLayers import SupplyNetworkElementLayer, SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
-from .classes.processing.routeNetworkTask import RouteNetworkTask
+from .classes.layers.analysisLayers import SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
 from .classes.processing.routeNetworkTaskHelpers import RouteNetworkTaskResult, RouteNetworkTaskProgress
-from .classes.processing.routeNetworkAnalyser import RouteNetworkAnalyser
 from .classes.interaction.centerEdit import CenterEditFeatureHandler, CenterEditToolType
 from .constants import AUTO_CENTER_POINTS_PATH
 from .statics import ARS_INDEX, PROCESSING_CONFIG, LAYER_MANAGER
+from .classes.processing.task import RouteNetworkTask
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -79,6 +75,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         event.accept()
     
     def postSetupUi(self):
+        self.loadProjectButton.hide()
         self.reprojectSelectLayer.setFilters(QgsMapLayerProxyModel.LineLayer)
         self.reprojectDemandSelectLayer.setFilters(QgsMapLayerProxyModel.LineLayer)
         self.reprojectDemandSelectField.setFilters(QgsFieldProxyModel.Filter.Numeric)
@@ -211,8 +208,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectBackButton.setEnabled(False)
             self.reprojectContinueButton.setEnabled(False)
             progressInfo = DialogState.REPROJECT.value.getProgress()
-            self.reprojectProgressBar.setValue(progressInfo)
-            # self.reprojectProgressLabel.setText(progressInfo.message)
+            self.reprojectProgressBar.setValue(progressInfo.progress)
+            self.reprojectProgressLabel.setText(progressInfo.message)
         else:
             self.reprojectGenerateButton.show()
             self.reprojectProgressBar.hide()
@@ -220,6 +217,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectCancelGenerateButton.hide()
             self.reprojectBackButton.setEnabled(True)
             self.reprojectContinueButton.setEnabled(DialogState.REPROJECT.value.hasRouteLayer())
+            self.reprojectProgressBar.setValue(0)
+            self.reprojectProgressLabel.setText("")
 
         self.selectTab(DialogState.REPROJECT)
     
@@ -232,8 +231,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectDemandBackButton.setEnabled(False)
             self.reprojectDemandContinueButton.setEnabled(False)
             progressInfo = DialogState.REPROJECTDEMAND.value.getProgress()
-            self.reprojectDemandProgressBar.setValue(progressInfo)
-            # self.reprojectDemandProgressLabel.setText(progressInfo.message)
+            self.reprojectDemandProgressBar.setValue(progressInfo.progress)
+            self.reprojectDemandProgressLabel.setText(progressInfo.message)
         else:
             self.reprojectDemandGenerateButton.show()
             self.reprojectDemandProgressBar.hide()
@@ -241,6 +240,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectDemandCancelGenerateButton.hide()
             self.reprojectDemandBackButton.setEnabled(True)
             self.reprojectDemandContinueButton.setEnabled(False)
+            self.reprojectDemandProgressBar.setValue(0)
+            self.reprojectDemandProgressLabel.setText("")
 
             if not self.reprojectDemandSelectLayer.currentLayer():
                 networkLayer = self.reprojectSelectLayer.currentLayer()
@@ -470,19 +471,20 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             DialogState.REPROJECT.value.setDetourTolerance(0.0)
 
         task = RouteNetworkTask.createAndRunFromContextStateHandler(DialogState.context(), self.onReprojectGenerateResult, self.onReprojectGenerateProgressChanged)
+
+
+        # task = RouteNetworkTask.createAndRunFromContextStateHandler(DialogState.context(), self.onReprojectGenerateResult, self.onReprojectGenerateProgressChanged)
         # Save the task into the context, so it does not get garbage collected
         DialogState.REPROJECT.value.setProcessing(task)
+        DialogState.REPROJECT.value.setIsProcessing(True)
+
+        task.start()
         self.showReprojectPage()
     
-    def onReprojectGenerateResult(self, result: Tuple[bool, RouteNetworkTaskResult]):
-        sucees, taskResult = result
-
-        DialogState.REPROJECT.value.setProcessing(None)
-
-        if sucees:
+    def onReprojectGenerateResult(self, sucess: bool, taskResult: RouteNetworkTaskResult):
+        if sucess:
             routeLayer = RouteNetworklayer(taskResult.routeEntries)
             DialogState.REPROJECT.value.setRouteLayer(routeLayer)
-            DialogState.REPROJECT.value.setPathfinder(taskResult.pathFinder)
             # supplyNetworkLayer = SupplyNetworkElementLayer(taskResult.networkElements)
             # DialogState.REPROJECT.value.setSupplyNetworkLayer(supplyNetworkLayer)
             supplyAggregatedNetworkLayer = SupplyAggregatedNetworkElementLayer(taskResult.aggregatedElements)
@@ -491,19 +493,21 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             DialogState.REPROJECT.value.setBreakingPointsNetworkLayer(breakingPointsNetworkLayer)
             LAYER_MANAGER.update()
         else:
-            QgsMessageLog.logMessage(f"Error while processing: {taskResult}")
+            QgsMessageLog.logMessage(f"Error while processing: {taskResult.error}")
+            
+        DialogState.REPROJECT.value.setIsProcessing(False)
         
         self.showReprojectPage()
     
-    def onReprojectGenerateProgressChanged(self, progress: int):
-        oldValue = DialogState.REPROJECT.value.setProgress(int(progress))
-        if oldValue != progress:
+    def onReprojectGenerateProgressChanged(self, progress: RouteNetworkTaskProgress):
+        oldValue = DialogState.REPROJECT.value.setProgress(progress)
+        if progress.isDifferentTo(oldValue):
             self.showReprojectPage()
     
     def onReprojectCancelGenerateButton(self):
         task = DialogState.REPROJECT.value.getProcessing()
         if task:
-            task.cancel()
+            task.stop()
     
     def onReprojectDetourToleranceCheckbox(self):
         self.reprojectDetourToleranceSpinbox.setEnabled(self.reprojectDetourToleranceCheckbox.isChecked())
@@ -543,6 +547,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         task = RouteNetworkTask.createAndRunFromContextStateHandler(DialogState.context(), self.onReprojectDemandGenerateResult, self.onReprojectDemandGenerateProgressChanged)
         # Save the task into the context, so it does not get garbage collected
         DialogState.REPROJECTDEMAND.value.setProcessing(task)
+        DialogState.REPROJECTDEMAND.value.setIsProcessing(True)
+
+        task.start()
         self.showReprojectPage()
     
     def onReprojectDemandSelectLayerChanged(self):
@@ -552,34 +559,31 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         
         self.reprojectDemandSelectField.setLayer(networkLayer)
     
-    def onReprojectDemandGenerateResult(self, result: Tuple[bool, RouteNetworkTaskResult]):
-        sucees, taskResult = result
-
-        DialogState.REPROJECTDEMAND.value.setProcessing(None)
-
-        if sucees:
+    def onReprojectDemandGenerateResult(self, sucess: bool, taskResult: RouteNetworkTaskResult):
+        if sucess:
             routeLayer = RouteNetworklayer(taskResult.routeEntries, layerName="Umgelegte Nachfagerelationen", groupName="Nachfrageumlegung")
             DialogState.REPROJECTDEMAND.value.setRouteLayer(routeLayer)
-            DialogState.REPROJECTDEMAND.value.setPathfinder(taskResult.pathFinder)
             supplyAggregatedNetworkLayer = SupplyAggregatedNetworkElementLayer(taskResult.aggregatedElements, layerName="Nachfragenetz (aggregiert)", groupName="Nachfrageumlegung")
             breakingPointsNetworkLayer = BreakingPointsNetworkLayer(taskResult.breakingPoints, layerName="Netzaufteilung (Nachfrage)", groupName="Nachfrageumlegung")
             DialogState.REPROJECTDEMAND.value.setAggregatedSupplyNetworkLayer(supplyAggregatedNetworkLayer)
             DialogState.REPROJECTDEMAND.value.setBreakingPointsNetworkLayer(breakingPointsNetworkLayer)
             LAYER_MANAGER.update()
         else:
-            QgsMessageLog.logMessage(f"Error while processing: {taskResult}")
+            QgsMessageLog.logMessage(f"Error while processing: {taskResult.error}")
         
+        DialogState.REPROJECTDEMAND.value.setIsProcessing(False)
+
         self.showReprojectDemandPage()
     
-    def onReprojectDemandGenerateProgressChanged(self, progress: int):
-        oldValue = DialogState.REPROJECTDEMAND.value.setProgress(int(progress))
-        if oldValue != progress:
+    def onReprojectDemandGenerateProgressChanged(self, progress: RouteNetworkTaskProgress):
+        oldValue = DialogState.REPROJECTDEMAND.value.setProgress(progress)
+        if progress.isDifferentTo(oldValue):
             self.showReprojectDemandPage()
     
     def onReprojectDemandCancelGenerateButton(self):
         task = DialogState.REPROJECTDEMAND.value.getProcessing()
         if task:
-            task.cancel()
+            task.stop()
     
     def onReprojectDemandDetourToleranceCheckbox(self):
         self.reprojectDemandDetourToleranceSpinbox.setEnabled(self.reprojectDemandDetourToleranceCheckbox.isChecked())

@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 
-from typing import List, Dict
+from typing import List
 
 from PyQt5.QtCore import QVariant
 from qgis.core import (
