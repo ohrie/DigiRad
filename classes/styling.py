@@ -7,6 +7,7 @@ class Colors:
     III = QColor("blue")
     IV = QColor("green")
     Extra = QColor("yellow")
+    Surounding = QColor("orange")
     Default = QColor("gray")
 
 class Style:
@@ -20,6 +21,8 @@ class Style:
             return Colors.IV
         elif loc == LevelOfCentrality.Singular:
             return Colors.Extra
+        elif loc == LevelOfCentrality.Surounding:
+            return Colors.Surounding
         else:
             return Colors.Default
     
@@ -45,6 +48,8 @@ class Style:
         elif loc == LevelOfCentrality.IV:
             return 2
         elif loc == LevelOfCentrality.Singular:
+            return 3
+        elif loc == LevelOfCentrality.Surounding:
             return 3
         else:
             return 1

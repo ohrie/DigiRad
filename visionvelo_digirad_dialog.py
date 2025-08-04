@@ -38,7 +38,7 @@ from .classes.layers.routeNetworkLayer import RouteNetworklayer
 from .classes.layers.analysisLayers import SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
 from .classes.processing.routeNetworkTaskHelpers import RouteNetworkTaskResult, RouteNetworkTaskProgress
 from .classes.interaction.centerEdit import CenterEditFeatureHandler, CenterEditToolType
-from .constants import AUTO_CENTER_POINTS_PATH
+from .constants import AUTO_CENTER_POINTS_PATH, SUROUNDINGS_CENTER_POINTS_PATH
 from .statics import ARS_INDEX, PROCESSING_CONFIG, LAYER_MANAGER
 from .classes.processing.task import RouteNetworkTask
 
@@ -69,6 +69,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         LAYER_MANAGER.setContextRef(self.stateMachine.context)
 
         self.setupConnections()
+
+        self.stateMachine.transitionTo(DialogState.WELCOME)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -162,9 +164,11 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     ### STATE TRANSITIONS
     def showWelcomePage(self):
         self.selectTab(DialogState.WELCOME)
+        self.welcomeNextButton.setFocus()
     
     def showLocationSelectPage(self):
         self.selectTab(DialogState.LCOATIONSELECT)
+        self.locationLineEdit.setFocus()
 
     def showCenterPointsPage(self):
         if DialogState.CENTERPOINTS.value.getGenerateMethod() == DirectRouteGenerateMethod.AUTO:
@@ -176,13 +180,14 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         
         self.centralNextButton.setEnabled(self.centerManualRadioButton.isChecked() or DialogState.CENTERPOINTS.value.hasCenterLayer())
         self.selectTab(DialogState.CENTERPOINTS)
+        self.centralGenerateButton.setFocus()
     
     def showCenterPointsEditPage(self):
         centerLayer = DialogState.CENTERPOINTS.value.getCenterLayer()
 
         if not centerLayer:
             if DialogState.CENTERPOINTS.value.getGenerateMethod() == DirectRouteGenerateMethod.MANUEL:
-                centerLayer = CenterLayer.createEmpty(DialogState.CENTERPOINTS.value.getLOCS())
+                centerLayer = CenterLayer.createEmpty(PROCESSING_CONFIG.arsCode.code, DialogState.CENTERPOINTS.value.getLOCS())
                 DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
                 LAYER_MANAGER.update()
             else:
@@ -194,10 +199,12 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.centerEditTool = CenterEditFeatureHandler(self.iface, centerLayer.qgsLayer())
 
         self.selectTab(DialogState.CENTERPOINTSEDIT)
+        self.centerEditContinueButton.setFocus()
     
     def showAirlinePage(self):
         self.airlineContinueButton.setEnabled(DialogState.AIRLINE.value.hasDirectRouteLayer())
         self.selectTab(DialogState.AIRLINE)
+        self.airlineGenerateButton.setFocus()
     
     def showReprojectPage(self):
         if DialogState.REPROJECT.value.isProcessing():
@@ -316,6 +323,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             locs.append(LevelOfCentrality.IV)
         if self.centerLOCSingleCheck.isChecked():
             locs.append(LevelOfCentrality.Singular)
+        if self.centerLOCSuroundingCheck.isChecked():
+            locs.append(LevelOfCentrality.Surounding)
         
         DialogState.CENTERPOINTS.value.setLOCs(locs)
 

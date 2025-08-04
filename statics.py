@@ -22,6 +22,9 @@
 """
 
 import os
+
+from qgis.core import QgsVectorLayer
+
 from .constants import DAT_PATH
 from .classes.ars import ARSIndex
 from .classes.processingConfig import ProcessingConfig

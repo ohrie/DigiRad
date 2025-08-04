@@ -38,7 +38,7 @@ from qgis.core import (
 from ...constants import CRS_STR
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
-from ..processing.directRouteNetwork import DirectRouteEntry
+from ..processing.directRouteEntry import DirectRouteEntry
 from ..styling import Style
 
 class DirectRouteNetworkFeatureConfig:

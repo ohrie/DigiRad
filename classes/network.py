@@ -81,6 +81,7 @@ class LevelOfCentrality(Enum):
     III = 3
     IV = 4
     Singular = 10
+    Surounding = 11
 
     @staticmethod
     def defaults() -> List['LevelOfCentrality']:
@@ -97,6 +98,8 @@ class LevelOfCentrality(Enum):
             return LevelOfCentrality.IV
         elif value == "singulärer erzeuger" or value == "s":
             return LevelOfCentrality.Singular
+        elif value == "überörtlich" or value == "ü":
+            return LevelOfCentrality.Surounding
         else:
             raise ValueError(f"'{value}' is not a valid level of centrality")
     
@@ -109,6 +112,8 @@ class LevelOfCentrality(Enum):
             return "Zentralitätsstufe IV"
         elif self == LevelOfCentrality.Singular:
             return "Singulärer Erzeuger"
+        elif self == LevelOfCentrality.Surounding:
+            return "Überörtlich"
     
     def asStrShort(self) -> str:
         if self == LevelOfCentrality.II:
@@ -119,6 +124,8 @@ class LevelOfCentrality(Enum):
             return "Z IV"
         elif self == LevelOfCentrality.Singular:
             return "S"
+        elif self == LevelOfCentrality.Surounding:
+            return "Ü"
 
     def isLowerEq(self, other: 'LevelOfCentrality') -> bool:
         return self.value <= other.value
@@ -142,6 +149,8 @@ class LevelOfCentrality(Enum):
         elif self == LevelOfCentrality.IV:
             return ConnectivityFunction.VFS_4
         elif self == LevelOfCentrality.Singular:
+            return ConnectivityFunction.VFS_3
+        elif self == LevelOfCentrality.Surounding:
             return ConnectivityFunction.VFS_3
 
 

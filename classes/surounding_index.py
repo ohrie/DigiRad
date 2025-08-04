@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- Constants
+ SuroundingIndex
                                  A QGIS plugin
  Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
                              -------------------
@@ -20,19 +20,31 @@
  *                                                                         *
  ***************************************************************************/
 """
+from typing import List, Dict, Optional
+from qgis.core import (
+    QgsMessageLog,
+    QgsVectorLayer,
+    QgsCategorizedSymbolRenderer,
+    QgsRendererCategory,
+    QgsFeatureRequest,
+    QgsPoint,
+    QgsSymbol,
+    QgsWkbTypes,
+    QgsEditFormConfig,
+    QgsAttributeEditorField,
+    QgsEditorWidgetSetup
+)
 
-import os
+from .ars import ARSCodeStr
 
-from qgis.core import QgsVectorLayer
+class SuroundingIndex:
+    def __init__(self, sourceLayerPath: str):
+        self.layer = QgsVectorLayer(sourceLayerPath, "suroundings_index", "ogr")
+    
+    
 
-PLUGIN_PATH = os.path.dirname(os.path.realpath(__file__))
-DAT_PATH = os.path.join(PLUGIN_PATH, "dat")
-
-AUTO_CENTER_POINTS_PATH = os.path.join(DAT_PATH, "DigiRadAutoZentren.gpkg")
-
-EPSG_CODE = "25832"
-CRS_STR = "EPSG:{}".format(EPSG_CODE)
-# Surounding distance in m
-SUROUNDING_QUERY_DISTANCE = 25000
-SUROUNDINGS_CENTER_POINTS_PATH = os.path.join(DAT_PATH, "DigiRadUmgebungsgemeinden.gpkg")
-SUROUNDING_LAYER = QgsVectorLayer(SUROUNDINGS_CENTER_POINTS_PATH, "suroundings_index", "ogr")
+class SuroundingCenterFeature:
+    def __init__(geom: QgsPoint, self, ars: ARSCodeStr, name: str = ""):
+        self.geom = geom
+        self.ars = ars
+        self.name = name

@@ -40,7 +40,8 @@ from qgis.analysis import (
 )
 
 from .networkValidator import Networkvalidator
-from ..layers.directRouteNetworkLayer import DirectRouteNetworklayer, DirectRouteEntry
+from ..layers.directRouteNetworkLayer import DirectRouteNetworklayer
+from ..processing.directRouteEntry import DirectRouteEntry
 from .routing.cfRouting import GraphkModifier
 
 class InnerPoint:
