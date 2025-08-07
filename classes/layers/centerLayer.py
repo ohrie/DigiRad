@@ -75,6 +75,10 @@ class CenterLayer(DigiRadLayer):
     def loadFromFile(filePath: str, arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
         layer = QgsVectorLayer(filePath, CenterLayer.LayerName, "ogr")
 
+        return CenterLayer.loadFromLayer(layer, arsCodeStr, availableLOCs, config)
+    
+    @staticmethod
+    def loadFromLayer(layer: QgsVectorLayer, arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
         if arsCodeStr.isEmpty():
             request = QgsFeatureRequest()
         else:

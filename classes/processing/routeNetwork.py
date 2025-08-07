@@ -205,7 +205,7 @@ class NetworkPathFinder:
         self.graphModifier.reset()
 
 class RouteEntryIndexItem:
-    def __init__(self, routeEntry: DirectRouteEntry, idxP1: int, idxP2: int):
+    def __init__(self, routeEntry: 'InnerDirectRouteEntry', idxP1: int, idxP2: int):
         self.relationId = routeEntry.relationId
         self.p1 = routeEntry.p1
         self.p2 = routeEntry.p2
@@ -238,8 +238,8 @@ class RouteEntryIndex:
 class InnerDirectRouteEntry:
     def __init__(self, entry: DirectRouteEntry):
         self.relationId = entry.relationId
-        self.p1 = InnerPoint(entry.p1)
-        self.p2 = InnerPoint(entry.p2)
+        self.p1 = InnerPoint(entry.p1())
+        self.p2 = InnerPoint(entry.p2())
         self.cf = entry.cf
     
     def geometry(self) -> QgsGeometry:

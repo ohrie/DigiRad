@@ -20,11 +20,12 @@
  *                                                                         *
  ***************************************************************************/
 """
+
+from typing import Optional
+from PyQt5.QtWidgets import QFileDialog
 from qgis.PyQt.QtWidgets import QMessageBox
 
-
 class QtHelper:
-
     @staticmethod
     def askForLayerDeletion(parent = None) -> bool:
         reply = QMessageBox.question(
@@ -48,3 +49,25 @@ class QtHelper:
         )
         
         return reply == QMessageBox.Yes
+    
+    @staticmethod
+    def showInformationBox(parent = None, title: str = "", message: str = ""):
+        QMessageBox.information(
+            parent,
+            title,
+            message,
+            QMessageBox.Ok, # Button
+            QMessageBox.Ok  # Default button
+        )
+    
+    @staticmethod
+    def askForProjectToSaveDirectory(parent = None) -> Optional[str]:
+        """Open folder dialog and get selected folder"""
+        directoryPath = QFileDialog.getExistingDirectory(
+            parent,
+            "Ordner auswählen",
+            "",
+            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
+        )
+
+        return directoryPath

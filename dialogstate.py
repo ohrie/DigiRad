@@ -56,6 +56,9 @@ class WelcomeHandler(StateHandler):
         super().__init__("Welcome")
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
+        # Clear the context state because we most likely want to restart
+        # the project
+        self.context.clear()
         self.handleUi()
     
     def onExit(self, nextState: Optional['DialogState'] = None):
@@ -109,7 +112,7 @@ class CenterPointsHandler(StateHandler):
             self.ui.showCenterPointsPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.LCOATIONSELECT, DialogState.CENTERPOINTSEDIT]
+        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.CENTERPOINTSEDIT]
     
     def hasCenterLayer(self) -> bool:
         return self.context.has(CenterPointsHandler.KCenterLayer)
@@ -153,7 +156,7 @@ class CenterPointsEditHandler(StateHandler):
             self.ui.showCenterPointsEditPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.CENTERPOINTS, DialogState.AIRLINE]
+        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.CENTERPOINTS, DialogState.AIRLINE]
 
 class AirlineHandler(StateHandler):
     KDirectRouteLayer = "airline.DirectRouteLayer"
@@ -173,7 +176,7 @@ class AirlineHandler(StateHandler):
             self.ui.showAirlinePage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.CENTERPOINTSEDIT, DialogState.REPROJECT, DialogState.REPROJECTDEMAND]
+        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.CENTERPOINTSEDIT, DialogState.REPROJECT, DialogState.REPROJECTDEMAND]
     
     def getDirectRouteLayer(self) -> Optional[DirectRouteNetworklayer]:
         return self.context.get(AirlineHandler.KDirectRouteLayer)
@@ -190,8 +193,8 @@ class ReprojectHandler(StateHandler):
     KIsProcessing = "reproject.Isprocessing"
     KProgress = "reproject.Progress"
     KDetourTolerance = "reproject.DetourTolerance"
-    KNetworkLayer = "reproject.Networklayer"
     KPathfinder = "reproject.Pathfinder"
+    KNetworkLayer = "reproject.Networklayer"
     KRouteLayer = "reproject.RouteLayer"
     KSupplyNetworkLayer = "reproject.SupplyNetworkLayer"
     KAggregatedSupplyNetworkLayer = "reproject.KAggregatedSupplyNetworkLayer"
@@ -219,7 +222,7 @@ class ReprojectHandler(StateHandler):
             self.ui.showReprojectPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.AIRLINE, DialogState.REPROJECTDEMAND]
+        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.AIRLINE, DialogState.REPROJECTDEMAND]
     
     def setIsProcessing(self, value: bool) -> bool:
         self.context.set(ReprojectHandler.KIsProcessing, value)
@@ -292,8 +295,8 @@ class ReprojectDemandHandler(StateHandler):
     KProgress = "reprojectDemand.Progress"
     KDetourTolerance = "reprojectDemand.DetourTolerance"
     KDemandFieldName = "reprojectDemand.DemandFieldName"
-    KNetworkLayer = "reprojectDemand.Networklayer"
     KPathfinder = "reprojectDemand.Pathfinder"
+    KNetworkLayer = "reprojectDemand.Networklayer"
     KRouteLayer = "reprojectDemand.RouteLayer"
     KSupplyNetworkLayer = "reprojectDemand.SupplyNetworkLayer"
     KAggregatedSupplyNetworkLayer = "reprojectDemand.KAggregatedSupplyNetworkLayer"
@@ -321,7 +324,7 @@ class ReprojectDemandHandler(StateHandler):
             self.ui.showReprojectDemandPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.REPROJECT]
+        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.REPROJECT]
     
     def setIsProcessing(self, value: bool) -> bool:
         self.context.set(ReprojectDemandHandler.KIsProcessing, value)

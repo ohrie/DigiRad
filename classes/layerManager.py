@@ -20,7 +20,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-from typing import Type, Optional
+from typing import Type, Optional, Tuple
+
+import os
 
 from PyQt5.QtCore import QTimer
 
@@ -29,7 +31,8 @@ from qgis.core import (
     QgsProject,
     QgsCoordinateReferenceSystem,
     QgsLayerTreeGroup,
-    QgsPointXY
+    QgsPointXY,
+    QgsVectorFileWriter
 )
 
 from ..constants import CRS_STR
@@ -102,6 +105,84 @@ class LayerManager:
             canvas.setCenter(self.center)
         
         canvas.freeze(False)
+    
+    def saveProjectToDisk(self, directory: str) -> Tuple[bool, str]:
+        # Get all layers
+        layers = []
+        for value in self.contextRef.values():
+            if isinstance(value, DigiRadLayer):
+                layers.append(value)
+        
+        if not layers:
+            return (True, "No layers")
+        try:
+            projectFilePath = os.path.join(directory, self.projectName + ".qgz")
+            gpkgFilePath = os.path.join(directory, self.projectName + ".gpkg")
+            
+            # Prepare directory
+            os.makedirs(directory, exist_ok=True)
+            if os.path.exists(projectFilePath):
+                os.remove(projectFilePath)
+            if os.path.exists(gpkgFilePath):
+                os.remove(gpkgFilePath)
+            
+            # Save layers to geopackage file
+            for layer in layers:
+                layerName = layer.name()
+                if not layerName:
+                    continue
+                layerName = LayerManager._sanitizeLayername(layerName)
+
+                options = QgsVectorFileWriter.SaveVectorOptions()
+                options.driverName = "GPKG"
+                options.layerName = layerName
+                
+                # Check if this is the first layer (create new file) or append to existing
+                if os.path.exists(gpkgFilePath):
+                    options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+                else:
+                    options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
+                
+                error = QgsVectorFileWriter.writeAsVectorFormatV3(
+                    layer.qgsLayer(),
+                    gpkgFilePath,
+                    layer.qgsLayer().transformContext(),
+                    options
+                )
+                if error[0] == QgsVectorFileWriter.NoError:
+                    pass
+                else:
+                    msg = f"Error writing layer {layer.name()}: {error[1]}"
+                    QgsMessageLog.logMessage(msg)
+                    return (False, msg)
+                
+                # Replace source in existing layer
+                newSource = f"{gpkgFilePath}|layername={layerName}"
+                layer.qgsLayer().setDataSource(newSource, layer.name(), "ogr")
+                if layer.qgsLayer().isValid():
+                    layer.qgsLayer().triggerRepaint()
+                    layer.qgsLayer().reload()
+                else:
+                    msg = f"Error while setting data source for layer {layer.name()}: {layer.qgsLayer().error()}"
+                    QgsMessageLog.logMessage(msg)
+                    return (False, msg)
+            
+            # Save project
+            success = QgsProject.instance().write(projectFilePath)
+            if not success:
+                msg = f"Error while saving project instance to {projectFilePath}"
+                QgsMessageLog.logMessage(msg)
+                return (False, msg)
+            else:
+                return (True, "")
+        except Exception as e:
+            return (False, f"Error while saving to disk: {e}")
+            
+
+    @staticmethod
+    def _sanitizeLayername(layerName: str) -> str:
+        layerName = layerName.replace(' ', '_').replace('-', '_')
+        return ''.join(c for c in layerName if c.isalnum() or c == '_')
 
     def update(self):
         if not self.contextRef:

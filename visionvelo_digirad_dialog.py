@@ -38,7 +38,7 @@ from .classes.layers.routeNetworkLayer import RouteNetworklayer
 from .classes.layers.analysisLayers import SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
 from .classes.processing.routeNetworkTaskHelpers import RouteNetworkTaskResult, RouteNetworkTaskProgress
 from .classes.interaction.centerEdit import CenterEditFeatureHandler, CenterEditToolType
-from .constants import AUTO_CENTER_POINTS_PATH, SUROUNDINGS_CENTER_POINTS_PATH
+from .constants import AUTO_CENTER_POINTS_PATH
 from .statics import ARS_INDEX, PROCESSING_CONFIG, LAYER_MANAGER
 from .classes.processing.task import RouteNetworkTask
 
@@ -78,6 +78,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     
     def postSetupUi(self):
         self.loadProjectButton.hide()
+        self.centerMapLayerComboBox.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.reprojectSelectLayer.setFilters(QgsMapLayerProxyModel.LineLayer)
         self.reprojectDemandSelectLayer.setFilters(QgsMapLayerProxyModel.LineLayer)
         self.reprojectDemandSelectField.setFilters(QgsFieldProxyModel.Filter.Numeric)
@@ -107,14 +108,20 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.locationResultsListWidget.currentItemChanged.connect(self.onLocationRegionItemChanged)
 
         # Center page
+        self.centralSaveProjectButton.clicked.connect(self.onSaveProjectButton)
         self.centralGenerateButton.clicked.connect(self.onCentralGenerateButton)
         self.centralNextButton.clicked.connect(self.onCentralNextButton)
-        self.centralRestartButton.clicked.connect(self.onCentralRestartButton)
+        self.centralRestartButton.clicked.connect(self.onRestartButton)
+        self.centerMapLayerComboBox.layerChanged.connect(self.onCenterMapLayerComboBox)
+        self.centerLoadLayerButton.clicked.connect(self.onCenterLoadLayerButton)
 
         self.centerAutoRadioButton.toggled.connect(self.onCenterAutoRadioButton)
         self.centerManualRadioButton.toggled.connect(self.onCenterManualRadioButton)
+        self.centerLayerRadioButton.toggled.connect(self.onCenterLayerRadioButton)
 
         # Center edit page
+        self.centerEditRestartButton.clicked.connect(self.onRestartButton)
+        self.centerEditSaveProjectButton.clicked.connect(self.onSaveProjectButton)
         self.centerEditBackButton.clicked.connect(self.onCenterEditBackButton)
         self.centerEditContinueButton.clicked.connect(self.onCenterEditContinueButton)
 
@@ -124,11 +131,15 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.centerEditDeleteButton.clicked.connect(self.onCenterEditDeleteButton)
 
         # Airline page
+        self.airlineRestartButton.clicked.connect(self.onRestartButton)
+        self.airlineSaveProjectButton.clicked.connect(self.onSaveProjectButton)
         self.airlineBackButton.clicked.connect(self.onAirlineBackButton)
         self.airlineContinueButton.clicked.connect(self.onAirlineContinueButton)
         self.airlineGenerateButton.clicked.connect(self.onAirlineGenerateButton)
 
         # Route page
+        self.reprojectRestartButton.clicked.connect(self.onRestartButton)
+        self.reprojectSaveProjectButton.clicked.connect(self.onSaveProjectButton)
         self.reprojectBackButton.clicked.connect(self.onReprojectBackButton)
         self.reprojectContinueButton.clicked.connect(self.onReprojectContinueButton)
         self.reprojectGenerateButton.clicked.connect(self.onReprojectGenerateButton)
@@ -136,6 +147,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectDetourToleranceCheckbox.clicked.connect(self.onReprojectDetourToleranceCheckbox)
 
         # Reproject demand page
+        self.reprojectDemandRestartButton.clicked.connect(self.onRestartButton)
+        self.reprojectDemandSaveProjectButton.clicked.connect(self.onSaveProjectButton)
         self.reprojectDemandBackButton.clicked.connect(self.onReprojectDemandBackButton)
         self.reprojectDemandContinueButton.clicked.connect(self.onReprojectDemandContinueButton)
         self.reprojectDemandGenerateButton.clicked.connect(self.onReprojectDemandGenerateButton)
@@ -174,9 +187,15 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if DialogState.CENTERPOINTS.value.getGenerateMethod() == DirectRouteGenerateMethod.AUTO:
             self.centralGenerateButton.show()
             self.centralLOCBox.show()
-        else:
+            self.centerMapLayerBox.hide()
+        elif DialogState.CENTERPOINTS.value.getGenerateMethod() == DirectRouteGenerateMethod.MANUEL:
             self.centralGenerateButton.hide()
             self.centralLOCBox.hide()
+            self.centerMapLayerBox.hide()
+        elif DialogState.CENTERPOINTS.value.getGenerateMethod() == DirectRouteGenerateMethod.LAYER:
+            self.centralGenerateButton.hide()
+            self.centralLOCBox.hide()
+            self.centerMapLayerBox.show()
         
         self.centralNextButton.setEnabled(self.centerManualRadioButton.isChecked() or DialogState.CENTERPOINTS.value.hasCenterLayer())
         self.selectTab(DialogState.CENTERPOINTS)
@@ -212,6 +231,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectProgressBar.show()
             self.reprojectProgressLabel.show()
             self.reprojectCancelGenerateButton.show()
+            self.reprojectRestartButton.setEnabled(False)
+            self.reprojectSaveProjectButton.setEnabled(False)
             self.reprojectBackButton.setEnabled(False)
             self.reprojectContinueButton.setEnabled(False)
             progressInfo = DialogState.REPROJECT.value.getProgress()
@@ -222,6 +243,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectProgressBar.hide()
             self.reprojectProgressLabel.hide()
             self.reprojectCancelGenerateButton.hide()
+            self.reprojectRestartButton.setEnabled(True)
+            self.reprojectSaveProjectButton.setEnabled(True)
             self.reprojectBackButton.setEnabled(True)
             self.reprojectContinueButton.setEnabled(DialogState.REPROJECT.value.hasRouteLayer())
             self.reprojectProgressBar.setValue(0)
@@ -234,6 +257,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectDemandGenerateButton.hide()
             self.reprojectDemandProgressBar.show()
             self.reprojectDemandProgressLabel.show()
+            self.reprojectDemandRestartButton.setEnabled(False)
+            self.reprojectDemandSaveProjectButton.setEnabled(False)
             self.reprojectDemandCancelGenerateButton.show()
             self.reprojectDemandBackButton.setEnabled(False)
             self.reprojectDemandContinueButton.setEnabled(False)
@@ -245,6 +270,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectDemandProgressBar.hide()
             self.reprojectDemandProgressLabel.hide()
             self.reprojectDemandCancelGenerateButton.hide()
+            self.reprojectDemandRestartButton.setEnabled(True)
+            self.reprojectDemandSaveProjectButton.setEnabled(True)
             self.reprojectDemandBackButton.setEnabled(True)
             self.reprojectDemandContinueButton.setEnabled(False)
             self.reprojectDemandProgressBar.setValue(0)
@@ -259,12 +286,35 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     ### SIGNALS
 
+    def show(self):
+        super().show()
+        LAYER_MANAGER.removeAll()
+        self.stateMachine.transitionTo(DialogState.WELCOME)
+
     ## HELPERS
 
     def guardLayerRegeneration(self, state: DialogState) -> bool:
         if DialogState.getValuesAfterContext(state, "LayerKeys"):
             return not QtHelper.askForLayerDeletion()
         return False
+    
+    def onRestartButton(self):
+        if QtHelper.askForProjectRestart():
+            LAYER_MANAGER.removeAll()
+            self.centerAutoRadioButton.setChecked(True)
+            self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
+    
+    def onSaveProjectButton(self):
+        directory = QtHelper.askForProjectToSaveDirectory(self)
+        if directory:
+            result = LAYER_MANAGER.saveProjectToDisk(directory)
+            (success, msg) = result
+            if success:
+                if msg:
+                    msg = f"\nWeitere Informationen: {msg}"
+                QtHelper.showInformationBox(self, "Speichern des Projekt", f"Projekt wurde erfolgreich unter {directory} gespeichert.{msg}")
+            else:
+                QtHelper.showInformationBox(self, "Speichern des Projekt", f"Fehler beim Speichern des Projekts unter {directory}:\n{msg}")
 
     ## WELCOME PAGE
     def onWelcomeNextButton(self):
@@ -329,11 +379,6 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         DialogState.CENTERPOINTS.value.setLOCs(locs)
 
     # SIGNALS
-    def onCentralRestartButton(self):
-        if QtHelper.askForProjectRestart():
-            LAYER_MANAGER.removeAll()
-            self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
-
     def onCentralNextButton(self):
         self.centerUpdateContextLocsFromUi()
         self.stateMachine.transitionTo(DialogState.CENTERPOINTSEDIT)
@@ -349,6 +394,28 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
             LAYER_MANAGER.update()
             self.showCenterPointsPage()
+    
+    def onCenterMapLayerComboBox(self):
+        layer = self.centerMapLayerComboBox.currentLayer()
+        if not layer:
+            self.centerLoadLayerButton.setEnabled(False)
+        else:
+            self.centerLoadLayerButton.setEnabled(True)
+        
+    def onCenterLoadLayerButton(self):
+        layer = self.centerMapLayerComboBox.currentLayer()
+        if not layer:
+            return
+        
+        # Check if layer is a valid center layer
+        try:
+            centerLayer = CenterLayer.loadFromLayer(layer, PROCESSING_CONFIG.arsCode.code, DialogState.CENTERPOINTS.value.getLOCS())
+            if centerLayer:
+                DialogState.CENTERPOINTS.value.setCenterLayer(centerLayer)
+                LAYER_MANAGER.update()
+                self.showCenterPointsPage()
+        except Exception as e:
+            QtHelper.showInformationBox(self, "Zentrenlayer", f"Keine valide Zentrenlayer: {e}")
 
     def onCenterAutoRadioButton(self):
         DialogState.CENTERPOINTS.value.setGenerateMethod(DirectRouteGenerateMethod.AUTO)
@@ -356,6 +423,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     def onCenterManualRadioButton(self):
         DialogState.CENTERPOINTS.value.setGenerateMethod(DirectRouteGenerateMethod.MANUEL)
+        self.showCenterPointsPage()
+    
+    def onCenterLayerRadioButton(self):
+        DialogState.CENTERPOINTS.value.setGenerateMethod(DirectRouteGenerateMethod.LAYER)
         self.showCenterPointsPage()
     
     ## CENTER EDIT PAGE

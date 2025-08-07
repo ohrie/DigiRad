@@ -34,6 +34,7 @@ from .meshCalculator import MeshCalculator
 class DirectRouteGenerateMethod(Enum):
     AUTO = 1
     MANUEL = 2
+    LAYER = 3
 
     @staticmethod
     def default() -> 'DirectRouteGenerateMethod':

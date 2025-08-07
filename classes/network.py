@@ -85,7 +85,7 @@ class LevelOfCentrality(Enum):
 
     @staticmethod
     def defaults() -> List['LevelOfCentrality']:
-        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular]
+        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular, LevelOfCentrality.Surounding]
 
     @staticmethod
     def fromStr(value: str) -> 'LevelOfCentrality':
