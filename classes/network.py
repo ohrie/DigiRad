@@ -77,11 +77,11 @@ class ConnectivityFunction(Enum):
         return ConnectivityFunction(max(value1.value, value2.value))
 
 class LevelOfCentrality(Enum):
-    II = 2
-    III = 3
-    IV = 4
-    Singular = 10
-    Surounding = 11
+    II = 20
+    III = 30
+    IV = 40
+    Singular = 22
+    Surounding = 21
 
     @staticmethod
     def defaults() -> List['LevelOfCentrality']:
@@ -149,7 +149,7 @@ class LevelOfCentrality(Enum):
         elif self == LevelOfCentrality.IV:
             return ConnectivityFunction.VFS_4
         elif self == LevelOfCentrality.Singular:
-            return ConnectivityFunction.VFS_3
+            return ConnectivityFunction.VFS_2
         elif self == LevelOfCentrality.Surounding:
             return ConnectivityFunction.VFS_3
 

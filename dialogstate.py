@@ -7,7 +7,7 @@ from qgis.core import QgsVectorLayer, QgsMessageLog
 from .classes.network import LevelOfCentrality
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
-from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer
+from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer, MissingRoutesLayer
 from .classes.layers.analysisLayers import SupplyNetworkElementLayer, SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
 from .classes.processing.directRouteNetwork import DirectRouteGenerateMethod
 from .classes.processing.routeNetwork import NetworkPathFinder
@@ -72,6 +72,8 @@ class WelcomeHandler(StateHandler):
         return targetState == DialogState.LCOATIONSELECT
 
 class LocationSelectHandler(StateHandler):
+    KBaseLayer = "location.BaseLayer"
+
     def __init__(self):
         super().__init__("LocationSelect")
     
@@ -91,6 +93,15 @@ class LocationSelectHandler(StateHandler):
     
     def canTransitionTo(self, targetState):
         return targetState in [DialogState.WELCOME, DialogState.CENTERPOINTS]
+    
+    def hasBaseLayerStr(self) -> bool:
+        return self.context.has(LocationSelectHandler.KBaseLayer)
+    
+    def getBaseLayerStr(self) -> Optional[str]:
+        return self.context.get(LocationSelectHandler.KBaseLayer)
+    
+    def setBaseLayerStr(self, value: str) -> Optional[str]:
+        return self.context.updateValue(LocationSelectHandler.KBaseLayer, value)
 
 class CenterPointsHandler(StateHandler):
     KCenterLayer = "center.CenterLayer"
@@ -199,13 +210,16 @@ class ReprojectHandler(StateHandler):
     KSupplyNetworkLayer = "reproject.SupplyNetworkLayer"
     KAggregatedSupplyNetworkLayer = "reproject.KAggregatedSupplyNetworkLayer"
     KBreakingPointsNetworkLayer = "reproject.KBreakingPointsNetworkLayer"
+    KMissingRoutesLayer = "reproject.KMissingRoutesLayer"
+    KCenterDistanceTolerance = "reproject.KCenterDistanceTolerance"
 
     LayerKeys = [
         KNetworkLayer,
         KRouteLayer,
         KSupplyNetworkLayer,
         KAggregatedSupplyNetworkLayer,
-        KBreakingPointsNetworkLayer
+        KBreakingPointsNetworkLayer,
+        KMissingRoutesLayer
         ]
 
     def __init__(self):
@@ -288,6 +302,13 @@ class ReprojectHandler(StateHandler):
     def setBreakingPointsNetworkLayer(self, value: BreakingPointsNetworkLayer) -> Optional[BreakingPointsNetworkLayer]:
         DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
         return self.context.updateValue(ReprojectHandler.KBreakingPointsNetworkLayer, value)
+    
+    def setMissingRoutesLayer(self, value: MissingRoutesLayer) -> Optional[MissingRoutesLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECT, "LayerKeys")
+        return self.context.updateValue(ReprojectHandler.KMissingRoutesLayer, value)
+    
+    def setCenterDistanceTolerance(self, value: int) -> Optional[int]:
+        return self.context.updateValue(ReprojectHandler.KCenterDistanceTolerance, value)
 
 class ReprojectDemandHandler(StateHandler):
     KProcessing = "reprojectDemand.Processing"
@@ -301,13 +322,16 @@ class ReprojectDemandHandler(StateHandler):
     KSupplyNetworkLayer = "reprojectDemand.SupplyNetworkLayer"
     KAggregatedSupplyNetworkLayer = "reprojectDemand.KAggregatedSupplyNetworkLayer"
     KBreakingPointsNetworkLayer = "reprojectDemand.KBreakingPointsNetworkLayer"
+    KMissingRoutesLayer = "reproject.KMissingRoutesLayer"
+    KCenterDistanceTolerance = "reproject.KCenterDistanceTolerance"
 
     LayerKeys = [
         KNetworkLayer,
         KRouteLayer,
         KSupplyNetworkLayer,
         KAggregatedSupplyNetworkLayer,
-        KBreakingPointsNetworkLayer
+        KBreakingPointsNetworkLayer,
+        KMissingRoutesLayer
         ]
 
     def __init__(self):
@@ -396,6 +420,13 @@ class ReprojectDemandHandler(StateHandler):
     def setBreakingPointsNetworkLayer(self, value: BreakingPointsNetworkLayer) -> Optional[BreakingPointsNetworkLayer]:
         DialogState.deleteValuesAfterContext(DialogState.REPROJECTDEMAND, "LayerKeys")
         return self.context.updateValue(ReprojectDemandHandler.KBreakingPointsNetworkLayer, value)
+
+    def setMissingRoutesLayer(self, value: MissingRoutesLayer) -> Optional[MissingRoutesLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.REPROJECTDEMAND, "LayerKeys")
+        return self.context.updateValue(ReprojectDemandHandler.KMissingRoutesLayer, value)
+    
+    def setCenterDistanceTolerance(self, value: int) -> Optional[int]:
+        return self.context.updateValue(ReprojectDemandHandler.KCenterDistanceTolerance, value)
 
 class DialogState(Enum):
     """State machine enum with handlers"""

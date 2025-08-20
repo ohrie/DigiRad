@@ -35,7 +35,7 @@ class ProcessingConfig:
     
     def setARSCode(self, arsCode: Optional[ARSCode]):
         self.arsCode = arsCode
-        dt = datetime.today().strftime('%Y-%m-%d')
+        dt = datetime.today().strftime('%Y-%m-%d-T%H-%M')
         if not arsCode:
             self.projectName = f"{ProcessingConfig.DefaultProjectName}_{dt}"
         else:

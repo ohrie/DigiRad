@@ -30,6 +30,9 @@ from qgis.core import (
     QgsPoint,
     QgsPointXY,
     QgsGeometry,
+    QgsDistanceArea,
+    QgsCoordinateTransformContext,
+    QgsCoordinateReferenceSystem,
 )
 from qgis.analysis import (
     QgsVectorLayerDirector,
@@ -43,6 +46,7 @@ from .networkValidator import Networkvalidator
 from ..layers.directRouteNetworkLayer import DirectRouteNetworklayer
 from ..processing.directRouteEntry import DirectRouteEntry
 from .routing.cfRouting import GraphkModifier
+from ...constants import CRS_STR
 
 class InnerPoint:
     def __init__(self, p: QgsPoint):
@@ -56,8 +60,9 @@ class InnerPoint:
         return self._y
 
 class RouteGenerationOptions:
-    def __init__(self, detourTolerance: float = 0.0, networkStrategy: QgsNetworkStrategy = QgsNetworkDistanceStrategy()):
+    def __init__(self, detourTolerance: float = 0.0, centerDistanceTolerance: int = 100, networkStrategy: QgsNetworkStrategy = QgsNetworkDistanceStrategy()):
         self.detourTolerance = detourTolerance
+        self.centerDistanceTolerance = centerDistanceTolerance
         self.networkStrategy = networkStrategy
     
     def detourToModifactionFactor(self) -> float:
@@ -133,6 +138,9 @@ class NetworkPathFinder:
         self.director = None
         self._routeEntryIndex = None
         self.crs = networkLayer.crs()
+        self.distanceCalc = QgsDistanceArea()
+        self.distanceCalc.setSourceCrs(QgsCoordinateReferenceSystem(CRS_STR), QgsCoordinateTransformContext())
+        self.distanceCalc.setEllipsoid('WGS84')
         
         # Initialize the network topology
         self._buildDirector()
@@ -155,6 +163,21 @@ class NetworkPathFinder:
         self.graphModifier = GraphkModifier(self.graph, self.options.detourToModifactionFactor())
         
         return self.graph
+    
+    def areRelationCenterDistancesInTolerance(self, relation: 'InnerDirectRouteEntry') -> bool:
+        indicies = self._routeEntryIndex.getTiedIndicesOfRelation(relation.relationId)
+        tiedP1 = self.tiedPoints[indicies[0]]
+        tiedP2 = self.tiedPoints[indicies[1]]
+
+        dist1 = self.distanceCalc.measureLine(QgsPointXY(relation.p1.x(), relation.p1.y()), tiedP1)
+        if dist1 > self.options.centerDistanceTolerance:
+            return False
+        
+        dist2 = self.distanceCalc.measureLine(QgsPointXY(relation.p2.x(), relation.p2.y()), tiedP2)
+        if dist2 > self.options.centerDistanceTolerance:
+            return False
+        
+        return True
     
     def findPathOfRelation(self, relationId: int, modifyGraph: bool = False) -> Optional[RouteResult]:
         """Find path of a relation"""
@@ -219,7 +242,6 @@ class RouteEntryIndex:
         for (i, entry) in enumerate(routeEntries):
             self._index[entry.relationId] = RouteEntryIndexItem(entry, i * 2, i * 2 + 1)
         
-
     def getTiedPoints(self) -> List[QgsPointXY]:
         tiedPoints = []
         for entry in self._index.values():

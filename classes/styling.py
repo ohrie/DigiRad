@@ -3,12 +3,19 @@ from qgis.PyQt.QtGui import QColor
 from .network import LevelOfCentrality, ConnectivityFunction
 
 class Colors:
-    II = QColor("red")
-    III = QColor("blue")
-    IV = QColor("green")
-    Extra = QColor("yellow")
-    Surounding = QColor("orange")
+    # Red
+    II = QColor(215,25,28, 255)
+    # Orange
+    III = QColor(253,174,97, 255)
+    # Darker Blue
+    IV = QColor(18,110,176, 255)
+    # Pale Yellow
+    Extra = QColor(255,255,191, 255)
+    # Darker Orange
+    Surounding = QColor(244,109,67, 255)
     Default = QColor("gray")
+    # Magenta
+    Error = QColor(255, 0, 255, 255) 
 
 class Style:
     @staticmethod
@@ -42,27 +49,27 @@ class Style:
     @staticmethod
     def getSizeForLOC(loc: LevelOfCentrality):
         if loc == LevelOfCentrality.II:
-            return 4
+            return 5
         elif loc == LevelOfCentrality.III:
-            return 3
+            return 4
         elif loc == LevelOfCentrality.IV:
-            return 2
+            return 3
         elif loc == LevelOfCentrality.Singular:
-            return 3
+            return 4
         elif loc == LevelOfCentrality.Surounding:
-            return 3
+            return 4
         else:
             return 1
     
     @staticmethod
     def getSizeForCF(cf: ConnectivityFunction):
         if cf == ConnectivityFunction.VFS_2:
-            return 0.7
+            return 0.8
         elif cf == ConnectivityFunction.VFS_3:
-            return 0.5
+            return 0.6
         elif cf == ConnectivityFunction.VFS_4:
-            return 0.2
+            return 0.4
         elif cf == ConnectivityFunction.VFS_5:
-            return 0.2
+            return 0.4
         else:
-            return 0.2
+            return 0.4

@@ -53,8 +53,9 @@ class DirectRouteNetwork:
 
         mergedRoutes = self._mergeCFRoutes(routesAll, routesIII_II_S)
         mergedRoutes = self._mergeCFRoutes(mergedRoutes, routesII)
+        filteredRoutes = self._filterOutSuroundingToSuroundingRoutes(mergedRoutes)
 
-        return mergedRoutes.values()
+        return filteredRoutes.values()
     
     def _getLocBasedFeatures(self, locs: List[LevelOfCentrality]) -> List[CenterLayerFeature]:
         features = []
@@ -76,4 +77,14 @@ class DirectRouteNetwork:
                 merged[routeId2] = routes2[routeId2]
 
         return merged
+    
+    def _filterOutSuroundingToSuroundingRoutes(self, routes: Dict[int, DirectRouteEntry]) -> Dict[int, DirectRouteEntry]:
+        filtered = {}
+
+        for (id, route) in routes.items():
+            if route.feat1.loc == LevelOfCentrality.Surounding and route.feat2.loc == LevelOfCentrality.Surounding:
+                continue
+            filtered[id] = route
+        
+        return filtered
         

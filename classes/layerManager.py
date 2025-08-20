@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 from typing import Type, Optional, Tuple
 
 import os
@@ -36,23 +37,20 @@ from qgis.core import (
 )
 
 from ..constants import CRS_STR
-from ..dialogstate import DialogStateContext
+from ..dialogstate import DialogStateContext, LocationSelectHandler
 from .layers.layer import DigiRadLayer
 from .layers.baseLayer import BaseLayer
+from .processingConfig import ProcessingConfig
 
 class LayerManager:
-    def __init__(self, projectName: str, showBaseMap: bool = True):
+    def __init__(self, processingConfig: ProcessingConfig, showBaseMap: bool = True):
         self._crs = QgsCoordinateReferenceSystem(CRS_STR)
         QgsProject.instance().setCrs(self._crs)
 
         self.iface = None
-        self.projectName = projectName
+        self.processingConfig = processingConfig
+        self.projectName = processingConfig.projectName
         self.showBaseMap = showBaseMap
-
-        if showBaseMap:
-            self.baseLayer = BaseLayer.create()
-        else:
-            self.baseLayer = None
 
         self.layers = {}
         self.contextRef = None
@@ -61,6 +59,11 @@ class LayerManager:
     def setContextRef(self, contextRef: DialogStateContext):
         self.contextRef = contextRef
     
+    def unlink(self):
+        self.layers = {}
+        self.processingConfig = ProcessingConfig()
+        self.projectName = self.processingConfig.projectName
+    
     def removeAll(self):
         root = QgsProject.instance().layerTreeRoot()
         group = root.findGroup(self.projectName)
@@ -68,10 +71,7 @@ class LayerManager:
             return
         root.removeChildNode(group)
         self.layers = {}
-        if self.showBaseMap:
-            self.baseLayer = BaseLayer.create()
-        else:
-            self.baseLayer = None
+        self.baseLayer = None
     
     def show(self, center: Optional[QgsPointXY] = None):
         # If no layer is on the map, QGIS updates the CRS and extent
@@ -86,6 +86,14 @@ class LayerManager:
         canvas.freeze(True)
         project.setCrs(self._crs)
         canvas.setDestinationCrs(self._crs)
+
+        if self.showBaseMap:
+            if self.contextRef:
+                providerName = self.contextRef.get(LocationSelectHandler.KBaseLayer)
+            else:
+                providerName = ""
+            
+            self.baseLayer = BaseLayer.createFromProviderName(providerName)
 
         self._ensureLayer(self.baseLayer)
         canvas.freeze(False)
@@ -105,6 +113,7 @@ class LayerManager:
             canvas.setCenter(self.center)
         
         canvas.freeze(False)
+        canvas.refresh()
     
     def saveProjectToDisk(self, directory: str) -> Tuple[bool, str]:
         # Get all layers
@@ -178,7 +187,6 @@ class LayerManager:
         except Exception as e:
             return (False, f"Error while saving to disk: {e}")
             
-
     @staticmethod
     def _sanitizeLayername(layerName: str) -> str:
         layerName = layerName.replace(' ', '_').replace('-', '_')
@@ -284,13 +292,13 @@ class LayerManager:
         
         return None
 
-    def updateProjectName(self, newName: str):
+    def updateProjectName(self):
         root = QgsProject.instance().layerTreeRoot()
         group = root.findGroup(self.projectName)
         if group:
-            group.setName(newName)
+            group.setName(self.processingConfig.projectName)
 
-        self.projectName = newName
+        self.projectName = self.processingConfig.projectName
 
     def crs(self):
         return self._crs

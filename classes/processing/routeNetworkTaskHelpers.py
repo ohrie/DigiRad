@@ -24,6 +24,7 @@ from typing import List, Optional
 
 from .routeNetwork import RouteEntry
 from .routeNetworkAnalyser import NetworkElement, AggregatedNetworkElement, BreakingElement
+from .directRouteEntry import DirectRouteEntry
 
 class RouteNetworkTaskResult:
     def __init__(self, routeEntries: Optional[List[RouteEntry]] = None, networkElements: Optional[List[NetworkElement]] = None, aggregatedElements: Optional[List[AggregatedNetworkElement]] = None, breakingPoints:Optional[ List[BreakingElement]] = None, error: str = None):
@@ -35,9 +36,16 @@ class RouteNetworkTaskResult:
     
     def isError(self) -> bool:
         return self.error is not None
+    
+    def getMissingRoutes(self) -> List[DirectRouteEntry]:
+        return [r.directRouteEntry for r in self.routeEntries if r.notFound()]
 
     @staticmethod
-    def createSuccess(routeEntries: List[RouteEntry], networkElements: List[NetworkElement], aggregatedElements: List[AggregatedNetworkElement], breakingPoints: List[BreakingElement]) -> 'RouteNetworkTaskResult':
+    def createSuccess(
+        routeEntries: List[RouteEntry],
+        networkElements: List[NetworkElement],
+        aggregatedElements: List[AggregatedNetworkElement],
+        breakingPoints: List[BreakingElement]) -> 'RouteNetworkTaskResult':
         return RouteNetworkTaskResult(routeEntries=routeEntries, networkElements=networkElements, aggregatedElements=aggregatedElements, breakingPoints=breakingPoints)
     
     @staticmethod

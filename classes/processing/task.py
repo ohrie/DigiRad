@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from qgis.core import (
     QgsMessageLog,
@@ -41,13 +41,6 @@ class RouteNetworkWorker(QThread):
             self.result = None
             entries = self.directRouteLayerEntries
 
-            sortedEntries = {}
-            for entry in entries:
-                if entry.cf in sortedEntries:
-                    sortedEntries[entry.cf].append(entry)
-                else:
-                    sortedEntries[entry.cf] = [entry]
-
             # Step 1: Build the graph
             self.setProgress(5, "Graphen erzeugen..")
             # Start a dummy timer which bumps up the progress to indicate the graph
@@ -71,6 +64,14 @@ class RouteNetworkWorker(QThread):
                 relationsLen = len(entries) * 2
             else:
                 relationsLen = len(entries)
+            
+            sortedEntries = {}
+            for entry in entries:
+                isValid = self.pathFinder.areRelationCenterDistancesInTolerance(entry)
+                if entry.cf in sortedEntries:
+                    sortedEntries[entry.cf].append((isValid, entry))
+                else:
+                    sortedEntries[entry.cf] = [(isValid, entry)]
 
             resultEntries = self._findRouteEntries(sortedEntries, self.options.isDetourActive(), 0, relationsLen, 55)
             self.pathFinder.graphModifier.modifyEdgeCostsBasedOnChangelog()
@@ -102,7 +103,7 @@ class RouteNetworkWorker(QThread):
     
     def _findRouteEntries(
             self,
-            sortedEntries: Dict[ConnectivityFunction, List[InnerDirectRouteEntry]],
+            sortedEntries: Dict[ConnectivityFunction, List[Tuple[bool, InnerDirectRouteEntry]]],
             modifyGraph: bool,
             progressProcessedStart: int,
             progressProcessMax: int,
@@ -114,11 +115,15 @@ class RouteNetworkWorker(QThread):
             subEntries = sortedEntries[cf][0:]
 
             QgsMessageLog.logMessage(f"Finding paths for {cf.asStr()} ({len(subEntries)} relations)..")
-            for (i, routeEntry) in enumerate(subEntries):
+            for (i, (isValid, routeEntry)) in enumerate(subEntries):
                 progressProcessedStart += 1
                 # Check if task was cancelled
                 if self.shouldStop:
                     return False
+                
+                if not isValid:
+                    routeEntries.append(RouteEntry(routeEntry, None))
+                    continue
                 
                 routeResult = self.pathFinder.findPathOfRelation(routeEntry.relationId, modifyGraph)
                 
@@ -204,13 +209,15 @@ class RouteNetworkTask:
         if context.currentState == DialogState.REPROJECT:
             networkLayer = context.get(ReprojectHandler.KNetworkLayer)
             detourTolerance = context.get(ReprojectHandler.KDetourTolerance)
-            options = RouteGenerationOptions(detourTolerance)
+            centerDistanceTolerance = context.get(ReprojectHandler.KCenterDistanceTolerance)
+            options = RouteGenerationOptions(detourTolerance, centerDistanceTolerance)
         elif context.currentState == DialogState.REPROJECTDEMAND:
             networkLayer = context.get(ReprojectDemandHandler.KNetworkLayer)
             demandFieldName = context.get(ReprojectDemandHandler.KDemandFieldName)
             detourTolerance = context.get(ReprojectDemandHandler.KDetourTolerance)
+            centerDistanceTolerance = context.get(ReprojectDemandHandler.KCenterDistanceTolerance)
             networkStrategy = DemandNetworkStrategy(NetworkDemandProperties.fromLayer(networkLayer, demandFieldName))
-            options = RouteGenerationOptions(detourTolerance, networkStrategy=networkStrategy)
+            options = RouteGenerationOptions(detourTolerance, centerDistanceTolerance, networkStrategy=networkStrategy)
         
         networkLayerData = RouteNetworkTask._createMemorylayerFromVector(networkLayer)
         directRouteLayerEntries = []

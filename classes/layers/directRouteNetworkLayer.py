@@ -28,6 +28,8 @@ from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
     QgsCategorizedSymbolRenderer,
+    QgsSingleSymbolRenderer,
+    QgsMarkerSymbol,
     QgsRendererCategory,
     QgsField,
     QgsFeature,
@@ -39,7 +41,7 @@ from ...constants import CRS_STR
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
 from ..processing.directRouteEntry import DirectRouteEntry
-from ..styling import Style
+from ..styling import Style, Colors
 
 class DirectRouteNetworkFeatureConfig:
     def __init__(self, cfName: str = "Verbindungsfunktionsstufe", relationName: str = "relation"):
@@ -49,8 +51,8 @@ class DirectRouteNetworkFeatureConfig:
 class DirectRouteNetworklayer(DigiRadLayer):
     LayerName = "Luftliniennetz"
 
-    def __init__(self, routeEntries: List[DirectRouteEntry], config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> 'DirectRouteNetworklayer':
-        super().__init__(DirectRouteNetworklayer._createLayerFromRouteEntries(routeEntries, config))
+    def __init__(self, routeEntries: List[DirectRouteEntry], layerName: str, groupName: str = "", config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> 'DirectRouteNetworklayer':
+        super().__init__(DirectRouteNetworklayer.createLayerFromRouteEntries(routeEntries, config, layerName), groupName)
         
         self.routeEntries = routeEntries
         self.config = config
@@ -60,8 +62,8 @@ class DirectRouteNetworklayer(DigiRadLayer):
         self._qgsLayer.triggerRepaint()
 
     @staticmethod
-    def _createLayerFromRouteEntries(routeEntries: DirectRouteEntry, config: DirectRouteNetworkFeatureConfig) -> 'DirectRouteNetworklayer':
-        meshlayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), DirectRouteNetworklayer.LayerName, "memory")
+    def createLayerFromRouteEntries(routeEntries: DirectRouteEntry, config: DirectRouteNetworkFeatureConfig, layerName: str) -> 'DirectRouteNetworklayer':
+        meshlayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), layerName, "memory")
         pr = meshlayer.dataProvider()
         pr.addAttributes([QgsField(config.relationName, QVariant.LongLong),
                             QgsField(config.cfName,  QVariant.String)])
@@ -93,5 +95,27 @@ class DirectRouteNetworklayer(DigiRadLayer):
         orderBy = QgsFeatureRequest.OrderBy([QgsFeatureRequest.OrderByClause(self.config.cfName, False)])
         renderer.setOrderByEnabled(True)
         renderer.setOrderBy(orderBy)
+
+        return renderer
+
+class MissingRoutesLayer(DigiRadLayer):
+    LayerNameReproject = "Nicht gefundene Umlegungen"
+    LayerNameReprojectDemand = "Nicht gefundene Nachfrageumlegungen"
+
+    def __init__(self, routeEntries: List[DirectRouteEntry], layerName: str, groupName: str, config: DirectRouteNetworkFeatureConfig = DirectRouteNetworkFeatureConfig()) -> 'MissingRoutesLayer':
+        super().__init__(DirectRouteNetworklayer.createLayerFromRouteEntries(routeEntries, config, layerName), groupName)
+
+        self.routeEntries = routeEntries
+        self.config = config
+
+        renderer = self._createRenderer()
+        self._qgsLayer.setRenderer(renderer)
+        self._qgsLayer.triggerRepaint()
+    
+    def _createRenderer(self) -> QgsCategorizedSymbolRenderer:
+        symbol = QgsLineSymbol.createSimple({'line_style':'dash'})
+        symbol.setColor(Colors.Error)
+        symbol.setWidth(0.4)
+        renderer = QgsSingleSymbolRenderer(symbol)
 
         return renderer

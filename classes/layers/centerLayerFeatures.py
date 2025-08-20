@@ -51,9 +51,7 @@ class CenterLayerFeature:
         
         nameIdx = qgsLayer.fields().indexFromName(config.nameName)
         locIdx = qgsLayer.fields().indexFromName(config.locName)
-        request = QgsFeatureRequest()
-        request.setSubsetOfAttributes([locIdx, nameIdx])
-        for feat in qgsLayer.getFeatures(request):
+        for feat in qgsLayer.getFeatures():
             name = feat.attributes()[nameIdx]
             loc = feat.attributes()[locIdx]
             try:

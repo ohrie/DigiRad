@@ -23,7 +23,7 @@
 
 from typing import Optional
 from PyQt5.QtWidgets import QFileDialog
-from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.PyQt.QtWidgets import QMessageBox, QAbstractButton
 
 class QtHelper:
     @staticmethod
@@ -38,17 +38,37 @@ class QtHelper:
         
         return reply == QMessageBox.Yes
     
+    Yes = 1
+    No = 2
+    KeepOldProject = 3
+
     @staticmethod
-    def askForProjectRestart(parent = None) -> bool:
-        reply = QMessageBox.question(
-            parent,
-            "Projekt neustarten",  # Dialog title
-            "Wenn Sie das Projekt neustarten, werden alle schon erzeugten Daten gelöscht. Möchten Sie fortfahren?",  # Dialog message
-            QMessageBox.Yes | QMessageBox.No,  # Buttons
-            QMessageBox.No  # Default button
-        )
+    def askForProjectRestart(parent = None) -> int:
+        msgBox = QMessageBox(parent=parent, icon=QMessageBox.Question)
+        msgBox.setWindowTitle("Projekt neustarten")
+        msgBox.setText("Wenn Sie das Projekt neustarten, werden alle schon erzeugten Daten gelöscht. Möchten Sie fortfahren?")
+        msgBox.setIcon
+        yesButton = msgBox.addButton("Ja", QMessageBox.YesRole)
+        noButton = msgBox.addButton("Nein", QMessageBox.NoRole)
+        keepOldProjectButton = msgBox.addButton("Projektdaten behalten", QMessageBox.ActionRole)
+
+        msgBox.exec()
+        if msgBox.clickedButton() == yesButton:
+            return QtHelper.Yes
+        if msgBox.clickedButton() == noButton:
+            return QtHelper.No
+        if msgBox.clickedButton() == keepOldProjectButton:
+            return QtHelper.KeepOldProject
+
+        # reply = QMessageBox.question(
+        #     parent,
+        #     "Projekt neustarten",  # Dialog title
+        #     "Wenn Sie das Projekt neustarten, werden alle schon erzeugten Daten gelöscht. Möchten Sie fortfahren?",  # Dialog message
+        #     QMessageBox.Yes | QMessageBox.No |  # Buttons
+        #     QMessageBox.No  # Default button
+        # )
         
-        return reply == QMessageBox.Yes
+        # return reply == QMessageBox.Yes
     
     @staticmethod
     def showInformationBox(parent = None, title: str = "", message: str = ""):

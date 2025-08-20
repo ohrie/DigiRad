@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>443</width>
+    <width>430</width>
     <height>576</height>
    </rect>
   </property>
@@ -24,14 +24,14 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="welcomeTab">
        <property name="enabled">
         <bool>true</bool>
        </property>
        <attribute name="title">
-        <string>Start</string>
+        <string>1. Start</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <property name="sizeConstraint">
@@ -107,7 +107,7 @@
         <bool>true</bool>
        </property>
        <attribute name="title">
-        <string>Ort/Region</string>
+        <string>2. Ort/Region</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -186,6 +186,12 @@
           </property>
           <item>
            <widget class="QLabel" name="label2">
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string>Auswahl:</string>
             </property>
@@ -193,8 +199,86 @@
           </item>
           <item>
            <widget class="QLabel" name="locationSelectedRegionLabel">
+            <property name="maximumSize">
+             <size>
+              <width>400</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_15">
+          <item>
+           <widget class="QLabel" name="label_9">
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Projektname</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="locationProjectNameEdit">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>400</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_16">
+          <item>
+           <widget class="QLabel" name="label_10">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Grundkarte</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="locationBaseMapComboBox">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>400</width>
+              <height>16777215</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -260,7 +344,7 @@
         <bool>true</bool>
        </property>
        <attribute name="title">
-        <string>Zentrale Orte</string>
+        <string>3. Zentrale Orte</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
@@ -345,26 +429,6 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QCheckBox" name="centerLOC4Check">
-             <property name="text">
-              <string>Zentralitätsstufe IV</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QCheckBox" name="centerLOC2Check">
-             <property name="text">
-              <string>Zentralitätsstufe II</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="1">
             <widget class="QCheckBox" name="centerLOCSingleCheck">
              <property name="enabled">
@@ -385,6 +449,33 @@
              </property>
              <property name="checked">
               <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QCheckBox" name="centerLOC2Check">
+             <property name="text">
+              <string>Zentralitätsstufe II</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QCheckBox" name="centerLOC4Check">
+             <property name="text">
+              <string>Zentralitätsstufe IV</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QPushButton" name="centralGenerateButton">
+             <property name="text">
+              <string>Punkte generieren</string>
              </property>
             </widget>
            </item>
@@ -422,13 +513,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="centralGenerateButton">
-          <property name="text">
-           <string>Punkte generieren</string>
-          </property>
-         </widget>
         </item>
         <item>
          <widget class="Line" name="line_3">
@@ -494,7 +578,7 @@
       </widget>
       <widget class="QWidget" name="centerEditTab">
        <attribute name="title">
-        <string>Zentrale Orte [Anpassung]</string>
+        <string>4. Zentrale Orte [Anpassung]</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
@@ -698,7 +782,7 @@
       </widget>
       <widget class="QWidget" name="airlineTab">
        <attribute name="title">
-        <string>Luftliniennetz</string>
+        <string>5. Luftliniennetz</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
@@ -849,7 +933,7 @@
       </widget>
       <widget class="QWidget" name="reprojectTab">
        <attribute name="title">
-        <string>Umlegung</string>
+        <string>6. Umlegung</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_9">
         <item>
@@ -946,6 +1030,45 @@
                </property>
                <property name="value">
                 <number>35</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Maximale Zentrenverknüpfungsdistanz</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reprojectCenterDistanceToleranzSpinbox">
+               <property name="maximumSize">
+                <size>
+                 <width>55</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="suffix">
+                <string>m</string>
+               </property>
+               <property name="minimum">
+                <number>10</number>
+               </property>
+               <property name="maximum">
+                <number>2000</number>
+               </property>
+               <property name="singleStep">
+                <number>50</number>
+               </property>
+               <property name="value">
+                <number>300</number>
                </property>
               </widget>
              </item>
@@ -1114,7 +1237,7 @@
       </widget>
       <widget class="QWidget" name="reprojectDemandTab">
        <attribute name="title">
-        <string>Nachfrageumlegung</string>
+        <string>7. Nachfrageumlegung</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_8">
         <item>
@@ -1208,6 +1331,45 @@
                </property>
                <property name="value">
                 <number>35</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_223">
+             <item>
+              <widget class="QLabel" name="label_113">
+               <property name="text">
+                <string>Maximale Zentrenverknüpfungsdistanz</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="reprojectDemandCenterDistanceToleranzSpinbox">
+               <property name="maximumSize">
+                <size>
+                 <width>55</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="suffix">
+                <string>m</string>
+               </property>
+               <property name="minimum">
+                <number>10</number>
+               </property>
+               <property name="maximum">
+                <number>2000</number>
+               </property>
+               <property name="singleStep">
+                <number>50</number>
+               </property>
+               <property name="value">
+                <number>300</number>
                </property>
               </widget>
              </item>
@@ -1316,31 +1478,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="reprojectDemandSaveProjectButton">
-            <property name="maximumSize">
-             <size>
-              <width>30</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="statusTip">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="whatsThis">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="accessibleName">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="accessibleDescription">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="text">
-             <string>💾</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="Line" name="line_18">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1355,12 +1492,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="reprojectDemandContinueButton">
+           <widget class="QPushButton" name="reprojectDemandSaveProjectButton">
             <property name="enabled">
              <bool>false</bool>
             </property>
             <property name="text">
-             <string>Weiter</string>
+             <string>💾 Projekt abschließen</string>
             </property>
            </widget>
           </item>

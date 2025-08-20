@@ -1,13 +1,9 @@
-# This file contains metadata for your plugin.
-
-# This file should be included when you package your plugin.# Mandatory items:
-
 [general]
 name=DigiRad
 qgisMinimumVersion=3.12
 description=Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
 version=0.2
-author=Vision Velo UG (haftungsbeschränkt)
+author=Vision Velo GmbH
 email=info@vision-velo.de
 
 about=Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr

@@ -51,43 +51,39 @@ from ..processing.meshCalculator import MeshCalculator
 class CenterLayer(DigiRadLayer):
     LayerName = "Zentren"
 
-    def __init__(self, layer, arsCodeStr: ARSCodeStr, availableLOCs: List[LevelOfCentrality], config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
+    def __init__(self, layer, arsCodeStr: ARSCodeStr, config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
         super().__init__(layer)
         self.arsCodeStr = arsCodeStr
         self.config = config
-        self.availableLOCs = availableLOCs
         renderer = self._createRenderer()
         formConfig = self._createFormConfig()
-        filter = self._createFeatureFilter()
         layer.setEditFormConfig(formConfig)
         layer.setRenderer(renderer)
-        layer.setSubsetString(filter)
         layer.triggerRepaint()
 
         self.locFeatures = CenterLayerFeature.featuresFromLayer(layer, config)
 
     @staticmethod
-    def createEmpty(arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()) -> 'CenterLayer':
+    def createEmpty(arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()) -> 'CenterLayer':
         layer = QgsVectorLayer("Point?crs={}&field={}:string&field={}:string".format(config.nameName, config.locName, CRS_STR), CenterLayer.LayerName, "memory")
-        return CenterLayer(layer, arsCodeStr, availableLOCs)
+        return CenterLayer(layer, arsCodeStr)
 
     @staticmethod
-    def loadFromFile(filePath: str, arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
+    def loadFromFile(filePath: str, arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), filterLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
         layer = QgsVectorLayer(filePath, CenterLayer.LayerName, "ogr")
 
-        return CenterLayer.loadFromLayer(layer, arsCodeStr, availableLOCs, config)
+        return CenterLayer.loadFromLayer(layer, arsCodeStr, filterLOCs, config)
     
     @staticmethod
-    def loadFromLayer(layer: QgsVectorLayer, arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), availableLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
-        if arsCodeStr.isEmpty():
-            request = QgsFeatureRequest()
-        else:
-            relevantCodePart = arsCodeStr.getRelevantPart()
-            request = QgsFeatureRequest().setFilterExpression("substr(\"{}\", 1, {}) = '{}'".format(config.arsName, len(relevantCodePart), relevantCodePart))
-        
+    def loadFromLayer(layer: QgsVectorLayer, arsCodeStr: ARSCodeStr = ARSCodeStr.empty(), filterLOCs: Optional[List[LevelOfCentrality]] = LevelOfCentrality.defaults(), config: CenterLayerFeatureConfig = CenterLayerFeatureConfig()):
+        filter = CenterLayer._createFeatureFilter(config, arsCodeStr, filterLOCs)
+        request = QgsFeatureRequest().setFilterExpression(filter)
+
         layer = layer.materialize(request)
-        layer = CenterLayer._mergeWithSuroundings(arsCodeStr, layer, config)
-        return CenterLayer(layer, arsCodeStr, availableLOCs, config)
+        # If there is no ARSCodeStr, we cannot get plausible suroundings 
+        if not arsCodeStr.isEmpty():
+            layer = CenterLayer._mergeWithSuroundings(arsCodeStr, layer, config)
+        return CenterLayer(layer, arsCodeStr, config)
     
     @staticmethod
     def _mergeWithSuroundings(arsCodeStr: ARSCodeStr, layer: QgsVectorLayer, config: CenterLayerFeatureConfig) -> QgsVectorLayer:
@@ -123,7 +119,7 @@ class CenterLayer(DigiRadLayer):
     def _createRenderer(self) -> QgsCategorizedSymbolRenderer:
         renderer = QgsCategorizedSymbolRenderer(self.config.locName)
         
-        for loc in self.availableLOCs:
+        for loc in LevelOfCentrality:
             symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
             symbol.setColor(Style.getColorForLOC(loc))
             symbol.setSize(Style.getSizeForLOC(loc))
@@ -146,7 +142,7 @@ class CenterLayer(DigiRadLayer):
             root.addChildElement(locElement)
 
             valueMap = {}
-            for loc in self.availableLOCs:
+            for loc in LevelOfCentrality:
                 valueMap[loc.asStr()] = loc.asStrShort()
             
             widgetSetup = QgsEditorWidgetSetup('ValueMap', {
@@ -166,9 +162,16 @@ class CenterLayer(DigiRadLayer):
         
         return formConfig
     
-    def _createFeatureFilter(self) -> str:
-        locs = ", ".join(map(lambda loc: "'{}'".format(loc.asStrShort()), self.availableLOCs))
-        return "{} in ({})".format(self.config.locName, locs)
+    @staticmethod
+    def _createFeatureFilter(config: CenterLayerFeatureConfig, arsCodeStr: ARSCodeStr, filterLocs: List[LevelOfCentrality]) -> str:
+        locFilter = "{} in ({})".format(config.locName, ", ".join(map(lambda loc: "'{}'".format(loc.asStrShort()), filterLocs)))
+        if arsCodeStr.isEmpty():
+           return locFilter
+         
+        relevantCodePart = arsCodeStr.getRelevantPart()
+        arsFilter = "substr(\"{}\", 1, {}) = '{}'".format(config.arsName, len(relevantCodePart), relevantCodePart)
+
+        return f"{arsFilter} AND {locFilter}"
 
 class SuroundingHelper:
 

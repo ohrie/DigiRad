@@ -23,16 +23,9 @@
 
 import os
 
-from qgis.core import QgsVectorLayer
-
 from .constants import DAT_PATH
 from .classes.ars import ARSIndex
-from .classes.processingConfig import ProcessingConfig
-from .classes.layerManager import LayerManager
 from .classes.processing.networkValidator import Networkvalidator
 
 ARS_INDEX = ARSIndex(os.path.join(DAT_PATH, "ARS_Zentren_merged.csv"))
-PROCESSING_CONFIG = ProcessingConfig()
-LAYER_MANAGER = LayerManager(PROCESSING_CONFIG.projectName)
-
-NETWORK_VALIDATOR = Networkvalidator(LAYER_MANAGER.crs())
+NETWORK_VALIDATOR = Networkvalidator()
