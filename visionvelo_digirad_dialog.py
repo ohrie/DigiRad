@@ -352,6 +352,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.stateMachine.transitionTo(DialogState.WELCOME)
 
     def onLocationCreateProject(self):
+        if self.layerManager.processingConfig.arsCode and self.layerManager.processingConfig.arsCode.code.isZ2():
+            QtHelper.showInformationBox(self, "Oberzentrum/Landkreis ausgewählt", "Die Nutzung des Plugins ist für Mittel- und Grundzentren optimiert. Ggf. treten bei der Nutzung von Oberzentren bzw. Landkreisen unerwartete Ergebnisse auf.")
+        
         lineEditText = self.locationProjectNameEdit.text().strip()
         if lineEditText:
             self.layerManager.processingConfig.projectName = lineEditText

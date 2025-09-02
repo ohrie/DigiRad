@@ -141,7 +141,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ortssuche&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="placeholderText">
-             <string>z.B. Dresden, Wetterau, etc.</string>
+             <string>z.B. Meißen, Boppard, etc.</string>
             </property>
            </widget>
           </item>
@@ -543,6 +543,9 @@
             <property name="accessibleDescription">
              <string>Projekt speichern</string>
             </property>
+            <property name="toolTip">
+             <string>Projekt speichern</string>
+            </property>
             <property name="text">
              <string>💾</string>
             </property>
@@ -750,6 +753,9 @@
             <property name="accessibleDescription">
              <string>Projekt speichern</string>
             </property>
+            <property name="toolTip">
+             <string>Projekt speichern</string>
+            </property>
             <property name="text">
              <string>💾</string>
             </property>
@@ -896,6 +902,9 @@
              <string>Projekt speichern</string>
             </property>
             <property name="accessibleDescription">
+             <string>Projekt speichern</string>
+            </property>
+            <property name="toolTip">
              <string>Projekt speichern</string>
             </property>
             <property name="text">
@@ -1200,6 +1209,9 @@
              <string>Projekt speichern</string>
             </property>
             <property name="accessibleDescription">
+             <string>Projekt speichern</string>
+            </property>
+            <property name="toolTip">
              <string>Projekt speichern</string>
             </property>
             <property name="text">

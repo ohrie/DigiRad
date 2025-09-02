@@ -46,6 +46,9 @@ class ARSCodeStr:
     def isEmpty(self) -> bool:
         return self.code == ""
     
+    def isZ2(self) -> bool:
+        return len(self.getRelevantPart()) <= 5
+    
     def getRelevantPart(self) -> str:
         if self.isEmpty():
             return ""
