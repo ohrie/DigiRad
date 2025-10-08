@@ -24,7 +24,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>5</number>
       </property>
       <widget class="QWidget" name="welcomeTab">
        <property name="enabled">
@@ -40,7 +40,7 @@
         <item>
          <widget class="QLabel" name="welcomeInfoLabel">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Willkommen zum Verkehrsnetz-Generator&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Dieses Tool hilft Ihnen bei der Erstellung eines Radverkehrsnetzes in mehreren Schritten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Mit diesem Assistenten können Sie ein Verkehrsnetz erstellen und bearbeiten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Der Prozess umfasst folgende Schritte:&lt;/p&gt;&lt;ol style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Auswahl des Gebiets/Ortes&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Festlegung zentraler Punkte/Orte&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Erstellung eines Luftliniennetzes&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Umlegung auf ein bestehendes Verkehrsnetz&lt;/li&gt;&lt;/ol&gt;&lt;p align=&quot;justify&quot;&gt;Klicken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;, um zu beginnen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Willkommen zum Radverkehrsnetz-Generator&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Dieses Tool hilft Ihnen bei der Erstellung eines RIN-konformen Radverkehrsnetzes in mehreren Schritten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Mit diesem Assistenten können Sie ein Verkehrsnetz erstellen und bearbeiten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Der Prozess umfasst folgende Schritte:&lt;/p&gt;&lt;ol style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Auswahl Gemeinde oder Kreis&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Festlegung zentraler Orte&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Erstellung eines Luftliniennetzes&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Umlegung auf ein bestehendes Verkehrsnetz&lt;/li&gt;&lt;/ol&gt;&lt;p align=&quot;justify&quot;&gt;Klicken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;, um zu beginnen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -107,13 +107,13 @@
         <bool>true</bool>
        </property>
        <attribute name="title">
-        <string>2. Ort/Region</string>
+        <string>2. Gemeinde/Kreis</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="locationInfoLabel">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ort- bzw. Regionensauswahl&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Wählen Sie den Ort/die Region, für den/die das Netz erstellt werden soll.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ort- bzw. Regionensauswahl&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Wählen Sie die Gemeinde/den Kreis, für die/den das Netz erstellt werden soll.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -356,7 +356,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zentrale Orte&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Definieren Sie die zentralen Orte des Radnetzes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zentrale Orte&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Definieren Sie die innergemeindlichen Zentralitäten des Radverkehrs.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -387,7 +387,7 @@
              <item>
               <widget class="QRadioButton" name="centerAutoRadioButton">
                <property name="text">
-                <string>Automatisch zentrale Punkte generieren</string>
+                <string>Zentrale Orte automatisch generieren</string>
                </property>
                <property name="checked">
                 <bool>true</bool>
@@ -531,6 +531,9 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Projekt speichern</string>
+            </property>
             <property name="statusTip">
              <string>Projekt speichern</string>
             </property>
@@ -541,9 +544,6 @@
              <string>Projekt speichern</string>
             </property>
             <property name="accessibleDescription">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="toolTip">
              <string>Projekt speichern</string>
             </property>
             <property name="text">
@@ -587,7 +587,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zentrale Orte bearbeiten&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Hier können Sie die vorhandenen zentralen Orte des Radnetzes mit Hilfe der Digitalisierungswerkzeuge von QGIS bearbeiten.&lt;/p&gt;&lt;p&gt;Sie können Punkte &lt;span style=&quot; font-style:italic;&quot;&gt;hinzufügen&lt;/span&gt;, &lt;span style=&quot; font-style:italic;&quot;&gt;verschieben&lt;/span&gt;, &lt;span style=&quot; font-style:italic;&quot;&gt;löschen&lt;/span&gt; und ihre Zentralitätsstufe anpassen.&lt;/p&gt;&lt;p&gt;Sobald Sie damit fertig sind, drücken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Zentrale Orte bearbeiten&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Bearbeiten Sie hier die zentralen Orte des Radnetzes mithilfe der Digitalisierungswerkzeuge.&lt;/p&gt;&lt;p&gt;Sie können Punkte &lt;span style=&quot; font-weight:600;&quot;&gt;hinzufügen&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;verschieben&lt;/span&gt; oder &lt;span style=&quot; font-weight:600;&quot;&gt;löschen&lt;/span&gt; und deren Zentralitätsstufe sowie Titel in den &lt;span style=&quot; font-weight:600;&quot;&gt;Eigenschaften &lt;/span&gt;anpassen.&lt;/p&gt;&lt;p&gt;Sobald Sie damit fertig sind, gehen Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -610,7 +610,7 @@
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
-           <string>Wählen Sie ein Tool für die Bearbeitung aus.</string>
+           <string>Wählen Sie ein Tool für die Bearbeitung aus:</string>
           </property>
          </widget>
         </item>
@@ -648,7 +648,7 @@
           <item>
            <widget class="QPushButton" name="centerEditGeometryButton">
             <property name="text">
-             <string>↔️ Geometrie</string>
+             <string>↔️ Verschieben</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -741,6 +741,9 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Projekt speichern</string>
+            </property>
             <property name="statusTip">
              <string>Projekt speichern</string>
             </property>
@@ -751,9 +754,6 @@
              <string>Projekt speichern</string>
             </property>
             <property name="accessibleDescription">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="toolTip">
              <string>Projekt speichern</string>
             </property>
             <property name="text">
@@ -892,6 +892,9 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Projekt speichern</string>
+            </property>
             <property name="statusTip">
              <string>Projekt speichern</string>
             </property>
@@ -902,9 +905,6 @@
              <string>Projekt speichern</string>
             </property>
             <property name="accessibleDescription">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="toolTip">
              <string>Projekt speichern</string>
             </property>
             <property name="text">
@@ -948,7 +948,7 @@
         <item>
          <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Netzumlegung&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Basierend auf dem Luftliniennetz wird nun eine Umlegung auf ein bestehendes Verkehrsnetz vorgenommen.&lt;/p&gt;&lt;p&gt;Dafür muss ein digitales Verkehrsnetz für die ausgewählte Region geladen werden.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Netzumlegung&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Basierend auf dem Luftliniennetz wird nun eine Umlegung auf ein vorhandenes Routennetz vorgenommen.&lt;/p&gt;&lt;p&gt;Dafür muss ein digitales Verkehrsnetz für die ausgewählte Region mit den folgenden Eigenschaften geladen werden:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;vollständige Abdeckung des Luftliniennetzes&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Routenfähigkeit ohne topologische Inseln&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:5px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Koordinatenreferenzsystem in EPSG 25832&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -1047,9 +1047,15 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
-              <widget class="QLabel" name="label_3">
+              <widget class="QLabel" name="reprojectCenterDistanceLabel">
                <property name="text">
-                <string>Maximale Zentrenverknüpfungsdistanz</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale &lt;a href=&quot;info&quot;&gt;Zentrenverknüpfungsdistanz&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::TextBrowserInteraction</set>
                </property>
               </widget>
              </item>
@@ -1199,6 +1205,9 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Projekt speichern</string>
+            </property>
             <property name="statusTip">
              <string>Projekt speichern</string>
             </property>
@@ -1209,9 +1218,6 @@
              <string>Projekt speichern</string>
             </property>
             <property name="accessibleDescription">
-             <string>Projekt speichern</string>
-            </property>
-            <property name="toolTip">
              <string>Projekt speichern</string>
             </property>
             <property name="text">
@@ -1255,7 +1261,7 @@
         <item>
          <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Netzumlegung anhand der Nachfrage&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Basierend auf dem Luftliniennetz und Nachfragedaten wird nun eine Umlegung auf ein bestehendes Verkehrsnetz vorgenommen.&lt;/p&gt;&lt;p&gt;Dafür muss ein digitales Verkehrsnetz für die ausgewählte Region geladen werden, welches auch über Nachfragedaten verfügt. Hierfür bieten sich die Verkehrsmengen aus der STADTRADELN-Kampagne an.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Netzumlegung anhand der Nachfrage&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Basierend auf dem Luftliniennetz und Nachfragedaten wird nun eine Umlegung auf ein bestehendes Verkehrsnetz vorgenommen.&lt;/p&gt;&lt;p&gt;Dafür muss ein digitales Verkehrsnetz für die ausgewählte Region geladen werden, in welchem Nachfragedaten hinterlegt sind. Hierfür bieten sich die Verkehrsmengen aus der STADTRADELN-Kampagne an.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -1351,9 +1357,15 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_223">
              <item>
-              <widget class="QLabel" name="label_113">
+              <widget class="QLabel" name="reprojectDemandCenterDistanceLabel">
                <property name="text">
-                <string>Maximale Zentrenverknüpfungsdistanz</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale &lt;a href=&quot;info&quot;&gt;Zentrenverknüpfungsdistanz&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::TextBrowserInteraction</set>
                </property>
               </widget>
              </item>

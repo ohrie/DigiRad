@@ -149,7 +149,7 @@ class LevelOfCentrality(Enum):
         elif self == LevelOfCentrality.IV:
             return ConnectivityFunction.VFS_4
         elif self == LevelOfCentrality.Singular:
-            return ConnectivityFunction.VFS_2
+            return ConnectivityFunction.VFS_3
         elif self == LevelOfCentrality.Surounding:
             return ConnectivityFunction.VFS_3
 

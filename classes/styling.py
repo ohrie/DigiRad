@@ -4,13 +4,13 @@ from .network import LevelOfCentrality, ConnectivityFunction
 
 class Colors:
     # Red
-    II = QColor(215,25,28, 255)
+    II = QColor(215, 25, 28, 255)
     # Orange
-    III = QColor(253,174,97, 255)
+    III = QColor(253, 163, 78, 255)
     # Darker Blue
-    IV = QColor(18,110,176, 255)
+    IV = QColor(14, 84, 134, 255)
     # Pale Yellow
-    Extra = QColor(255,255,191, 255)
+    Extra = QColor(255, 255, 191, 255)
     # Darker Orange
     Surounding = QColor(244,109,67, 255)
     Default = QColor("gray")
@@ -64,12 +64,12 @@ class Style:
     @staticmethod
     def getSizeForCF(cf: ConnectivityFunction):
         if cf == ConnectivityFunction.VFS_2:
-            return 0.8
+            return 0.9
         elif cf == ConnectivityFunction.VFS_3:
-            return 0.6
+            return 0.7
         elif cf == ConnectivityFunction.VFS_4:
-            return 0.4
+            return 0.6
         elif cf == ConnectivityFunction.VFS_5:
-            return 0.4
+            return 0.5
         else:
-            return 0.4
+            return 0.5

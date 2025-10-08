@@ -152,6 +152,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectGenerateButton.clicked.connect(self.onReprojectGenerateButton)
         self.reprojectCancelGenerateButton.clicked.connect(self.onReprojectCancelGenerateButton)
         self.reprojectDetourToleranceCheckbox.clicked.connect(self.onReprojectDetourToleranceCheckbox)
+        self.reprojectCenterDistanceLabel.linkActivated.connect(self.onReprojectDemandCenterDistanceLabel)
 
         # Reproject demand page
         self.reprojectDemandRestartButton.clicked.connect(self.onRestartButton)
@@ -161,6 +162,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectDemandCancelGenerateButton.clicked.connect(self.onReprojectDemandCancelGenerateButton)
         self.reprojectDemandSelectLayer.layerChanged.connect(self.onReprojectDemandSelectLayerChanged)
         self.reprojectDemandDetourToleranceCheckbox.clicked.connect(self.onReprojectDemandDetourToleranceCheckbox)
+        self.reprojectDemandCenterDistanceLabel.linkActivated.connect(self.onReprojectDemandCenterDistanceLabel)
     
     def setupMapView(self):
         # Setup map canvas
@@ -353,7 +355,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     def onLocationCreateProject(self):
         if self.layerManager.processingConfig.arsCode and self.layerManager.processingConfig.arsCode.code.isZ2():
-            QtHelper.showInformationBox(self, "Oberzentrum/Landkreis ausgewählt", "Die Nutzung des Plugins ist für Mittel- und Grundzentren optimiert. Ggf. treten bei der Nutzung von Oberzentren bzw. Landkreisen unerwartete Ergebnisse auf.")
+            QtHelper.showInformationBox(self, "Oberzentrum/Landkreis ausgewählt", "Die Nutzung des Plugins ist für Mittel- und Grundzentren optimiert. Bei der Anwendung auf Pberzentren oder Landkreise können unter Umständen weniger präzise Ergebnisse auftreten.")
         
         lineEditText = self.locationProjectNameEdit.text().strip()
         if lineEditText:
@@ -733,4 +735,5 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def onReprojectDemandDetourToleranceCheckbox(self):
         self.reprojectDemandDetourToleranceSpinbox.setEnabled(self.reprojectDemandDetourToleranceCheckbox.isChecked())
     
-    
+    def onReprojectDemandCenterDistanceLabel(self):
+        QtHelper.showInformationBox(self, "Zentrenverknüpfungsdistanz", "Maximal valide Distanz zwischen einem Zentrenpunkt und einer Netzkante.")
