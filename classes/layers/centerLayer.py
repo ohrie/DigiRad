@@ -31,6 +31,7 @@ from qgis.core import (
     QgsFeature,
     QgsGeometry,
     QgsPoint,
+    QgsPointXY,
     QgsRectangle,
     QgsSymbol,
     QgsWkbTypes,
@@ -104,7 +105,7 @@ class CenterLayer(DigiRadLayer):
         for centerFeat in suroundingFeats:
             feat = QgsFeature()
             feat.setAttributes([maxFeatId, "", centerFeat.loc.asStrShort(), centerFeat.name])
-            feat.setGeometry(QgsGeometry.fromPoint(centerFeat.geom))
+            feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(centerFeat.geom.x(), centerFeat.geom.y())))
             feats.append(feat)
             maxFeatId += 1
 

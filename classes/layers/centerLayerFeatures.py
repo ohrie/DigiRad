@@ -62,6 +62,11 @@ class CenterLayerFeature:
             geom = feat.geometry()
             if not geom:
                 continue
+            if geom.isMultipart():
+                if not geom.convertToSingleType():
+                    QgsMessageLog.logMessage("Unable to convert to single")
+                    continue
+            
             geom = geom.asPoint()
             geom = QgsPoint(geom.x(), geom.y())
             features[loc].append(CenterLayerFeature(feat.id(), name, loc, geom))
