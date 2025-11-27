@@ -992,9 +992,15 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_11">
              <item>
-              <widget class="QLabel" name="label_6">
+              <widget class="QLabel" name="reprojectDetourToleranceLabel">
                <property name="text">
-                <string>Umwegetoleranz</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Umwegetoleranz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::TextBrowserInteraction</set>
                </property>
               </widget>
              </item>
@@ -1049,7 +1055,7 @@
              <item>
               <widget class="QLabel" name="reprojectCenterDistanceLabel">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale &lt;a href=&quot;info&quot;&gt;Zentrenverknüpfungsdistanz&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale Zentrenverknüpfungsdistanz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="textFormat">
                 <enum>Qt::RichText</enum>
@@ -1305,9 +1311,15 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_14">
              <item>
-              <widget class="QLabel" name="label_8">
+              <widget class="QLabel" name="reprojectDemandDetourToleranceLabel">
                <property name="text">
-                <string>Umwegetoleranz</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Umwegetoleranz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+               <property name="textInteractionFlags">
+                <set>Qt::TextBrowserInteraction</set>
                </property>
               </widget>
              </item>
@@ -1359,7 +1371,7 @@
              <item>
               <widget class="QLabel" name="reprojectDemandCenterDistanceLabel">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale &lt;a href=&quot;info&quot;&gt;Zentrenverknüpfungsdistanz&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale Zentrenverknüpfungsdistanz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="textFormat">
                 <enum>Qt::RichText</enum>

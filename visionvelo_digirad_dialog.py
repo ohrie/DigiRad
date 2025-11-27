@@ -152,6 +152,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectGenerateButton.clicked.connect(self.onReprojectGenerateButton)
         self.reprojectCancelGenerateButton.clicked.connect(self.onReprojectCancelGenerateButton)
         self.reprojectDetourToleranceCheckbox.clicked.connect(self.onReprojectDetourToleranceCheckbox)
+        self.reprojectDetourToleranceLabel.linkActivated.connect(self.onReprojectDetourToleranceLabel)
         self.reprojectCenterDistanceLabel.linkActivated.connect(self.onReprojectDemandCenterDistanceLabel)
 
         # Reproject demand page
@@ -162,6 +163,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectDemandCancelGenerateButton.clicked.connect(self.onReprojectDemandCancelGenerateButton)
         self.reprojectDemandSelectLayer.layerChanged.connect(self.onReprojectDemandSelectLayerChanged)
         self.reprojectDemandDetourToleranceCheckbox.clicked.connect(self.onReprojectDemandDetourToleranceCheckbox)
+        self.reprojectDemandDetourToleranceLabel.linkActivated.connect(self.onReprojectDetourToleranceLabel)
         self.reprojectDemandCenterDistanceLabel.linkActivated.connect(self.onReprojectDemandCenterDistanceLabel)
     
     def setupMapView(self):
@@ -339,11 +341,11 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             if success:
                 if msg:
                     msg = f"\nWeitere Informationen: {msg}"
-                QtHelper.showInformationBox(self, "Speichern des Projekt", f"Projekt wurde erfolgreich unter {directory} gespeichert.{msg}")
+                QtHelper.showInformationBox(self, "Projekt speichern", f"Projekt wurde erfolgreich unter {directory} gespeichert.{msg}")
                 if self.stateMachine.currentState == DialogState.REPROJECTDEMAND:
                     self.stateMachine.transitionTo(DialogState.WELCOME)
             else:
-                QtHelper.showInformationBox(self, "Speichern des Projekt", f"Fehler beim Speichern des Projekts unter {directory}:\n{msg}")
+                QtHelper.showInformationBox(self, "Projekt speichern", f"Fehler beim Speichern des Projekts unter {directory}:\n{msg}")
 
     ## WELCOME PAGE
     def onWelcomeNextButton(self):
@@ -735,5 +737,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def onReprojectDemandDetourToleranceCheckbox(self):
         self.reprojectDemandDetourToleranceSpinbox.setEnabled(self.reprojectDemandDetourToleranceCheckbox.isChecked())
     
+    def onReprojectDetourToleranceLabel(self):
+        QtHelper.showInformationBox(self, "Umwegetoleranz", "Die Umwegetoleranz gibt an, bis zu welchem Anteil zum kürzesten Weg zwischen zwei zu verbindenden Punkten eine Verbindung bevorzugt wird.\n\nBeträgt z.B. der kürzeste Weg zwischen zwei Zentrenpunkten 1000 Meter und die Umwegetoleranz 35 %, werden auch Wege in Betracht gezogen, die eine Entfernung bis 1350 Meter aufweisen, sofern andere Routen in der Nähe liegen.\n\nMit diesem Parameter kann also die Netzdichte beeinflusst werden. Je kleiner die Umwegetoleranz, desto mehr parallele Routen werden erstellt.")
+
     def onReprojectDemandCenterDistanceLabel(self):
-        QtHelper.showInformationBox(self, "Zentrenverknüpfungsdistanz", "Maximal valide Distanz zwischen einem Zentrenpunkt und einer Netzkante.")
+        QtHelper.showInformationBox(self, "Maximale Zentrenverknüpfungsdistanz", "Maximal valide Distanz zwischen einem Zentrenpunkt und einer Netzkante.\n\nIst ein Zentrenpunkt weiter als die angegebene Distanz von einer Netzkante entfernt, wird der Zentrenpunkt nicht angebunden und ein entsprechender Warnhinweis erscheint.")

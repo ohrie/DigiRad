@@ -25,6 +25,9 @@ import copy
 from enum import Enum
 from typing import List, Dict
 
+from ..helper import createDoublePointHash
+from qgis.core import QgsSpatialIndex, QgsPointXY
+
 from ..network import LevelOfCentrality
 from ..layers.centerLayer import CenterLayer
 from ..layers.centerLayerFeatures import CenterLayerFeature
@@ -55,7 +58,9 @@ class DirectRouteNetwork:
         mergedRoutes = self._mergeCFRoutes(mergedRoutes, routesII)
         filteredRoutes = self._filterOutSuroundingToSuroundingRoutes(mergedRoutes)
 
-        return filteredRoutes.values()
+        notConnectedSuroundings = self._connectNotConnectedSuroundings(filteredRoutes)
+
+        return list(filteredRoutes.values()) + notConnectedSuroundings
     
     def _getLocBasedFeatures(self, locs: List[LevelOfCentrality]) -> List[CenterLayerFeature]:
         features = []
@@ -87,4 +92,35 @@ class DirectRouteNetwork:
             filtered[id] = route
         
         return filtered
+    
+    def _connectNotConnectedSuroundings(self, routes: Dict[int, DirectRouteEntry]) -> List[DirectRouteEntry]:
+        suroundingFeats = copy.copy(self.centerLayer.locFeatures[LevelOfCentrality.Surounding])
+        
+        # Remove all surounding features from the list which already are connected
+        for route in routes.values():
+            if route.feat1.loc == LevelOfCentrality.Surounding:
+                if route.feat1 in suroundingFeats:
+                    suroundingFeats.remove(route.feat1)
+            if route.feat2.loc == LevelOfCentrality.Surounding:
+                if route.feat2 in suroundingFeats:
+                    suroundingFeats.remove(route.feat2)
+        
+        connectionCandidates = self._getLocBasedFeatures([LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.Singular])
+
+        index = QgsSpatialIndex()
+        for (i, connectionCandiate) in enumerate(connectionCandidates):
+            index.addFeature(i, connectionCandiate.geom.boundingBox())
+        
+        connectedRouteEntries = []
+        for suroundingFeat in suroundingFeats:
+            suroundingPoint = suroundingFeat.geom
+            nearestFeatIds = index.nearestNeighbor(QgsPointXY(suroundingPoint.x(), suroundingPoint.y()), 1)
+            if not nearestFeatIds:
+                continue
+            nearestFeat = connectionCandidates[nearestFeatIds[0]]
+            relationId = createDoublePointHash(suroundingPoint, nearestFeat.geom)
+            connectedRouteEntries.append(DirectRouteEntry(relationId, suroundingFeat, nearestFeat))
+        
+        return connectedRouteEntries
+
         

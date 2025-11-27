@@ -60,18 +60,23 @@ class ARSCodeStr:
                 sub -= i
                 break
         
+        # Pad `sub` to ARS parts (L, K, RB, VG etc.).
+        # E.g. when we have a VG with the value 220 then the end result would remove the
+        # trailing 0
+        if sub == 1:
+            sub = 2
+        elif sub == 4:
+            sub = 5
+        elif sub >= 6 and sub <= 8:
+            sub = 9
+        elif sub == 10 or sub == 11:
+            sub = 12
+
         return self.code[0:sub]
     
     def isWithin(self, other: 'ARSCodeStr') -> bool:
         if self.isEmpty():
             return False
-        
-        sub = 12
-        # Find the right most zero before a non zero
-        for (i, c) in enumerate(reversed(other.code)):
-            if c != "0":
-                sub -= i
-                break
         
         otherSub = other.getRelevantPart()
         
