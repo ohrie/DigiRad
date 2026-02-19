@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>430</width>
-    <height>576</height>
+    <height>625</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -615,9 +615,25 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_9">
-          <item>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Zentrenpunkt zu der Karte hinzufügen</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
            <widget class="QPushButton" name="centerEditAddutton">
+            <property name="maximumSize">
+             <size>
+              <width>120</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Zentrum hinzufügen</string>
+            </property>
             <property name="text">
              <string>➕ Hinzufügen</string>
             </property>
@@ -629,8 +645,11 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="1" column="0">
            <widget class="QPushButton" name="centerEditPropertiesButton">
+            <property name="toolTip">
+             <string>Eigenschaften eines Zentrums ändern</string>
+            </property>
             <property name="text">
              <string>🗓 Eigenschaften</string>
             </property>
@@ -645,8 +664,11 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="2" column="0">
            <widget class="QPushButton" name="centerEditGeometryButton">
+            <property name="toolTip">
+             <string>Punkt verschieben</string>
+            </property>
             <property name="text">
              <string>↔️ Verschieben</string>
             </property>
@@ -655,8 +677,61 @@
             </property>
            </widget>
           </item>
-          <item>
+          <item row="5" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QPushButton" name="centerEditUndo">
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>11</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Änderung rückgängig machen</string>
+              </property>
+              <property name="text">
+               <string>⇦</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="centerEditRedo">
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>11</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Änderung wiederholen</string>
+              </property>
+              <property name="text">
+               <string>⇨</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="3" column="0">
            <widget class="QPushButton" name="centerEditDeleteButton">
+            <property name="toolTip">
+             <string>Punkt löschen</string>
+            </property>
             <property name="text">
              <string>❌ Löschen</string>
             </property>
@@ -665,6 +740,34 @@
             </property>
             <property name="checked">
              <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Eigenschaften eines Punkts ansehen bzw. ändern</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Zentrenpunkt verschieben</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Zentrenpunkt löschen</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Änderung rückgängig machen bzw. wiederholen</string>
             </property>
            </widget>
           </item>
@@ -971,11 +1074,28 @@
         <item>
          <widget class="QGroupBox" name="groupBox_2">
           <property name="title">
-           <string>Verkehrsnetz</string>
+           <string>Netzdaten</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_10">
            <item>
-            <widget class="QgsMapLayerComboBox" name="reprojectSelectLayer"/>
+            <layout class="QGridLayout" name="gridLayout_5">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="maximumSize">
+                <size>
+                 <width>120</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Verkehrsnetz</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QgsMapLayerComboBox" name="reprojectSelectLayer"/>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -989,67 +1109,6 @@
            <property name="sizeConstraint">
             <enum>QLayout::SetDefaultConstraint</enum>
            </property>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_11">
-             <item>
-              <widget class="QLabel" name="reprojectDetourToleranceLabel">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Umwegetoleranz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::RichText</enum>
-               </property>
-               <property name="textInteractionFlags">
-                <set>Qt::TextBrowserInteraction</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="reprojectDetourToleranceCheckbox">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Aktiviert</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="reprojectDetourToleranceSpinbox">
-               <property name="maximumSize">
-                <size>
-                 <width>55</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="suffix">
-                <string>%</string>
-               </property>
-               <property name="minimum">
-                <number>0</number>
-               </property>
-               <property name="maximum">
-                <number>95</number>
-               </property>
-               <property name="singleStep">
-                <number>5</number>
-               </property>
-               <property name="value">
-                <number>35</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
              <item>
@@ -1069,7 +1128,7 @@
               <widget class="QSpinBox" name="reprojectCenterDistanceToleranzSpinbox">
                <property name="maximumSize">
                 <size>
-                 <width>55</width>
+                 <width>80</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -1290,14 +1349,44 @@
         <item>
          <widget class="QGroupBox" name="groupBox">
           <property name="title">
-           <string>Verkehrsnetz mit Nachfragedaten</string>
+           <string>Netzdaten</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="1" column="0">
-            <widget class="QgsFieldComboBox" name="reprojectDemandSelectField"/>
-           </item>
            <item row="0" column="0">
-            <widget class="QgsMapLayerComboBox" name="reprojectDemandSelectLayer"/>
+            <layout class="QGridLayout" name="gridLayout_6">
+             <item row="1" column="1">
+              <widget class="QgsFieldComboBox" name="reprojectDemandSelectField"/>
+             </item>
+             <item row="0" column="1">
+              <widget class="QgsMapLayerComboBox" name="reprojectDemandSelectLayer"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="reprojectDemandSelectVMLabel">
+               <property name="maximumSize">
+                <size>
+                 <width>120</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nachfrageattribut &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="maximumSize">
+                <size>
+                 <width>120</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Verkehrsnetz</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -1308,64 +1397,6 @@
            <string>Optionen</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_14">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_14">
-             <item>
-              <widget class="QLabel" name="reprojectDemandDetourToleranceLabel">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Umwegetoleranz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::RichText</enum>
-               </property>
-               <property name="textInteractionFlags">
-                <set>Qt::TextBrowserInteraction</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="reprojectDemandDetourToleranceCheckbox">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Aktiviert</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="reprojectDemandDetourToleranceSpinbox">
-               <property name="maximumSize">
-                <size>
-                 <width>55</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="suffix">
-                <string>%</string>
-               </property>
-               <property name="maximum">
-                <number>95</number>
-               </property>
-               <property name="singleStep">
-                <number>5</number>
-               </property>
-               <property name="value">
-                <number>35</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_223">
              <item>
@@ -1385,7 +1416,7 @@
               <widget class="QSpinBox" name="reprojectDemandCenterDistanceToleranzSpinbox">
                <property name="maximumSize">
                 <size>
-                 <width>55</width>
+                 <width>80</width>
                  <height>16777215</height>
                 </size>
                </property>

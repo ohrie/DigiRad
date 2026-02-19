@@ -4,7 +4,7 @@ from qgis.core import QgsMessageLog, QgsMapLayer
 from qgis.gui import (
     QgsMapToolIdentifyFeature,
     QgsAttributeDialog,
-    QgsAttributeEditorContext
+    QgsAttributeEditorContext,
 )
 
 class CenterEditFeatureHandler:
@@ -31,7 +31,8 @@ class CenterEditFeatureHandler:
             self.canvas.setMapTool(self.identifyTool)
 
     def restore(self):
-        self.canvas.setMapTool(self.previousTool)
+        if self.previousTool:
+            self.canvas.setMapTool(self.previousTool)
         self.toolType = None
         
     def onFeatureIdentified(self, feature):

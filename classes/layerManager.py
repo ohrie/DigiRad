@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 
-from typing import Type, Optional, Tuple
+from typing import Type, Optional, Tuple, List
 
 import os
 
@@ -192,7 +192,7 @@ class LayerManager:
         layerName = layerName.replace(' ', '_').replace('-', '_')
         return ''.join(c for c in layerName if c.isalnum() or c == '_')
 
-    def update(self):
+    def update(self, layerHideList: List[str] = [], groupHidelist: List[str] = []):
         if not self.contextRef:
             return
         
@@ -210,12 +210,43 @@ class LayerManager:
         
         for layerId in layersToRemove:
             del self.layers[layerId]
-    
+        
+        if self.layers and (layerHideList or groupHidelist):
+            root = QgsProject.instance().layerTreeRoot()
+            group = root.findGroup(self.projectName)
+            for value in self.contextRef.values():
+                if not isinstance(value, DigiRadLayer):
+                    continue
+                if value.groupName:
+                    subgroup = group.findGroup(value.groupName)
+                    if subgroup:
+                        if value.groupName in groupHidelist:
+                            subgroup.setItemVisibilityChecked(False)
+                            subgroup.setExpanded(False)
+                        else:
+                            subgroup.setItemVisibilityChecked(True)
+                            subgroup.setExpanded(True)
+                
+                layerName = value.name()
+                layerNode = group.findLayer(value._qgsLayer)
+                if layerNode:
+                    if layerName in layerHideList:
+                        layerNode.setItemVisibilityCheckedRecursive(False)
+                        layerNode.setExpanded(False)
+                    else:
+                        layerNode.setItemVisibilityCheckedRecursive(value.visible)
+                        layerNode.setExpanded(value.expanded)
+
     def _getGroup(self, layer: Optional[DigiRadLayer] = None):
         root = QgsProject.instance().layerTreeRoot()
         group = root.findGroup(self.projectName)
         if not group:
+            # If the project group is not found, add it and then move it to the top
             group = root.addGroup(self.projectName)
+            clone = group.clone()
+            root.insertChildNode(0, clone)
+            root.removeChildNode(group)
+            group = clone
         
         if layer and layer.groupName:
             subgroup = group.findGroup(layer.groupName)

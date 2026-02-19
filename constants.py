@@ -30,6 +30,8 @@ DAT_PATH = os.path.join(PLUGIN_PATH, "dat")
 
 AUTO_CENTER_POINTS_PATH = os.path.join(DAT_PATH, "DigiRadAutoZentren.gpkg")
 
+REPROJECT_DETOUR_FACTOR = 0.3
+
 EPSG_CODE = "25832"
 CRS_STR = "EPSG:{}".format(EPSG_CODE)
 # Surounding distance in m

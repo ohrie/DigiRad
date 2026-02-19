@@ -26,15 +26,15 @@ from qgis.core import QgsDistanceArea, QgsCoordinateReferenceSystem, QgsCoordina
 from ...constants import CRS_STR
 
 class ValidationEntry:
-    def __init__(self, detourFactor):
-        self.detourFactor = detourFactor
+    def __init__(self, airDistPathRel):
+        self.airDistPathRel = airDistPathRel
     
     @staticmethod
     def empty() -> 'ValidationEntry':
         ValidationEntry(0)
     
     def isEmpty(self) -> bool:
-        return self.detourFactor == 0
+        return self.airDistPathRel == 0
 
 class NetworkvalidatorMeta(type):
     _instances = {}
@@ -60,10 +60,10 @@ class Networkvalidator(metaclass=NetworkvalidatorMeta):
     def validate(self, routeEntry) -> ValidationEntry:
         if routeEntry.notFound():
             return ValidationEntry.empty()
-        detourFactor = self._calculateDetourFactor(routeEntry)
-        return ValidationEntry(detourFactor)
+        airDistPathRel = self._calculateAirDistPathRel(routeEntry)
+        return ValidationEntry(airDistPathRel)
     
-    def _calculateDetourFactor(self, routeEntry) -> float:
+    def _calculateAirDistPathRel(self, routeEntry) -> float:
         airDistance = self.distCalc.measureLength(routeEntry.directRouteEntry.geometry())
         pathDistance = self.distCalc.measureLength(routeEntry.geometry())
 

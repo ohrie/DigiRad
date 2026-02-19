@@ -41,8 +41,8 @@ from ..network import ConnectivityFunction
 from ..processing.routeNetworkAnalyser import NetworkElement, AggregatedNetworkElement, BreakingElement
 from ..styling import Style
 
-class SupplyNetworkElemenFeatureConfig:
-    def __init__(self, edgeIdName: str = "KantenId", cfName: str = "Verbindungsfunktionsstufe", occupancyName: str = "Belegung") -> 'SupplyNetworkElemenFeatureConfig':
+class SupplyNetworkElementFeatureConfig:
+    def __init__(self, edgeIdName: str = "KantenId", cfName: str = "Verbindungsfunktionsstufe", occupancyName: str = "Belegung") -> 'SupplyNetworkElementFeatureConfig':
         self.edgeIdName = edgeIdName
         self.cfName = cfName
         self.occupancyName = occupancyName
@@ -51,7 +51,7 @@ class SupplyNetworkElemenFeatureConfig:
         self.occupancyNameCF4 = "{} {}".format(occupancyName, ConnectivityFunction.VFS_4.asStrShort())
 
 class SupplyNetworkElementLayer(DigiRadLayer):
-    def __init__(self, networkElements: List[NetworkElement], layerName: str = "Angebotsnetz", groupName: str = "Umlegung", config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyNetworkElementLayer':
+    def __init__(self, networkElements: List[NetworkElement], layerName: str = "Angebotsnetz", groupName: str = "Umlegung", config: SupplyNetworkElementFeatureConfig = SupplyNetworkElementFeatureConfig()) -> 'SupplyNetworkElementLayer':
         super().__init__(
             SupplyNetworkElementLayer._createLayerFromNetworkElements(networkElements, layerName, config),
             groupName,
@@ -67,7 +67,7 @@ class SupplyNetworkElementLayer(DigiRadLayer):
         self._qgsLayer.triggerRepaint()
 
     @staticmethod
-    def _createLayerFromNetworkElements(networkElements: List[NetworkElement], layerName: str, config: SupplyNetworkElemenFeatureConfig) -> QgsVectorLayer:
+    def _createLayerFromNetworkElements(networkElements: List[NetworkElement], layerName: str, config: SupplyNetworkElementFeatureConfig) -> QgsVectorLayer:
         routeLayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), 
                              layerName, "memory")
         pr = routeLayer.dataProvider()
@@ -109,7 +109,7 @@ class SupplyNetworkElementLayer(DigiRadLayer):
 class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
     LayerName = "Angebotsnetz (aggregiert)"
 
-    def __init__(self, networkElements: List[AggregatedNetworkElement], layerName: str = "Angebotsnetz (aggregiert)", groupName: str = "Umlegung", config: SupplyNetworkElemenFeatureConfig = SupplyNetworkElemenFeatureConfig()) -> 'SupplyAggregatedNetworkElementLayer':
+    def __init__(self, networkElements: List[AggregatedNetworkElement], layerName: str = "Angebotsnetz (aggregiert)", groupName: str = "Umlegung", config: SupplyNetworkElementFeatureConfig = SupplyNetworkElementFeatureConfig()) -> 'SupplyAggregatedNetworkElementLayer':
         super().__init__(SupplyAggregatedNetworkElementLayer._createLayerFromNetworkElements(networkElements, layerName, config), groupName)
 
         self.networkElements = networkElements
@@ -120,7 +120,7 @@ class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
         self._qgsLayer.triggerRepaint()
 
     @staticmethod
-    def _createLayerFromNetworkElements(networkElements: List[AggregatedNetworkElement], layerName: str, config: SupplyNetworkElemenFeatureConfig) -> QgsVectorLayer:
+    def _createLayerFromNetworkElements(networkElements: List[AggregatedNetworkElement], layerName: str, config: SupplyNetworkElementFeatureConfig) -> QgsVectorLayer:
         routeLayer = QgsVectorLayer("LineString?crs={}".format(CRS_STR), 
                              layerName, "memory")
         pr = routeLayer.dataProvider()

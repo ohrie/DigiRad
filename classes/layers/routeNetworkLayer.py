@@ -42,13 +42,15 @@ from ..processing.routeNetwork import RouteEntry
 from ..styling import Style
 
 class RouteNetworkFeatureConfig:
-    def __init__(self, cfName: str = "Verbindungsfunktionsstufe", relationName: str = "relation", detourName: str = "Umwegefaktor"):
+    def __init__(self, cfName: str = "Verbindungsfunktionsstufe", relationName: str = "relation", airDistPathRel: str = "LuftlinienWegRelation"):
         self.cfName = cfName
         self.relationName = relationName
-        self.detourName = detourName
+        self.airDistPathRel = airDistPathRel
 
 class RouteNetworklayer(DigiRadLayer):
     LayerName = "Umgelegte Relationen"
+    GroupName = "Umlegung"
+    DemandGroupname = "Nachfrageumlegung"
 
     def __init__(self, routeEntries: List[RouteEntry], layerName: str = "Umgelegte Relationen", groupName: str = "Umlegung", config: RouteNetworkFeatureConfig = RouteNetworkFeatureConfig()) -> 'RouteNetworklayer':
         super().__init__(
@@ -71,7 +73,7 @@ class RouteNetworklayer(DigiRadLayer):
         pr.addAttributes([
             QgsField(config.relationName, QVariant.LongLong),
             QgsField(config.cfName, QVariant.String),
-            QgsField(config.detourName, QVariant.Double),
+            QgsField(config.airDistPathRel, QVariant.Double),
         ])
         routeLayer.updateFields()
 
@@ -81,7 +83,7 @@ class RouteNetworklayer(DigiRadLayer):
                 QgsMessageLog.logMessage(f"Route not found {route.directRouteEntry.relationId}")
                 continue
             feat = QgsFeature()
-            feat.setAttributes([route.directRouteEntry.relationId, route.directRouteEntry.cf.asStr(), route.validation.detourFactor])
+            feat.setAttributes([route.directRouteEntry.relationId, route.directRouteEntry.cf.asStr(), route.validation.airDistPathRel])
             feat.setGeometry(route.geometry())
             feats.append(feat)
 

@@ -71,7 +71,6 @@ class RouteGenerationOptions:
     def isDetourActive(self) -> bool:
         return self.detourTolerance != 0.0
     
-
 class RouteEntry:
     def __init__(self, directRouteEntry: DirectRouteEntry, routeResult: 'RouteResult') -> 'RouteEntry':
         self.directRouteEntry = directRouteEntry
@@ -102,11 +101,12 @@ class RouteNetwork:
         resultEntries = []
         QgsMessageLog.logMessage("Finding paths..")
         for routeEntry in entries:
-            (pathPoints, cost) = pathFinder.findPathOfRelation(routeEntry.relationId)
+            pathPoints = pathFinder.findPathOfRelation(routeEntry.relationId)
             if not pathPoints:
                 QgsMessageLog.logMessage(f"No path found for relation {routeEntry.relationId}")
             
-            resultEntries.append(RouteEntry(routeEntry, pathPoints, cost))
+            # Still append the result to resultEntries if pathPoints is empty to indicate which routeEntry was not found
+            resultEntries.append(RouteEntry(routeEntry, pathPoints))
         
         QgsMessageLog.logMessage("Done.")
         
@@ -212,7 +212,8 @@ class NetworkPathFinder:
         # Iterate the graph
         while fromVertex != toVertex:
             edgeId = tree[toVertex]
-            toVertex = self.graph.edge(edgeId).fromVertex()
+            edge = self.graph.edge(edgeId)
+            toVertex = edge.fromVertex()
             points.append(self.graph.vertex(toVertex).point())
             edgeIds.append(edgeId)
         

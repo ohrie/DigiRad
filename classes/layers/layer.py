@@ -22,7 +22,7 @@
 """
 
 from abc import ABC
-from typing import Optional
+from typing import Optional, List
 from qgis.core import QgsVectorLayer, QgsMessageLog
 
 class DigiRadLayer(ABC):

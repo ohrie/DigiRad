@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from qgis.core import QgsVectorLayer, QgsMessageLog
 
+from .constants import REPROJECT_DETOUR_FACTOR
 from .classes.network import LevelOfCentrality
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
@@ -224,8 +225,11 @@ class ReprojectHandler(StateHandler):
 
     def __init__(self):
         super().__init__("Reproject")
-    
+        
     def onEnter(self, previousState: Optional['DialogState'] = None):
+        # Hard code detour (Umwegtoleranz) to 30% as it is not setable in the ui anymore
+        # (Moved from user definable to an implementation detail)
+        self.context.updateValue(ReprojectHandler.KDetourTolerance, REPROJECT_DETOUR_FACTOR)
         self.handleUi()
     
     def onExit(self, nextState: Optional['DialogState'] = None):
@@ -322,8 +326,8 @@ class ReprojectDemandHandler(StateHandler):
     KSupplyNetworkLayer = "reprojectDemand.SupplyNetworkLayer"
     KAggregatedSupplyNetworkLayer = "reprojectDemand.KAggregatedSupplyNetworkLayer"
     KBreakingPointsNetworkLayer = "reprojectDemand.KBreakingPointsNetworkLayer"
-    KMissingRoutesLayer = "reproject.KMissingRoutesLayer"
-    KCenterDistanceTolerance = "reproject.KCenterDistanceTolerance"
+    KMissingRoutesLayer = "reprojectDemand.KMissingRoutesLayer"
+    KCenterDistanceTolerance = "reprojectDemand.KCenterDistanceTolerance"
 
     LayerKeys = [
         KNetworkLayer,
@@ -338,6 +342,9 @@ class ReprojectDemandHandler(StateHandler):
         super().__init__("ReprojectDemand")
     
     def onEnter(self, previousState: Optional['DialogState'] = None):
+        # Hard code detour (Umwegtoleranz) to 30% as it is not setable in the ui anymore
+        # (Moved from user definable to an implementation detail)
+        self.context.updateValue(ReprojectDemandHandler.KDetourTolerance, REPROJECT_DETOUR_FACTOR)
         self.handleUi()
     
     def onExit(self, nextState: Optional['DialogState'] = None):
@@ -369,7 +376,7 @@ class ReprojectDemandHandler(StateHandler):
         return self.context.updateValue(ReprojectDemandHandler.KProgress, value, default=RouteNetworkTaskProgress(0))
     
     def getDetourTolerance(self) -> float:
-        return self.context.get(ReprojectDemandHandler.KDetourTolerance, 1)
+        return self.context.get(ReprojectDemandHandler.KDetourTolerance, 0)
     
     def setDetourTolerance(self, value: float) -> float:
         return self.context.updateValue(ReprojectDemandHandler.KDetourTolerance, value)
@@ -628,11 +635,4 @@ class DialogStateMachine:
         """Get current context"""
         return self.context.copy()
     
-    def updateContext(self, **kwargs):
-        """Update context variables"""
-        self.context.update(kwargs)
     
-    def showCurrentUi(self):
-        """Show UI for current state"""
-        print(f"\n=== Current State: {self.currentState.name} ===")
-        self.currentState.handleUi()
