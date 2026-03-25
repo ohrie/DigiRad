@@ -34,6 +34,7 @@ from qgis.core import (
     QgsPointXY,
     QgsRectangle,
     QgsSymbol,
+    QgsMarkerSymbol,
     QgsWkbTypes,
     QgsEditFormConfig,
     QgsAttributeEditorField,
@@ -104,7 +105,7 @@ class CenterLayer(DigiRadLayer):
         feats = []
         for centerFeat in suroundingFeats:
             feat = QgsFeature()
-            feat.setAttributes([maxFeatId, "", centerFeat.loc.asStrShort(), centerFeat.name])
+            feat.setAttributes([maxFeatId, "", centerFeat.name, centerFeat.loc.asStrShort()])
             feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(centerFeat.geom.x(), centerFeat.geom.y())))
             feats.append(feat)
             maxFeatId += 1
@@ -121,7 +122,11 @@ class CenterLayer(DigiRadLayer):
         renderer = QgsCategorizedSymbolRenderer(self.config.locName)
         
         for loc in LevelOfCentrality:
-            symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+            if loc == LevelOfCentrality.Surounding:
+                symbol = QgsMarkerSymbol.createSimple({'name': 'diamond'})
+            else:
+                symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
+
             symbol.setColor(Style.getColorForLOC(loc))
             symbol.setSize(Style.getSizeForLOC(loc))
             cat = QgsRendererCategory(loc.asStrShort(), symbol, loc.asStr())
@@ -172,6 +177,7 @@ class CenterLayer(DigiRadLayer):
         relevantCodePart = arsCodeStr.getRelevantPart()
         arsFilter = "substr(\"{}\", 1, {}) = '{}'".format(config.arsName, len(relevantCodePart), relevantCodePart)
 
+        QgsMessageLog.logMessage(f"{arsFilter} AND {locFilter}")
         return f"{arsFilter} AND {locFilter}"
 
 class SuroundingHelper:

@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import sys
 import os.path
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
@@ -27,11 +28,13 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
-from .resources import *
+from . import resources_rc
+sys.modules['resources_rc'] = resources_rc
 # Import the code for the dialog
 from .visionvelo_digirad_dialog import DigiRadDialog
 from .classes.layerManager import LayerManager
 from .classes.processingConfig import ProcessingConfig
+
 
 class DigiRad:
     """QGIS Plugin Implementation."""

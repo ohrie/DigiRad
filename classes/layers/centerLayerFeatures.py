@@ -31,7 +31,7 @@ from qgis.core import (
 from ..network import LevelOfCentrality
 
 class CenterLayerFeatureConfig:
-    def __init__(self, locName: str = "Zentralität", nameName: str = "Bemerkung", arsName: str = "ARS"):
+    def __init__(self, locName: str = "Zentralitaet", nameName: str = "Bemerkung", arsName: str = "ARS"):
         self.locName = locName
         self.nameName = nameName
         self.arsName = arsName
@@ -51,9 +51,11 @@ class CenterLayerFeature:
         
         nameIdx = qgsLayer.fields().indexFromName(config.nameName)
         locIdx = qgsLayer.fields().indexFromName(config.locName)
+        QgsMessageLog.logMessage(f"name idx: {nameIdx}, loc idx: {locIdx}")
         for feat in qgsLayer.getFeatures():
             name = feat.attributes()[nameIdx]
             loc = feat.attributes()[locIdx]
+            QgsMessageLog.logMessage(f"LOC: {loc}, NAME: {name}")
             try:
                 loc = LevelOfCentrality.fromStr(loc)
             except Exception as e:

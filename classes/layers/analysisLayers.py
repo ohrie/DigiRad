@@ -22,24 +22,26 @@
 """
 from typing import List
 
-from PyQt5.QtCore import QVariant
+from PyQt5.QtCore import QVariant, Qt
 from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
     QgsCategorizedSymbolRenderer,
+    QgsSimpleLineSymbolLayer,
     QgsRendererCategory,
     QgsField,
     QgsSymbol,
     QgsMarkerSymbol,
     QgsWkbTypes,
     QgsFeatureRequest,
+    Qgis
     )
 
 from ...constants import CRS_STR
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
 from ..processing.routeNetworkAnalyser import NetworkElement, AggregatedNetworkElement, BreakingElement
-from ..styling import Style
+from ..styling import Style, Colors
 
 class SupplyNetworkElementFeatureConfig:
     def __init__(self, edgeIdName: str = "KantenId", cfName: str = "Verbindungsfunktionsstufe", occupancyName: str = "Belegung") -> 'SupplyNetworkElementFeatureConfig':
@@ -115,7 +117,7 @@ class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
         self.networkElements = networkElements
         self.config = config
 
-        renderer = self._createRenderer()
+        renderer = self._createRenderer(groupName != "Umlegung")
         self._qgsLayer.setRenderer(renderer)
         self._qgsLayer.triggerRepaint()
 
@@ -141,15 +143,12 @@ class SupplyAggregatedNetworkElementLayer(DigiRadLayer):
 
         return routeLayer
     
-    def _createRenderer(self) -> QgsCategorizedSymbolRenderer:
+    def _createRenderer(self, isDemand: bool = False) -> QgsCategorizedSymbolRenderer:
         renderer = QgsCategorizedSymbolRenderer(self.config.cfName)
 
         for cf in [ConnectivityFunction.VFS_2, ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]:
-            symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.LineGeometry)
-            symbol.setColor(Style.getColorForCF(cf))
-            symbol.setWidth(Style.getSizeForCF(cf))
+            symbol = Style.getStyleForRouteLine(cf, isDemand)
             cat = QgsRendererCategory(cf.asStrShort(), symbol, cf.asStr())
-
             renderer.addCategory(cat)
         
         orderBy = QgsFeatureRequest.OrderBy([QgsFeatureRequest.OrderByClause(self.config.cfName, False)])
