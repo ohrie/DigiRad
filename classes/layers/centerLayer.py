@@ -85,6 +85,7 @@ class CenterLayer(DigiRadLayer):
         # If there is no ARSCodeStr, we cannot get plausible suroundings 
         if not arsCodeStr.isEmpty():
             layer = CenterLayer._mergeWithSuroundings(arsCodeStr, layer, config)
+        
         return CenterLayer(layer, arsCodeStr, config)
     
     @staticmethod

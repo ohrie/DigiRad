@@ -51,11 +51,9 @@ class CenterLayerFeature:
         
         nameIdx = qgsLayer.fields().indexFromName(config.nameName)
         locIdx = qgsLayer.fields().indexFromName(config.locName)
-        QgsMessageLog.logMessage(f"name idx: {nameIdx}, loc idx: {locIdx}")
         for feat in qgsLayer.getFeatures():
             name = feat.attributes()[nameIdx]
             loc = feat.attributes()[locIdx]
-            QgsMessageLog.logMessage(f"LOC: {loc}, NAME: {name}")
             try:
                 loc = LevelOfCentrality.fromStr(loc)
             except Exception as e:
