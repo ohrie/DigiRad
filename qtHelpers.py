@@ -81,6 +81,21 @@ class QtHelper:
         )
     
     @staticmethod
+    def showAskBox(parent = None, title: str = "", message: str = "") -> int:
+        msgBox = QMessageBox(parent=parent, icon=QMessageBox.Question)
+        msgBox.setWindowTitle(title)
+        msgBox.setText(message)
+        msgBox.setIcon
+        yesButton = msgBox.addButton("Ja", QMessageBox.YesRole)
+        noButton = msgBox.addButton("Nein", QMessageBox.NoRole)
+
+        msgBox.exec()
+        if msgBox.clickedButton() == yesButton:
+            return QtHelper.Yes
+        if msgBox.clickedButton() == noButton:
+            return QtHelper.No
+    
+    @staticmethod
     def askForProjectToSaveDirectory(parent = None) -> Optional[str]:
         """Open folder dialog and get selected folder"""
         directoryPath = QFileDialog.getExistingDirectory(

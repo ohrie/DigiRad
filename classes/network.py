@@ -154,3 +154,31 @@ class LevelOfCentrality(Enum):
             return ConnectivityFunction.VFS_3
 
 
+class NetworkSource(Enum):
+    UNKNOWN = 0
+    ATKIS = 1
+    OSM = 2
+
+    def fromAttributeList(attributes: List[str]) -> 'NetworkSource':
+        if "objektart" in attributes and "klasse" in attributes and "kennung" in attributes:
+            return NetworkSource.ATKIS
+        if "osm_id" in attributes and "highway" in attributes:
+            return NetworkSource.OSM
+        else:
+            return NetworkSource.UNKNOWN
+    
+    def getFilterStr(self) -> str:
+        if self == NetworkSource.ATKIS:
+            return "objektart in ('Fahrbahnachse', 'Fahrwegachse', 'Strassenachse', 'Strassenverkehrsanlage', 'WegPfadSteig') AND klasse not in ('Bundesautobahn', '(Kletter-)Steig im Gebirge')"
+        elif self == NetworkSource.OSM:
+            return "highway not in ('trunk_link ', 'trunk', 'motorway_link', 'motorway', 'raceway', 'via_ferrata', 'proposed', 'construction')  AND psv IS NULL"
+        else:
+            return ""
+
+    def asStr(self) -> str:
+        if self == NetworkSource.ATKIS:
+            return "ATKIS"
+        elif self == NetworkSource.OSM:
+            return "Openstreetmap"
+        else:
+            return "UNKNOWN"

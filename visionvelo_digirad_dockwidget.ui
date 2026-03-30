@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>430</width>
-    <height>625</height>
+    <height>636</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
        <bool>true</bool>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="welcomeTab">
        <property name="enabled">
@@ -40,7 +40,7 @@
         <item>
          <widget class="QLabel" name="welcomeInfoLabel">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Willkommen zum Radverkehrsnetz-Generator&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Dieses Tool hilft Ihnen bei der Erstellung eines &lt;span style=&quot; font-weight:600;&quot;&gt;RIN-konformen Radverkehrsnetzes&lt;/span&gt; in mehreren Schritten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Mit diesem Assistenten können Sie ein Verkehrsnetz erstellen und bearbeiten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Der Prozess umfasst folgende Schritte:&lt;/p&gt;&lt;ol style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Auswahl Gemeinde oder Kreis&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Festlegung zentraler Orte&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Erstellung eines Luftliniennetzes&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Umlegung auf ein bestehendes Verkehrsnetz&lt;/li&gt;&lt;/ol&gt;&lt;p align=&quot;justify&quot;&gt;Klicken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;, um zu beginnen.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Bitte beachten Sie&lt;/span&gt;: Die Ergebnisse dieses Tools sind als Entwurf zu verstehen und ersetzen keine fachliche Prüfung.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Willkommen zum Radverkehrsnetz-Generator&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Dieses Tool hilft Ihnen bei der Erstellung eines &lt;span style=&quot; font-weight:600;&quot;&gt;RIN-konformen Radverkehrsnetzes&lt;/span&gt; in mehreren Schritten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Mit diesem Assistenten können Sie ein Verkehrsnetz erstellen und bearbeiten.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Der Prozess umfasst folgende Schritte:&lt;/p&gt;&lt;ol style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Auswahl Gemeinde oder Kreis&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Festlegung zentraler Orte&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Erstellung eines Luftliniennetzes&lt;/li&gt;&lt;li align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Umlegung auf ein bestehendes Verkehrsnetz&lt;/li&gt;&lt;/ol&gt;&lt;p align=&quot;justify&quot;&gt;Neben kurzen Informationstexten zu jedem Schritt (Klick auf das ❓-Symbol) wird die Lektüre des projektbegleitenden Leitfadens empfohlen.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Bitte beachten Sie&lt;/span&gt;: Die Ergebnisse dieses Tools sind als Entwurf zu verstehen und ersetzen keine fachliche Prüfung.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -127,7 +127,7 @@
           <item>
            <widget class="QPushButton" name="welcomeNextButton">
             <property name="text">
-             <string>Weiter</string>
+             <string>Beginnen</string>
             </property>
            </widget>
           </item>
@@ -318,7 +318,76 @@
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer_3">
+         <widget class="Line" name="line_20">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="locationSelectVerticalLayout">
+          <item>
+           <widget class="QLabel" name="locationSelectExpandInfoLabel">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Weitere Informationen anzeigen</string>
+            </property>
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::RichText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="locationSelectInfoBox">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_2">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>367</width>
+               <height>198</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_119">
+              <item>
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zunächst wählen Sie den Ort, für den das Zielnetz generiert werden soll. Dafür müssen Sie nach dem Untersuchungsraum ohne amtlichen Namenszusatz suchen (z.B. Bonn statt Bundesstadt Bonn; Siegen-Wittgenstein statt Landkreis Siegen-Wittgenstein).&lt;/p&gt;&lt;p&gt;Die Nutzung des Plugins ist für Mittel- und Grundzentren optimiert. Bei der Anwendung auf Oberzen-tren oder Landkreise können unter Umständen weniger präzise Ergebnisse auftreten. &lt;/p&gt;&lt;p&gt;Bei Oberzentren kann es vorkommen, dass mehrere zentrale Stadtbereiche nicht ausreichend als Zentralitätsstufe III identifiziert werden. Darüber hinaus können in Oberzentrum spezielle Einrichtungen angesiedelt sein, die ggf. händisch hinzugefügt werden müssen (Messen, Kongresszentren, tour. Ziele u. ä.).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::RichText</enum>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="locationSelectVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -535,7 +604,69 @@
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer_2">
+         <layout class="QVBoxLayout" name="centerCreateVerticalLayout">
+          <item>
+           <widget class="QLabel" name="centerCreateInfoLabel">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Weitere Informationen anzeigen</string>
+            </property>
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::RichText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="centerCreateInfoBox">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_2">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>-254</y>
+               <width>367</width>
+               <height>350</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_1192">
+              <item>
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DigiRad kann für Ihr Untersuchungsgebiet automatisiert zentrale Orte mit ihren Zentralitätsstufen definieren. Dafür sammelt es alle relevanten verkehrserzeugenden Orte innerhalb Ihres Untersuchungsgebiets aus einem hinterlegten Verzeichnis und hierarchisiert sie entsprechend der Einteilung in der RIN in entsprechende Zentralitätsstufen.&lt;/p&gt;&lt;p&gt;&lt;a name=&quot;_x0000_t75&quot;/&gt;Im Zuge der automatisierten Generierung von zentralen Orten lässt sich festlegen, für welche Zentralitätsstufen Orte generiert werden sollen: &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Hauptzentrum&lt;/span&gt; (Zentralitätsstufe II): Stadtzentrum mit höchster Funktionsdichte (z. B. Verwaltung, überregionaler Einzelhandel, Theater, Hochschulen, Kliniken)&lt;/li&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Innerstädtisches&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Grundzentrum&lt;/span&gt; (Zentralitätsstufe III): Einrichtungen mit regionaler Bedeutung (z. B. Gymnasien, Krankenhäuser, Einkaufsgebiete, Schienenhaltepunkte)&lt;/li&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Orte ohne zentralörtliche Funktion&lt;/span&gt; (Zentralitätsstufe IV): Lokale Versorgungseinrichtungen (z. B. Grundschulen, Ärzte, Apotheken, Supermärkte) &lt;/li&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Sonderbereiche&lt;/span&gt;: Große (sog. singuläre) Verkehrserzeuger wie Universitäten, Flughäfen oder Freizeitparks &lt;/li&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Überörtliche Anbindung&lt;/span&gt;: Zentren benachbarter Gemeinden als Quell- und Zielpunkte &lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::RichText</enum>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="centerCreateVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -807,7 +938,7 @@
          </layout>
         </item>
         <item>
-         <spacer name="verticalSpacer_4">
+         <spacer name="centerEditverticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -930,7 +1061,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Luftliniennetz erstellen&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Auf Grundlage der festgelegten zentralen Orte wird nun ein Luftliniennetz erstellt.&lt;/p&gt;&lt;p&gt;Sobald Sie damit fertig sind, drücken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Luftliniennetz erstellen&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Auf Grundlage der festgelegten zentralen Orte wird nun ein Luftliniennetz erstellt.&lt;/p&gt;&lt;p&gt;DigiRad verbindet dafür alle Punkte mit definierter Zentralität nach dem unten beschriebenen Schema. Das Plugin erstellt dafür den &lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Luftliniennetz&lt;/span&gt;. Dieser enthält für jede Relation die Verbindungen inklusive Zuordnung zu Verbindungsfunktionsstufen, nach denen sich auch die Darstellung der Linien richtet.&lt;/p&gt;&lt;p&gt;Sobald Sie damit fertig sind, drücken Sie auf &lt;span style=&quot; font-weight:600;&quot;&gt;Weiter&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -951,9 +1082,74 @@
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer_5">
+         <layout class="QVBoxLayout" name="verticalLayout_18">
+          <item>
+           <widget class="QLabel" name="airlineExpandInfoLabel">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Weitere Informationen anzeigen</string>
+            </property>
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::RichText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="airlineInfoBox">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_2">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>384</width>
+               <height>199</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_19">
+              <item>
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Für die Bildung von Luftliniennetzen sieht die ursprüngliche RIN-Methodik Dreiecksnetze vor, bei denen Verbindungen über zwischenliegende Zielpunkte geführt werden. Im Gegensatz dazu verzichtet die ERA 202X auf dieses Prinzip und setzt stattdessen auf direkte Verbindungen zwischen Quell- und Zielpunkten, gegebenenfalls mit einer Führung über einen anderen Zielpunkt. Dies führt dazu, dass sich Luftlinien kreuzen, was den tatsächlichen Verkehrsbeziehungen besser entspricht.&lt;/p&gt;&lt;p&gt;In DigiRad wurde dieser methodische Ansatz aufgegriffen und umgesetzt. Alle benachbarten Punkte einer Hierarchieebene (Zentralitätsstufe) werden verbunden. Außerdem werden alle Punkte der nächsthöheren Hierarchieebene angebunden. Überörtliche Zentren werden an den nächstgelegenen Punkt der Zentralitätsstufe III angebunden.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::RichText</enum>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="airlineVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -1084,7 +1280,7 @@
         <item>
          <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Netzumlegung&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Basierend auf dem Luftliniennetz wird nun eine Umlegung auf ein vorhandenes Routennetz vorgenommen.&lt;/p&gt;&lt;p&gt;Dafür muss ein digitales Verkehrsnetz für die ausgewählte Region mit den folgenden Eigenschaften geladen werden:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;vollständige Abdeckung des Luftliniennetzes&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Routenfähigkeit ohne topologische Inseln&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:5px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Koordinatenreferenzsystem in EPSG 25832&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Netzumlegung&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Basierend auf dem Luftliniennetz wird nun eine Umlegung auf ein vorhandenes Routennetz vorgenommen.&lt;/p&gt;&lt;p&gt;Dafür muss ein digitales Verkehrsnetz für die ausgewählte Region mit den folgenden Eigenschaften geladen werden:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;vollständige Abdeckung des Luftliniennetzes&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Routenfähigkeit ohne topologische Inseln&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:5px; margin-left:-10px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Koordinatenreferenzsystem in EPSG 25832&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="textFormat">
            <enum>Qt::RichText</enum>
@@ -1112,6 +1308,9 @@
           <layout class="QVBoxLayout" name="verticalLayout_10">
            <item>
             <layout class="QGridLayout" name="gridLayout_5">
+             <item row="0" column="1">
+              <widget class="QgsMapLayerComboBox" name="reprojectSelectLayer"/>
+             </item>
              <item row="0" column="0">
               <widget class="QLabel" name="label_13">
                <property name="maximumSize">
@@ -1125,8 +1324,34 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
-              <widget class="QgsMapLayerComboBox" name="reprojectSelectLayer"/>
+             <item row="1" column="0">
+              <widget class="QLabel" name="reprojectReduceNetworkBoundsLabel">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ausschnitt begrenzen &lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="reprojectReduceNetworkBoundsCheckbox">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
+               </property>
+               <property name="text">
+                <string>Ja</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -1147,7 +1372,7 @@
              <item>
               <widget class="QLabel" name="reprojectCenterDistanceLabel">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale Zentrenverknüpfungsdistanz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale Zentrenverknüpfungsdistanz &lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="textFormat">
                 <enum>Qt::RichText</enum>
@@ -1191,7 +1416,69 @@
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer_7">
+         <layout class="QVBoxLayout" name="reporjectVerticalLayout">
+          <item>
+           <widget class="QLabel" name="reprojectInfoLabel">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Weitere Informationen anzeigen</string>
+            </property>
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::RichText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="reprojectInfoBox">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_2">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>367</width>
+               <height>263</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_1292">
+              <item>
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Basierend auf dem Luftliniennetz wird nun eine Umlegung auf ein vorhandenes Netz vorgenommen. Sie markiert den letzten Schritt der Netzplanung. Aus Luftlinien werden also konkrete Routen. Voraussetzung dafür ist ein digitales Verkehrsnetz.&lt;/p&gt;&lt;p&gt;Bei der Umlegung bietet DigiRad zwei Routingverfahren: Das kürzeste-Wege-Verfahren, das durch diesen Reiter (&lt;span style=&quot; text-decoration: underline;&quot;&gt;6. Umlegung&lt;/span&gt;) initiiert werden kann, und das nachfragegewichtete Verfahren (&lt;span style=&quot; text-decoration: underline;&quot;&gt;7. Nachfrageumlegung&lt;/span&gt;). &lt;/p&gt;&lt;p&gt;Mit dem kürzeste-Wege-Verfahren werden die Luftlinienverbindungen zwischen Quellen und Zielen auf das Verkehrsnetz übertragen, indem für jede Verbindung der kürzeste Weg berechnet wird. Die Berechnung erfolgt auf Basis der tatsächlichen Streckenlängen. Höhendaten fließen hier nicht mit ein, es wird also nicht berücksichtigt, ob der kürzeste Weg mehr Höhenmeter überwindet als ein anderer. Dieses Verfahren liefert ein direktes, effizientes Zielnetz und macht Lücken oder Umwege im bestehenden Radwegenetz sichtbar. Es eignet sich besonders für die grundlegende Netzplanung und die Identifikation von Infrastrukturdefiziten.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::RichText</enum>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="reprojectVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -1390,9 +1677,6 @@
              <item row="1" column="1">
               <widget class="QgsFieldComboBox" name="reprojectDemandSelectField"/>
              </item>
-             <item row="0" column="1">
-              <widget class="QgsMapLayerComboBox" name="reprojectDemandSelectLayer"/>
-             </item>
              <item row="1" column="0">
               <widget class="QLabel" name="reprojectDemandSelectVMLabel">
                <property name="maximumSize">
@@ -1402,7 +1686,7 @@
                 </size>
                </property>
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nachfrageattribut &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nachfrageattribut &lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
               </widget>
              </item>
@@ -1416,6 +1700,32 @@
                </property>
                <property name="text">
                 <string>Verkehrsnetz</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QgsMapLayerComboBox" name="reprojectDemandSelectLayer"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="reprojectDemandReduceNetworkBoundsLabel">
+               <property name="text">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ausschnitt begrenzen &lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="reprojectDemandReduceNetworkBoundsCheckbox">
+               <property name="layoutDirection">
+                <enum>Qt::RightToLeft</enum>
+               </property>
+               <property name="text">
+                <string>Ja</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -1435,7 +1745,7 @@
              <item>
               <widget class="QLabel" name="reprojectDemandCenterDistanceLabel">
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale Zentrenverknüpfungsdistanz &lt;a href=&quot;info&quot;&gt;[?]&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximale Zentrenverknüpfungsdistanz &lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="textFormat">
                 <enum>Qt::RichText</enum>
@@ -1479,9 +1789,74 @@
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer_6">
+         <layout class="QVBoxLayout" name="reprojectDemandInfoBoxVerticalLayout">
+          <item>
+           <widget class="QLabel" name="reprojectDemandInfoLabel">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Weitere Informationen anzeigen</string>
+            </property>
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;info&quot;&gt;❓&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::RichText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="reprojectDemandInfoBox">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_2">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>-5</y>
+               <width>367</width>
+               <height>302</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_1132">
+              <item>
+               <widget class="QLabel" name="label_18">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Basierend auf dem Luftliniennetz wird nun eine Umlegung auf ein vorhandenes Netz vorgenommen. Sie markiert den letzten Schritt der Netzplanung. Aus Luftlinien werden also konkrete Routen. Voraussetzung dafür ist ein digitales Verkehrsnetz.&lt;/p&gt;&lt;p&gt;Bei der Umlegung bietet DigiRad zwei Routingverfahren: Das kürzeste-Wege-Verfahren, das durch vorherigen Reiter (&lt;span style=&quot; text-decoration: underline;&quot;&gt;6. Umlegung&lt;/span&gt;) initiiert werden kann, und das nachfragegewichtete Verfahren in diesem Reiter (&lt;span style=&quot; text-decoration: underline;&quot;&gt;7. Nachfrageumlegung&lt;/span&gt;). &lt;/p&gt;&lt;p&gt;Der nachfragegewichtete Ansatz integriert reale Radverkehrsdaten (z. B. aus GPS-Tracking oder Zählstellen) in die Routenberechnung. Die Kantengewichte im Verkehrsnetz werden so angepasst, dass häufig genutzte Strecken bevorzugt werden, auch wenn sie nicht die geometrisch kürzesten sind. Dadurch spiegelt das berechnete Zielnetz das tatsächliche Nutzerverhalten und die Nachfrage besser wider. Implizit werden so also auch die zurückgelegten Höhenmeter und vorhandene Infrastruktur berücksichtigt. Das Verfahren ermöglicht eine nachfrageorientierte Netzplanung, indem es stark frequentierte Routen identifiziert und priorisiert. Es unterstützt die gezielte Weiterentwicklung und Optimierung des Radverkehrsnetzes auf Basis empirischer Nutzungsdaten.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::RichText</enum>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="reprojectDemandVerticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>

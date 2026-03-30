@@ -34,7 +34,7 @@ from .classes.interaction.keyFilter import KeyPressFilter
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.baseLayer import BaseLayerProvider
 from .classes.ars import ARSCodeStr
-from .classes.network import LevelOfCentrality
+from .classes.network import LevelOfCentrality, NetworkSource
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer, MissingRoutesLayer
 from .classes.processing.directRouteNetwork import DirectRouteNetwork, DirectRouteGenerateMethod
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
@@ -126,6 +126,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.locationCreateProject.clicked.connect(self.onLocationCreateProject)
         self.locationLineEdit.textChanged.connect(self.onLocationLineEditTextChanged)
         self.locationResultsListWidget.currentItemChanged.connect(self.onLocationRegionItemChanged)
+        self.locationSelectExpandInfoLabel.linkActivated.connect(self.onLocationSelectExpandInfoLabel)
 
         # Center page
         self.centralSaveProjectButton.clicked.connect(self.onSaveProjectButton)
@@ -134,6 +135,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.centralRestartButton.clicked.connect(self.onRestartButton)
         self.centerMapLayerComboBox.layerChanged.connect(self.onCenterMapLayerComboBox)
         self.centerLoadLayerButton.clicked.connect(self.onCenterLoadLayerButton)
+        self.centerCreateInfoLabel.linkActivated.connect(self.onCenterCreateInfoLabel)
 
         self.centerAutoRadioButton.toggled.connect(self.onCenterAutoRadioButton)
         self.centerManualRadioButton.toggled.connect(self.onCenterManualRadioButton)
@@ -158,6 +160,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.airlineBackButton.clicked.connect(self.onAirlineBackButton)
         self.airlineContinueButton.clicked.connect(self.onAirlineContinueButton)
         self.airlineGenerateButton.clicked.connect(self.onAirlineGenerateButton)
+        self.airlineExpandInfoLabel.linkActivated.connect(self.onAirlineExpandInfoLabel)
 
         # Reproject page
         self.reprojectRestartButton.clicked.connect(self.onRestartButton)
@@ -167,6 +170,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectGenerateButton.clicked.connect(self.onReprojectGenerateButton)
         self.reprojectCancelGenerateButton.clicked.connect(self.onReprojectCancelGenerateButton)
         self.reprojectCenterDistanceLabel.linkActivated.connect(self.onReprojectDemandCenterDistanceLabel)
+        self.reprojectReduceNetworkBoundsLabel.linkActivated.connect(self.onReprojectReduceNetworkBoundsLabel)
+        self.reprojectInfoLabel.linkActivated.connect(self.onReprojectInfoLabel)
 
         # Reproject demand page
         self.reprojectDemandRestartButton.clicked.connect(self.onRestartButton)
@@ -177,6 +182,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.reprojectDemandSelectLayer.layerChanged.connect(self.onReprojectDemandSelectLayerChanged)
         self.reprojectDemandCenterDistanceLabel.linkActivated.connect(self.onReprojectDemandCenterDistanceLabel)
         self.reprojectDemandSelectVMLabel.linkActivated.connect(self.onReprojectDemandSelectVMLabel)
+        self.reprojectDemandReduceNetworkBoundsLabel.linkActivated.connect(self.onReprojectReduceNetworkBoundsLabel)
+        self.reprojectDemandInfoLabel.linkActivated.connect(self.onReprojectDemandInfoLabel)
     
     def setupMapView(self):
         # Setup map canvas
@@ -210,6 +217,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.locationSelectedRegionLabel.setText("")
         self.locationProjectNameEdit.setText("")
         self.locationCreateProject.setEnabled(False)
+        self.locationSelectExpandInfoLabel.show()
+        self.locationSelectInfoBox.hide()
         self.selectTab(DialogState.LCOATIONSELECT)
         self.locationLineEdit.setFocus()
 
@@ -227,6 +236,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.centralLOCBox.hide()
             self.centerMapLayerBox.show()
         
+        self.centerCreateInfoLabel.show()
+        self.centerCreateInfoBox.hide()
         self.centralNextButton.setEnabled(self.centerManualRadioButton.isChecked() or DialogState.CENTERPOINTS.value.hasCenterLayer())
         self.selectTab(DialogState.CENTERPOINTS)
         self.centralGenerateButton.setFocus()
@@ -262,6 +273,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.airlineContinueButton.setEnabled(DialogState.AIRLINE.value.hasDirectRouteLayer())
         self.selectTab(DialogState.AIRLINE)
         self.airlineGenerateButton.setFocus()
+        self.airlineExpandInfoLabel.show()
+        self.airlineInfoBox.hide()
 
         self.layerManager.update(
             layerHideList=[],
@@ -292,12 +305,17 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.reprojectProgressBar.setValue(0)
             self.reprojectProgressLabel.setText("")
 
+        
         self.selectTab(DialogState.REPROJECT)
 
         if not fastUpdate:
             self.layerManager.update(
                 layerHideList=[DirectRouteNetworklayer.LayerName],
                 groupHidelist=[RouteNetworklayer.DemandGroupname])
+        else:
+            self.reprojectInfoLabel.show()  
+            self.reprojectInfoBox.hide()
+
     
     def showReprojectDemandPage(self, fastUpdate: bool = False):
         if DialogState.REPROJECTDEMAND.value.isProcessing():
@@ -332,6 +350,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.layerManager.update(
                 layerHideList=[DirectRouteNetworklayer.LayerName],
                 groupHidelist=[RouteNetworklayer.GroupName])
+        else:
+            self.reprojectDemandInfoLabel.show()
+            self.reprojectDemandInfoBox.hide()
 
     #endregion
 
@@ -352,6 +373,16 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 f"Das angegebene Referenzsystem ({layerCrs}) stimmt nicht mit dem Projektreferenzsystem ({projectCrs}) überein.\n\nBitte Transformieren Sie die Daten zuerst in das geforderte Referenzsystem. (Menüpunkt Vektor > Datenmanangement-Werkzeuge > Layer reprojizieren, Ziel-KBS: {projectCrs})")
             return True
         return False
+    
+    def getNetworkSource(self, networkLayer: QgsVectorLayer) -> NetworkSource:
+        result = NetworkSource.UNKNOWN
+        filterAttributeMode = NetworkSource.fromAttributeList(networkLayer.fields().names())
+        if filterAttributeMode != NetworkSource.UNKNOWN:
+            asnwer = QtHelper.showAskBox(self, "Datenquelle erkannt", f"Es wurde die Datenquelle {filterAttributeMode.asStr()} erkannt.\n\nSollen nicht nutzbare Straßensegmente (z.B. Autobahnen, Zugstrecken) bei der Analyse entfernt werden?\n\nFalls ja, wird dieser Filter angewendet:\n{filterAttributeMode.getFilterStr()}")
+            if asnwer == QtHelper.Yes:
+                result = filterAttributeMode
+        
+        return result
     
     def onRestartButton(self):
         reply = QtHelper.askForProjectRestart()
@@ -435,6 +466,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.iface.mapCanvas().setCenter(code.center)
         self.iface.mapCanvas().refresh()
+    
+    def onLocationSelectExpandInfoLabel(self):
+        self.locationSelectExpandInfoLabel.hide()
+        self.locationSelectInfoBox.show()
 
     #endregion
 
@@ -514,6 +549,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         DialogState.CENTERPOINTS.value.setGenerateMethod(DirectRouteGenerateMethod.LAYER)
         self.showCenterPointsPage()
     
+    def onCenterCreateInfoLabel(self):
+        self.centerCreateInfoLabel.hide()
+        self.centerCreateInfoBox.show()
+
     #endregion
 
     #region CENTER EDIT PAGE
@@ -639,6 +678,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.layerManager.update()
             self.showAirlinePage()
 
+    def onAirlineExpandInfoLabel(self):
+        self.airlineExpandInfoLabel.hide()
+        self.airlineInfoBox.show()
+
     #endregion
 
     #region REPROJECT PAGE
@@ -663,9 +706,14 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if self.guardLayerCrsMistmatch(networkLayer):
             return
         
+        # Check for known datasource to possible filter out invalid edges
+        DialogState.REPROJECT.value.setFitlerAttributeMode(self.getNetworkSource(networkLayer))
+
         DialogState.REPROJECT.value.setNetworklayer(networkLayer)
         
         DialogState.REPROJECT.value.setCenterDistanceTolerance(self.reprojectCenterDistanceToleranzSpinbox.value())
+
+        DialogState.REPROJECT.value.setReduceNetworkbounds(self.reprojectReduceNetworkBoundsCheckbox.isChecked())
 
         task = RouteNetworkTask.createAndRunFromContextStateHandler(DialogState.context(), self.onReprojectGenerateResult, self.onReprojectGenerateProgressChanged)
 
@@ -713,6 +761,10 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if task:
             task.stop()
     
+    def onReprojectInfoLabel(self):
+        self.reprojectInfoLabel.hide()
+        self.reprojectInfoBox.show()
+
     #endregion
 
     #region REPROJECT DEMAND PAGE
@@ -734,14 +786,20 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if self.guardLayerCrsMistmatch(networkLayer):
             return
         
+        # Check for known datasource to possible filter out invalid edges
+        DialogState.REPROJECTDEMAND.value.setFitlerAttributeMode(self.getNetworkSource(networkLayer))
+        
         DialogState.REPROJECTDEMAND.value.setNetworklayer(networkLayer)
 
         demandFieldName = self.reprojectDemandSelectField.currentField()
         if not demandFieldName:
             return
+        
         DialogState.REPROJECTDEMAND.value.setDemandFieldName(demandFieldName)
         
         DialogState.REPROJECTDEMAND.value.setCenterDistanceTolerance(self.reprojectDemandCenterDistanceToleranzSpinbox.value())
+
+        DialogState.REPROJECTDEMAND.value.setReduceNetworkbounds(self.reprojectDemandReduceNetworkBoundsCheckbox.isChecked())
 
         task = RouteNetworkTask.createAndRunFromContextStateHandler(DialogState.context(), self.onReprojectDemandGenerateResult, self.onReprojectDemandGenerateProgressChanged)
         # Save the task into the context, so it does not get garbage collected
@@ -792,10 +850,18 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if task:
             task.stop()
     
+    def onReprojectReduceNetworkBoundsLabel(self):
+        QtHelper.showInformationBox(self, "Ausschnitt begrenzen", "Wenn das gewählte Verkehrsnetz größer als der Untersuchungsraum ist, kann die Umlegung sehr lange dauern.\nMit dieser Option wird das Netz auf die Ausdehnung aller Zentrenpunkte und einer Pufferzone von 5 km begrenzt.")
+
+
     def onReprojectDemandCenterDistanceLabel(self):
         QtHelper.showInformationBox(self, "Maximale Zentrenverknüpfungsdistanz", "Maximal valide Distanz zwischen einem Zentrenpunkt und einer Netzkante.\n\nIst ein Zentrenpunkt weiter als die angegebene Distanz von einer Netzkante entfernt, wird der Zentrenpunkt nicht angebunden und ein entsprechender Warnhinweis erscheint.")
 
     def onReprojectDemandSelectVMLabel(self):
         QtHelper.showInformationBox(self, "Auswahl des Nachfrageattributes", "Für die Gewichtung des Umlegealgorithmus ist die Auswahl eines Nachfrageattributs (z.B. Verkehrsmengen, DTV etc.) für den Radverkehr Voraussetzung.")
+
+    def onReprojectDemandInfoLabel(self):
+        self.reprojectDemandInfoLabel.hide()
+        self.reprojectDemandInfoBox.show()
 
     #endregion

@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from qgis.core import QgsVectorLayer, QgsMessageLog
 
 from .constants import REPROJECT_DETOUR_FACTOR
-from .classes.network import LevelOfCentrality
+from .classes.network import LevelOfCentrality, NetworkSource
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer, MissingRoutesLayer
@@ -213,6 +213,8 @@ class ReprojectHandler(StateHandler):
     KBreakingPointsNetworkLayer = "reproject.KBreakingPointsNetworkLayer"
     KMissingRoutesLayer = "reproject.KMissingRoutesLayer"
     KCenterDistanceTolerance = "reproject.KCenterDistanceTolerance"
+    KReduceNetworkBounds = "reproject.KReduceNetworkBounds"
+    KFilterAttributeMode = "reproject.KFilterAttributeMode"
 
     LayerKeys = [
         KNetworkLayer,
@@ -313,6 +315,12 @@ class ReprojectHandler(StateHandler):
     
     def setCenterDistanceTolerance(self, value: int) -> Optional[int]:
         return self.context.updateValue(ReprojectHandler.KCenterDistanceTolerance, value)
+    
+    def setReduceNetworkbounds(self, value: bool) -> Optional[bool]:
+        return self.context.updateValue(ReprojectHandler.KReduceNetworkBounds, value)
+    
+    def setFitlerAttributeMode(self, value: str) -> Optional[str]:
+        return self.context.updateValue(ReprojectHandler.KFilterAttributeMode, value)
 
 class ReprojectDemandHandler(StateHandler):
     KProcessing = "reprojectDemand.Processing"
@@ -328,6 +336,8 @@ class ReprojectDemandHandler(StateHandler):
     KBreakingPointsNetworkLayer = "reprojectDemand.KBreakingPointsNetworkLayer"
     KMissingRoutesLayer = "reprojectDemand.KMissingRoutesLayer"
     KCenterDistanceTolerance = "reprojectDemand.KCenterDistanceTolerance"
+    KReduceNetworkBounds = "reprojectDemand.KReduceNetworkBounds"
+    KFilterAttributeMode = "reprojectDemand.KFilterAttributeMode"
 
     LayerKeys = [
         KNetworkLayer,
@@ -434,6 +444,12 @@ class ReprojectDemandHandler(StateHandler):
     
     def setCenterDistanceTolerance(self, value: int) -> Optional[int]:
         return self.context.updateValue(ReprojectDemandHandler.KCenterDistanceTolerance, value)
+    
+    def setReduceNetworkbounds(self, value: bool) -> Optional[bool]:
+        return self.context.updateValue(ReprojectDemandHandler.KReduceNetworkBounds, value)
+    
+    def setFitlerAttributeMode(self, value: NetworkSource) -> Optional[NetworkSource]:
+        return self.context.updateValue(ReprojectDemandHandler.KFilterAttributeMode, value)
 
 class DialogState(Enum):
     """State machine enum with handlers"""
@@ -587,10 +603,7 @@ class DialogStateMachine:
     def transitionTo(self, targetState: DialogState, **additionalContext) -> bool:
         """Transition to a new state"""
         if not self.currentState.canTransitionTo(targetState):
-            print(f"Transition from {self.currentState.name} to {targetState.name} not allowed")
             return False
-        
-        print(f"\n--- Transitioning: {self.currentState.name} -> {targetState.name} ---")
         
         # Add any additional context
         self.context.merge(additionalContext)
@@ -617,7 +630,6 @@ class DialogStateMachine:
     def goBack(self) -> bool:
         """Go back to previous state"""
         if len(self.stateHistory) < 2:
-            print("No previous state to return to")
             return False
         
         # Remove current state from history

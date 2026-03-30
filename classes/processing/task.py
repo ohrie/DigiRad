@@ -3,18 +3,21 @@ from typing import Dict, List, Tuple
 from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
+    QgsFeatureRequest,
     QgsWkbTypes,
     QgsFeature,
     QgsGeometry,
+    QgsRectangle,
 )
 from qgis.PyQt.QtCore import pyqtSignal, QTimer, QThread
 
 from .routeNetwork import NetworkPathFinder, RouteEntry, RouteGenerationOptions, InnerDirectRouteEntry
 from ..network import ConnectivityFunction
-from ...dialogstate import DialogState, DialogStateContext, ReprojectHandler, AirlineHandler, ReprojectDemandHandler
+from ...dialogstate import DialogState, DialogStateContext, ReprojectHandler, AirlineHandler, ReprojectDemandHandler, CenterPointsHandler
 from .routing.demandRouting import DemandNetworkStrategy, NetworkDemandProperties
 from .routeNetworkTaskHelpers import RouteNetworkTaskResult, RouteNetworkTaskProgress
 from .routeNetworkAnalyser import RouteNetworkAnalyser
+from ..network import NetworkSource
 
 class RouteNetworkWorker(QThread):
     """Worker that will live in a separate thread"""
@@ -211,6 +214,8 @@ class RouteNetworkTask:
             detourTolerance = context.get(ReprojectHandler.KDetourTolerance)
             centerDistanceTolerance = context.get(ReprojectHandler.KCenterDistanceTolerance)
             options = RouteGenerationOptions(detourTolerance, centerDistanceTolerance)
+            reduceNetworkBounds = context.get(ReprojectHandler.KReduceNetworkBounds)
+            filterAttributeMode = context.get(ReprojectHandler.KFilterAttributeMode, NetworkSource.UNKNOWN)
         elif context.currentState == DialogState.REPROJECTDEMAND:
             networkLayer = context.get(ReprojectDemandHandler.KNetworkLayer)
             demandFieldName = context.get(ReprojectDemandHandler.KDemandFieldName)
@@ -218,8 +223,22 @@ class RouteNetworkTask:
             centerDistanceTolerance = context.get(ReprojectDemandHandler.KCenterDistanceTolerance)
             networkStrategy = DemandNetworkStrategy(NetworkDemandProperties.fromLayer(networkLayer, demandFieldName))
             options = RouteGenerationOptions(detourTolerance, centerDistanceTolerance, networkStrategy=networkStrategy)
+            reduceNetworkBounds = context.get(ReprojectDemandHandler.KReduceNetworkBounds)
+            filterAttributeMode = context.get(ReprojectDemandHandler.KFilterAttributeMode, NetworkSource.UNKNOWN)
         
-        networkLayerData = RouteNetworkTask._createMemorylayerFromVector(networkLayer)
+        if reduceNetworkBounds:
+            rect = QgsRectangle()
+            for f in context.get(CenterPointsHandler.KCenterLayer).qgsLayer().getFeatures():
+                rect.include(f.geometry().asPoint())
+            rect.grow(5000)
+            request = QgsFeatureRequest().setFilterRect(rect)
+        else:
+            request = QgsFeatureRequest()
+        
+        if filterAttributeMode != NetworkSource.UNKNOWN:
+            request.setFilterExpression(filterAttributeMode.getFilterStr())
+        
+        networkLayerData = RouteNetworkTask._createMemorylayerFromVector(networkLayer, request)
         directRouteLayerEntries = []
         for entry in directRouteLayer.routeEntries:
             directRouteLayerEntries.append(InnerDirectRouteEntry(entry))
@@ -245,11 +264,10 @@ class RouteNetworkTask:
             self.result_callback(success, result)
     
     @staticmethod
-    def _createMemorylayerFromVector(originalLayer: QgsVectorLayer) -> dict:
+    def _createMemorylayerFromVector(originalLayer: QgsVectorLayer, request: QgsFeatureRequest) -> dict:
         """Create memory layer data that can be safely used in background thread"""
         
         # Get layer info
-        geom_type = QgsWkbTypes.displayString(originalLayer.wkbType())
         crs_authid = originalLayer.crs().authid()
         
         # Build memory layer URI
@@ -266,7 +284,7 @@ class RouteNetworkTask:
         
         # Copy features data
         featuresData = []
-        for feature in originalLayer.getFeatures():
+        for feature in originalLayer.getFeatures(request):
             featureDict = {
                 "geometry": feature.geometry().asWkt() if feature.hasGeometry() else None,
                 "attributes": feature.attributes()
