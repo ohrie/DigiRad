@@ -27,7 +27,7 @@ from qgis.core import QgsMessageLog, QgsPoint, QgsGeometry, QgsFeature, QgsPoint
 from qgis.analysis import QgsMeshTriangulation
 
 from ...constants import CRS_STR
-from ..helper import createPointHash
+from ..helper import createPointHash, createDoublePointHash
 from ..layers.centerLayerFeatures import CenterLayerFeature
 from .directRouteEntry import DirectRouteEntry
 
@@ -37,14 +37,21 @@ class MeshCalculator:
         pass
     
     def extractDirectRoutes(self, centerFeatures: List[CenterLayerFeature]) -> Dict[int, DirectRouteEntry]:
-        mesh = self._calculateMeshForFeatures(centerFeatures)
-        pointIndex = self._createPointIndex(centerFeatures)
-
         routeEntries = {}
-        for i in range(0, mesh.faceCount()):
-            for entry in DirectRouteEntry.entriesFromMeshFace(mesh, i, pointIndex):
-                if not entry.relationId in routeEntries:
-                    routeEntries[entry.relationId] = entry
+        # If only two features exist, the mesh calculation does not start, so we have to handle it manually
+        if len(centerFeatures) == 2:
+            p1 = centerFeatures[0].geom
+            p2 = centerFeatures[1].geom
+            relationId = createDoublePointHash(p1, p2)
+            routeEntries[relationId] = DirectRouteEntry(relationId, centerFeatures[0], centerFeatures[1])
+        else:
+            mesh = self._calculateMeshForFeatures(centerFeatures)
+            pointIndex = self._createPointIndex(centerFeatures)
+
+            for i in range(0, mesh.faceCount()):
+                for entry in DirectRouteEntry.entriesFromMeshFace(mesh, i, pointIndex):
+                    if not entry.relationId in routeEntries:
+                        routeEntries[entry.relationId] = entry
         
         return routeEntries
     
