@@ -1,27 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-/***************************************************************************
- CenterLayer
-                                 A QGIS plugin
- Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
-                             -------------------
-        begin                : 2025-05-13
-        git sha              : $Format:%H$
-        copyright            : (C) 2025 by Vision Velo UG (haftungsbeschränkt)
-        email                : info@vision-velo.de
- ***************************************************************************/
+Copyright (c) 2026 Vision Velo GmbH
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
-from typing import List, Dict, Optional
+from typing import List, Optional
 from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
@@ -41,8 +33,8 @@ from qgis.core import (
     QgsEditorWidgetSetup
 )
 
-from ...constants import CRS_STR, SUROUNDING_QUERY_DISTANCE
-from ...constants import SUROUNDING_LAYER 
+from ...constants import CRS_STR, SURROUNDING_QUERY_DISTANCE
+from ...constants import SURROUNDING_LAYER 
 from ..ars import ARSCodeStr
 from .layer import DigiRadLayer
 from ..network import LevelOfCentrality
@@ -82,15 +74,14 @@ class CenterLayer(DigiRadLayer):
         request = QgsFeatureRequest().setFilterExpression(filter)
 
         layer = layer.materialize(request)
-        # If there is no ARSCodeStr, we cannot get plausible suroundings 
+        # If there is no ARSCodeStr, we cannot get plausible surroundings 
         if not arsCodeStr.isEmpty():
-            layer = CenterLayer._mergeWithSuroundings(arsCodeStr, layer, config)
-        
+            layer = CenterLayer._mergeWithSurroundings(arsCodeStr, layer, config)
         return CenterLayer(layer, arsCodeStr, config)
     
     @staticmethod
-    def _mergeWithSuroundings(arsCodeStr: ARSCodeStr, layer: QgsVectorLayer, config: CenterLayerFeatureConfig) -> QgsVectorLayer:
-        suroundingFeats = SuroundingHelper.getSuroundingFeatures(arsCodeStr, layer, config)
+    def _mergeWithSurroundings(arsCodeStr: ARSCodeStr, layer: QgsVectorLayer, config: CenterLayerFeatureConfig) -> QgsVectorLayer:
+        surroundingFeats = SurroundingHelper.getSurroundingFeatures(arsCodeStr, layer, config)
 
         # Get next free feature id of the loc layer
         fidIdx = layer.fields().indexFromName("fid")
@@ -104,9 +95,9 @@ class CenterLayer(DigiRadLayer):
 
         pr = layer.dataProvider()
         feats = []
-        for centerFeat in suroundingFeats:
+        for centerFeat in surroundingFeats:
             feat = QgsFeature()
-            feat.setAttributes([maxFeatId, "", centerFeat.name, centerFeat.loc.asStrShort()])
+            feat.setAttributes([maxFeatId, centerFeat.ars.code, centerFeat.name, centerFeat.loc.asStrShort()])
             feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(centerFeat.geom.x(), centerFeat.geom.y())))
             feats.append(feat)
             maxFeatId += 1
@@ -123,7 +114,7 @@ class CenterLayer(DigiRadLayer):
         renderer = QgsCategorizedSymbolRenderer(self.config.locName)
         
         for loc in LevelOfCentrality:
-            if loc == LevelOfCentrality.Surounding:
+            if loc == LevelOfCentrality.Surrounding:
                 symbol = QgsMarkerSymbol.createSimple({'name': 'diamond'})
             else:
                 symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.PointGeometry)
@@ -174,59 +165,63 @@ class CenterLayer(DigiRadLayer):
         locFilter = "{} in ({})".format(config.locName, ", ".join(map(lambda loc: "'{}'".format(loc.asStrShort()), filterLocs)))
         if arsCodeStr.isEmpty():
            return locFilter
-         
+        
         relevantCodePart = arsCodeStr.getRelevantPart()
         arsFilter = "substr(\"{}\", 1, {}) = '{}'".format(config.arsName, len(relevantCodePart), relevantCodePart)
 
-        QgsMessageLog.logMessage(f"{arsFilter} AND {locFilter}")
         return f"{arsFilter} AND {locFilter}"
 
-class SuroundingHelper:
+class SurroundingHelper:
 
     @staticmethod
-    def getSuroundingFeatures(arsCodeStr: ARSCodeStr, centerLayer: QgsVectorLayer, config: CenterLayerFeatureConfig) -> List[CenterLayerFeature]:
+    def getSurroundingFeatures(arsCodeStr: ARSCodeStr, centerLayer: QgsVectorLayer, config: CenterLayerFeatureConfig) -> List[CenterLayerFeature]:
         featureBounds = centerLayer.extent()
         queryBounds = QgsRectangle(
-            featureBounds.xMinimum() - SUROUNDING_QUERY_DISTANCE,
-            featureBounds.yMinimum() - SUROUNDING_QUERY_DISTANCE,
-            featureBounds.xMaximum() + SUROUNDING_QUERY_DISTANCE,
-            featureBounds.yMaximum() + SUROUNDING_QUERY_DISTANCE
+            featureBounds.xMinimum() - SURROUNDING_QUERY_DISTANCE,
+            featureBounds.yMinimum() - SURROUNDING_QUERY_DISTANCE,
+            featureBounds.xMaximum() + SURROUNDING_QUERY_DISTANCE,
+            featureBounds.yMaximum() + SURROUNDING_QUERY_DISTANCE
             )
         request = QgsFeatureRequest().setFilterRect(queryBounds).setFlags(QgsFeatureRequest.ExactIntersect)
         locFeatures = CenterLayerFeature.featuresFromLayer(centerLayer, config)
         
-        suroundingFeats = []
-        arsIdx = SUROUNDING_LAYER.fields().indexFromName("ARS_2")
-        nameIdx = SUROUNDING_LAYER.fields().indexFromName("GEN")
-        for feat in SUROUNDING_LAYER.getFeatures(request):
-            ars = feat[arsIdx]
+        surroundingFeats = []
+        arsIdx = SURROUNDING_LAYER.fields().indexFromName("ARS_2")
+        nameIdx = SURROUNDING_LAYER.fields().indexFromName("GEN")
+        for feat in SURROUNDING_LAYER.getFeatures(request):
+            arsStr = str(feat[arsIdx])
             # Skip ars of self
-            if arsCodeStr.code == ars:
+            if arsCodeStr.code == arsStr:
                 continue
+            ars = ARSCodeStr.fromStr(arsStr)
+            if not ars:
+                QgsMessageLog.logMessage(f"Unable to create ars code from {arsStr} (surrounding)")
+                ars = ARSCodeStr.empty()
+            
 
             name = feat[nameIdx]
             geom = feat.geometry().asPoint()
             geom = QgsPoint(geom.x(), geom.y())
             
-            suroundingFeats.append(
-                CenterLayerFeature(feat.id(), name, LevelOfCentrality.Surounding, geom))
+            surroundingFeats.append(
+                CenterLayerFeature(feat.id(), name, ars, LevelOfCentrality.Surrounding, geom))
         
-        allFeats = suroundingFeats
+        allFeats = surroundingFeats
         for locFeats in locFeatures.values():
             allFeats += locFeats
         
         meshCalc = MeshCalculator()
         directRoutes = meshCalc.extractDirectRoutes(allFeats)
-        nearbySuroundingFeats = []
+        nearbySurroundingFeats = []
         nearbyAddedIds = set()
         for route in directRoutes.values():
-            if route.feat1.loc == LevelOfCentrality.Surounding:
-                if route.feat2.loc != LevelOfCentrality.Surounding and route.feat1.featureId not in nearbyAddedIds:
-                    nearbySuroundingFeats.append(route.feat1)
+            if route.feat1.loc == LevelOfCentrality.Surrounding:
+                if route.feat2.loc != LevelOfCentrality.Surrounding and route.feat1.featureId not in nearbyAddedIds:
+                    nearbySurroundingFeats.append(route.feat1)
                     nearbyAddedIds.add(route.feat1.featureId)
-            elif route.feat2.loc == LevelOfCentrality.Surounding:
-                if route.feat1.loc != LevelOfCentrality.Surounding and route.feat2.featureId not in nearbyAddedIds:
-                    nearbySuroundingFeats.append(route.feat2)
+            elif route.feat2.loc == LevelOfCentrality.Surrounding:
+                if route.feat1.loc != LevelOfCentrality.Surrounding and route.feat2.featureId not in nearbyAddedIds:
+                    nearbySurroundingFeats.append(route.feat2)
                     nearbyAddedIds.add(route.feat2.featureId)
         
-        return nearbySuroundingFeats
+        return nearbySurroundingFeats

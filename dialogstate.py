@@ -1,3 +1,18 @@
+# -*- coding: utf-8 -*-
+"""
+Copyright (c) 2026 Vision Velo GmbH
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+"""
+
 from enum import Enum
 from typing import Dict, Any, Optional, Callable, List
 from abc import ABC, abstractmethod
@@ -70,7 +85,7 @@ class WelcomeHandler(StateHandler):
             self.ui.showWelcomePage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState == DialogState.LCOATIONSELECT
+        return targetState == DialogState.LOCATIONSELECT
 
 class LocationSelectHandler(StateHandler):
     KBaseLayer = "location.BaseLayer"
@@ -124,13 +139,17 @@ class CenterPointsHandler(StateHandler):
             self.ui.showCenterPointsPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.CENTERPOINTSEDIT]
+        return targetState in [DialogState.WELCOME, DialogState.LOCATIONSELECT, DialogState.CENTERPOINTSEDIT]
     
     def hasCenterLayer(self) -> bool:
         return self.context.has(CenterPointsHandler.KCenterLayer)
     
     def getCenterLayer(self) -> Optional[CenterLayer]:
         return self.context.get(CenterPointsHandler.KCenterLayer)
+    
+    def removeCenterLayer(self) -> Optional[CenterLayer]:
+        DialogState.deleteValuesAfterContext(DialogState.CENTERPOINTS, "LayerKeys")
+        return self.context.delete(CenterPointsHandler.KCenterLayer)
     
     def setCenterLayer(self, value: CenterLayer) -> Optional[CenterLayer]:
         DialogState.deleteValuesAfterContext(DialogState.CENTERPOINTS, "LayerKeys")
@@ -168,7 +187,7 @@ class CenterPointsEditHandler(StateHandler):
             self.ui.showCenterPointsEditPage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.CENTERPOINTS, DialogState.AIRLINE]
+        return targetState in [DialogState.WELCOME, DialogState.LOCATIONSELECT, DialogState.CENTERPOINTS, DialogState.AIRLINE]
 
 class AirlineHandler(StateHandler):
     KDirectRouteLayer = "airline.DirectRouteLayer"
@@ -188,7 +207,7 @@ class AirlineHandler(StateHandler):
             self.ui.showAirlinePage()
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.CENTERPOINTSEDIT, DialogState.REPROJECT, DialogState.REPROJECTDEMAND]
+        return targetState in [DialogState.WELCOME, DialogState.LOCATIONSELECT, DialogState.CENTERPOINTSEDIT, DialogState.REPROJECT, DialogState.REPROJECTDEMAND]
     
     def getDirectRouteLayer(self) -> Optional[DirectRouteNetworklayer]:
         return self.context.get(AirlineHandler.KDirectRouteLayer)
@@ -239,10 +258,10 @@ class ReprojectHandler(StateHandler):
     
     def handleUi(self):
         if self.ui:
-            self.ui.showReprojectPage()
+            self.ui.showReprojectPage(True)
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.AIRLINE, DialogState.REPROJECTDEMAND]
+        return targetState in [DialogState.WELCOME, DialogState.LOCATIONSELECT, DialogState.AIRLINE, DialogState.REPROJECTDEMAND]
     
     def setIsProcessing(self, value: bool) -> bool:
         self.context.set(ReprojectHandler.KIsProcessing, value)
@@ -362,10 +381,10 @@ class ReprojectDemandHandler(StateHandler):
     
     def handleUi(self):
         if self.ui:
-            self.ui.showReprojectDemandPage()
+            self.ui.showReprojectDemandPage(True)
     
     def canTransitionTo(self, targetState: 'DialogState') -> bool:
-        return targetState in [DialogState.WELCOME, DialogState.LCOATIONSELECT, DialogState.REPROJECT]
+        return targetState in [DialogState.WELCOME, DialogState.LOCATIONSELECT, DialogState.REPROJECT]
     
     def setIsProcessing(self, value: bool) -> bool:
         self.context.set(ReprojectDemandHandler.KIsProcessing, value)
@@ -454,7 +473,7 @@ class ReprojectDemandHandler(StateHandler):
 class DialogState(Enum):
     """State machine enum with handlers"""
     WELCOME = WelcomeHandler()
-    LCOATIONSELECT = LocationSelectHandler() 
+    LOCATIONSELECT = LocationSelectHandler() 
     CENTERPOINTS = CenterPointsHandler()
     CENTERPOINTSEDIT = CenterPointsEditHandler()
     AIRLINE = AirlineHandler()

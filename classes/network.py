@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-/***************************************************************************
- Network
-                                 A QGIS plugin
- Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
-                             -------------------
-        begin                : 2025-05-13
-        git sha              : $Format:%H$
-        copyright            : (C) 2025 by Vision Velo UG (haftungsbeschränkt)
-        email                : info@vision-velo.de
- ***************************************************************************/
+Copyright (c) 2026 Vision Velo GmbH
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 from typing import List, TypeVar
@@ -81,11 +73,11 @@ class LevelOfCentrality(Enum):
     III = 30
     IV = 40
     Singular = 22
-    Surounding = 21
+    Surrounding = 21
 
     @staticmethod
     def defaults() -> List['LevelOfCentrality']:
-        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular, LevelOfCentrality.Surounding]
+        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular, LevelOfCentrality.Surrounding]
 
     @staticmethod
     def fromStr(value: str) -> 'LevelOfCentrality':
@@ -99,7 +91,7 @@ class LevelOfCentrality(Enum):
         elif value == "singulärer erzeuger" or value == "s":
             return LevelOfCentrality.Singular
         elif value == "überörtlich" or value == "ü":
-            return LevelOfCentrality.Surounding
+            return LevelOfCentrality.Surrounding
         else:
             raise ValueError(f"'{value}' is not a valid level of centrality")
     
@@ -112,7 +104,7 @@ class LevelOfCentrality(Enum):
             return "Zentralitätsstufe IV"
         elif self == LevelOfCentrality.Singular:
             return "Singulärer Erzeuger"
-        elif self == LevelOfCentrality.Surounding:
+        elif self == LevelOfCentrality.Surrounding:
             return "Überörtlich"
     
     def asStrShort(self) -> str:
@@ -124,7 +116,7 @@ class LevelOfCentrality(Enum):
             return "Z IV"
         elif self == LevelOfCentrality.Singular:
             return "S"
-        elif self == LevelOfCentrality.Surounding:
+        elif self == LevelOfCentrality.Surrounding:
             return "Ü"
 
     def isLowerEq(self, other: 'LevelOfCentrality') -> bool:
@@ -150,7 +142,7 @@ class LevelOfCentrality(Enum):
             return ConnectivityFunction.VFS_4
         elif self == LevelOfCentrality.Singular:
             return ConnectivityFunction.VFS_3
-        elif self == LevelOfCentrality.Surounding:
+        elif self == LevelOfCentrality.Surrounding:
             return ConnectivityFunction.VFS_3
 
 

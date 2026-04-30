@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-/***************************************************************************
- DirectRouteNetwork
-                                 A QGIS plugin
- Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
-                             -------------------
-        begin                : 2025-05-13
-        git sha              : $Format:%H$
-        copyright            : (C) 2025 by Vision Velo UG (haftungsbeschränkt)
-        email                : info@vision-velo.de
- ***************************************************************************/
+Copyright (c) 2026 Vision Velo GmbH
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import copy
@@ -51,16 +43,16 @@ class DirectRouteNetwork:
         meshCalc = MeshCalculator()
         
         routesAll = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular]))
-        routesIII_II_S = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.Singular, LevelOfCentrality.Surounding]))
+        routesIII_II_S = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.Singular, LevelOfCentrality.Surrounding]))
         routesII = meshCalc.extractDirectRoutes(self._getLocBasedFeatures([LevelOfCentrality.II]))
 
         mergedRoutes = self._mergeCFRoutes(routesAll, routesIII_II_S)
         mergedRoutes = self._mergeCFRoutes(mergedRoutes, routesII)
-        filteredRoutes = self._filterOutSuroundingToSuroundingRoutes(mergedRoutes)
+        filteredRoutes = self._filterOutSurroundingToSurroundingRoutes(mergedRoutes)
 
-        notConnectedSuroundings = self._connectNotConnectedSuroundings(filteredRoutes)
+        notConnectedSurroundings = self._connectNotConnectedSurroundings(filteredRoutes)
 
-        return list(filteredRoutes.values()) + notConnectedSuroundings
+        return list(filteredRoutes.values()) + notConnectedSurroundings
     
     def _getLocBasedFeatures(self, locs: List[LevelOfCentrality]) -> List[CenterLayerFeature]:
         features = []
@@ -83,27 +75,27 @@ class DirectRouteNetwork:
 
         return merged
     
-    def _filterOutSuroundingToSuroundingRoutes(self, routes: Dict[int, DirectRouteEntry]) -> Dict[int, DirectRouteEntry]:
+    def _filterOutSurroundingToSurroundingRoutes(self, routes: Dict[int, DirectRouteEntry]) -> Dict[int, DirectRouteEntry]:
         filtered = {}
 
         for (id, route) in routes.items():
-            if route.feat1.loc == LevelOfCentrality.Surounding and route.feat2.loc == LevelOfCentrality.Surounding:
+            if route.feat1.loc == LevelOfCentrality.Surrounding and route.feat2.loc == LevelOfCentrality.Surrounding:
                 continue
             filtered[id] = route
         
         return filtered
     
-    def _connectNotConnectedSuroundings(self, routes: Dict[int, DirectRouteEntry]) -> List[DirectRouteEntry]:
-        suroundingFeats = copy.copy(self.centerLayer.locFeatures[LevelOfCentrality.Surounding])
+    def _connectNotConnectedSurroundings(self, routes: Dict[int, DirectRouteEntry]) -> List[DirectRouteEntry]:
+        surroundingFeats = copy.copy(self.centerLayer.locFeatures[LevelOfCentrality.Surrounding])
         
-        # Remove all surounding features from the list which already are connected
+        # Remove all surrounding features from the list which already are connected
         for route in routes.values():
-            if route.feat1.loc == LevelOfCentrality.Surounding:
-                if route.feat1 in suroundingFeats:
-                    suroundingFeats.remove(route.feat1)
-            if route.feat2.loc == LevelOfCentrality.Surounding:
-                if route.feat2 in suroundingFeats:
-                    suroundingFeats.remove(route.feat2)
+            if route.feat1.loc == LevelOfCentrality.Surrounding:
+                if route.feat1 in surroundingFeats:
+                    surroundingFeats.remove(route.feat1)
+            if route.feat2.loc == LevelOfCentrality.Surrounding:
+                if route.feat2 in surroundingFeats:
+                    surroundingFeats.remove(route.feat2)
         
         connectionCandidates = self._getLocBasedFeatures([LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.Singular])
 
@@ -112,14 +104,14 @@ class DirectRouteNetwork:
             index.addFeature(i, connectionCandiate.geom.boundingBox())
         
         connectedRouteEntries = []
-        for suroundingFeat in suroundingFeats:
-            suroundingPoint = suroundingFeat.geom
-            nearestFeatIds = index.nearestNeighbor(QgsPointXY(suroundingPoint.x(), suroundingPoint.y()), 1)
+        for surroundingFeat in surroundingFeats:
+            surroundingPoint = surroundingFeat.geom
+            nearestFeatIds = index.nearestNeighbor(QgsPointXY(surroundingPoint.x(), surroundingPoint.y()), 1)
             if not nearestFeatIds:
                 continue
             nearestFeat = connectionCandidates[nearestFeatIds[0]]
-            relationId = createDoublePointHash(suroundingPoint, nearestFeat.geom)
-            connectedRouteEntries.append(DirectRouteEntry(relationId, suroundingFeat, nearestFeat))
+            relationId = createDoublePointHash(surroundingPoint, nearestFeat.geom)
+            connectedRouteEntries.append(DirectRouteEntry(relationId, surroundingFeat, nearestFeat))
         
         return connectedRouteEntries
 

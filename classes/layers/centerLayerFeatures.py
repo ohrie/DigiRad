@@ -1,34 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-/***************************************************************************
- CenterLayerFeature
-                                 A QGIS plugin
- Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
-                             -------------------
-        begin                : 2025-05-13
-        git sha              : $Format:%H$
-        copyright            : (C) 2025 by Vision Velo UG (haftungsbeschränkt)
-        email                : info@vision-velo.de
- ***************************************************************************/
+Copyright (c) 2026 Vision Velo GmbH
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
+
 from typing import List, Dict
 from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
-    QgsFeatureRequest,
     QgsPoint,
 )
 
 from ..network import LevelOfCentrality
+from ..ars import ARSCodeStr
 
 class CenterLayerFeatureConfig:
     def __init__(self, locName: str = "Zentralitaet", nameName: str = "Bemerkung", arsName: str = "ARS"):
@@ -37,9 +30,10 @@ class CenterLayerFeatureConfig:
         self.arsName = arsName
 
 class CenterLayerFeature:
-    def __init__(self, featureId, name: str, loc: LevelOfCentrality, geom: QgsPoint) -> 'CenterLayerFeature':
+    def __init__(self, featureId, name: str, ars: ARSCodeStr, loc: LevelOfCentrality, geom: QgsPoint) -> 'CenterLayerFeature':
         self.featureId = featureId
         self.name = name
+        self.ars = ars
         self.loc = loc
         self.geom = geom
 
@@ -50,9 +44,11 @@ class CenterLayerFeature:
             features[loc] = []
         
         nameIdx = qgsLayer.fields().indexFromName(config.nameName)
+        arsIdx = qgsLayer.fields().indexFromName(config.arsName)
         locIdx = qgsLayer.fields().indexFromName(config.locName)
         for feat in qgsLayer.getFeatures():
             name = feat.attributes()[nameIdx]
+            arsStr = str(feat.attributes()[arsIdx])
             loc = feat.attributes()[locIdx]
             try:
                 loc = LevelOfCentrality.fromStr(loc)
@@ -67,8 +63,13 @@ class CenterLayerFeature:
                     QgsMessageLog.logMessage("Unable to convert to single")
                     continue
             
+            ars = ARSCodeStr.fromStr(arsStr)
+            if not ars:
+                QgsMessageLog.logMessage(f"Unable to create ars code from {arsStr}")
+                ars = ARSCodeStr.empty()
+            
             geom = geom.asPoint()
             geom = QgsPoint(geom.x(), geom.y())
-            features[loc].append(CenterLayerFeature(feat.id(), name, loc, geom))
+            features[loc].append(CenterLayerFeature(feat.id(), name, ars, loc, geom))
 
         return features

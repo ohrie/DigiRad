@@ -1,39 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-/***************************************************************************
-RouteNetworklayer
-                                 A QGIS plugin
- Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
-                             -------------------
-        begin                : 2025-05-13
-        git sha              : $Format:%H$
-        copyright            : (C) 2025 by Vision Velo UG (haftungsbeschränkt)
-        email                : info@vision-velo.de
- ***************************************************************************/
+Copyright (c) 2026 Vision Velo GmbH
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
+
 from typing import List
 
-from PyQt5.QtCore import QVariant, Qt
+from PyQt5.QtCore import QVariant
 
 from qgis.core import (
     QgsMessageLog,
     QgsVectorLayer,
     QgsCategorizedSymbolRenderer,
-    QgsSimpleLineSymbolLayer,
     QgsRendererCategory,
     QgsField,
     QgsFeature,
-    QgsSymbol,
-    QgsWkbTypes,
     QgsFeatureRequest
     )
 
@@ -41,7 +31,7 @@ from ...constants import CRS_STR
 from .layer import DigiRadLayer
 from ..network import ConnectivityFunction
 from ..processing.routeNetwork import RouteEntry
-from ..styling import Style, Colors
+from ..styling import Style
 
 class RouteNetworkFeatureConfig:
     def __init__(self, cfName: str = "Verbindungsfunktionsstufe", relationName: str = "relation", airDistPathRel: str = "LuftlinienWegRelation"):

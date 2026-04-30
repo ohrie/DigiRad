@@ -1,3 +1,18 @@
+# -*- coding: utf-8 -*-
+"""
+Copyright (c) 2026 Vision Velo GmbH
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+"""
+
 from qgis.PyQt.QtGui import QColor
 
 from qgis.core import (
@@ -19,7 +34,7 @@ class Colors:
     # Pale Yellow
     Extra = QColor(255, 255, 191, 255)
     # Darker Orange
-    Surounding = QColor(245, 124, 0, 255)
+    Surrounding = QColor(245, 124, 0, 255)
     Default = QColor("gray")
     # Magenta
     Error = QColor(255, 0, 255, 255) 
@@ -37,8 +52,8 @@ class Style:
             return Colors.IV
         elif loc == LevelOfCentrality.Singular:
             return Colors.Extra
-        elif loc == LevelOfCentrality.Surounding:
-            return Colors.Surounding
+        elif loc == LevelOfCentrality.Surrounding:
+            return Colors.Surrounding
         else:
             return Colors.Default
     
@@ -65,7 +80,7 @@ class Style:
             return 3
         elif loc == LevelOfCentrality.Singular:
             return 4
-        elif loc == LevelOfCentrality.Surounding:
+        elif loc == LevelOfCentrality.Surrounding:
             return 4
         else:
             return 1

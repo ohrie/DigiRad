@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-/***************************************************************************
- DigiRadDialog
-                                 A QGIS plugin
- Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
-                             -------------------
-        begin                : 2025-05-13
-        git sha              : $Format:%H$
-        copyright            : (C) 2025 by Vision Velo UG (haftungsbeschränkt)
-        email                : info@vision-velo.de
- ***************************************************************************/
+Copyright (c) 2026 Vision Velo GmbH
 
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import os
@@ -33,12 +25,11 @@ from .dialogstate import DialogStateMachine, DialogState
 from .classes.interaction.keyFilter import KeyPressFilter
 from .classes.layers.centerLayer import CenterLayer
 from .classes.layers.baseLayer import BaseLayerProvider
-from .classes.ars import ARSCodeStr
 from .classes.network import LevelOfCentrality, NetworkSource
 from .classes.layers.directRouteNetworkLayer import DirectRouteNetworklayer, MissingRoutesLayer
 from .classes.processing.directRouteNetwork import DirectRouteNetwork, DirectRouteGenerateMethod
 from .classes.layers.routeNetworkLayer import RouteNetworklayer
-from .classes.layers.analysisLayers import SupplyAggregatedNetworkElementLayer, BreakingPointsNetworkLayer
+from .classes.layers.analysisLayers import SupplyAggregatedNetworkElementLayer
 from .classes.processing.routeNetworkTaskHelpers import RouteNetworkTaskResult, RouteNetworkTaskProgress
 from .classes.interaction.centerEdit import CenterEditFeatureHandler, CenterEditToolType
 from .constants import AUTO_CENTER_POINTS_PATH
@@ -102,7 +93,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.tabs = {
             DialogState.WELCOME: self.welcomeTab,
-            DialogState.LCOATIONSELECT: self.locationTab,
+            DialogState.LOCATIONSELECT: self.locationTab,
             DialogState.CENTERPOINTS: self.centerTab,
             DialogState.CENTERPOINTSEDIT: self.centerEditTab,
             DialogState.AIRLINE: self.airlineTab,
@@ -219,7 +210,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.locationCreateProject.setEnabled(False)
         self.locationSelectExpandInfoLabel.show()
         self.locationSelectInfoBox.hide()
-        self.selectTab(DialogState.LCOATIONSELECT)
+        self.selectTab(DialogState.LOCATIONSELECT)
         self.locationLineEdit.setFocus()
 
     def showCenterPointsPage(self):
@@ -389,11 +380,11 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if reply == QtHelper.Yes:
             self.layerManager.removeAll()
             self.centerAutoRadioButton.setChecked(True)
-            self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
+            self.stateMachine.transitionTo(DialogState.LOCATIONSELECT)
         elif reply == QtHelper.KeepOldProject:
             self.layerManager.unlink()
             self.centerAutoRadioButton.setChecked(True)
-            self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
+            self.stateMachine.transitionTo(DialogState.LOCATIONSELECT)
     
     def onSaveProjectButton(self):
         directory = QtHelper.askForProjectToSaveDirectory(self)
@@ -413,7 +404,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     #region WELCOME PAGE
     def onWelcomeNextButton(self):
-        self.stateMachine.transitionTo(DialogState.LCOATIONSELECT)
+        self.stateMachine.transitionTo(DialogState.LOCATIONSELECT)
 
     #endregion
     
@@ -429,7 +420,7 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
         if lineEditText:
             self.layerManager.processingConfig.projectName = lineEditText
             self.layerManager.updateProjectName()
-        DialogState.LCOATIONSELECT.value.setBaseLayerStr(self.locationBaseMapComboBox.currentText())
+        DialogState.LOCATIONSELECT.value.setBaseLayerStr(self.locationBaseMapComboBox.currentText())
         self.setupMapView()
         self.stateMachine.transitionTo(DialogState.CENTERPOINTS)
     
@@ -486,8 +477,8 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             locs.append(LevelOfCentrality.IV)
         if self.centerLOCSingleCheck.isChecked():
             locs.append(LevelOfCentrality.Singular)
-        if self.centerLOCSuroundingCheck.isChecked():
-            locs.append(LevelOfCentrality.Surounding)
+        if self.centerLOCSurroundingCheck.isChecked():
+            locs.append(LevelOfCentrality.Surrounding)
         
         DialogState.CENTERPOINTS.value.setLOCs(locs)
 
@@ -514,6 +505,9 @@ class DigiRadDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.centerLoadLayerButton.setEnabled(False)
         else:
             self.centerLoadLayerButton.setEnabled(True)
+            # When there was a change, we need to disable the next button so we are
+            # forced to load it again
+            self.centralNextButton.setEnabled(False)
         
     def onCenterLoadLayerButton(self):
         if self.guardLayerRegeneration(DialogState.CENTERPOINTS):

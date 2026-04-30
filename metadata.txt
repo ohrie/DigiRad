@@ -2,7 +2,7 @@
 name=DigiRad
 qgisMinimumVersion=3.16
 description=Unterstützung bei der Erstellung von digitalen Angebotsnetzen für den Radverkehr
-version=0.6.0
+version=0.7.0
 author=Vision Velo GmbH
 email=info@vision-velo.de
 
@@ -12,30 +12,22 @@ tracker=https://github.com/VisionVelo/DigiRad/issues
 repository=https://github.com/VisionVelo/DigiRad
 # End of mandatory metadata
 
-# Recommended items:
-
 hasProcessingProvider=no
-# Uncomment the following line and add your changelog:
 # changelog=
 
-# Tags are comma separated with spaces allowed
 tags=python, digital bicycle data, digitale Radverkehrsdaten, Netzerstellung, Angebotsnetz
 
 homepage=https://vision-velo.de
 category=Plugins
 icon=icon.png
-# experimental flag
 experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
 
-# Since QGIS 3.8, a comma separated list of plugins to be installed
-# (or upgraded) can be specified.
-# Check the documentation for more information.
 # plugin_dependencies=
 
-Category of the plugin: Raster, Vector, Database or Web
+# Category of the plugin: Raster, Vector, Database or Web
 # category=
 
 # If the plugin can run on QGIS Server.
