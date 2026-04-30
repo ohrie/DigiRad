@@ -1,4 +1,6 @@
 __pycache__
 *.pyc
+Makefile
+pb_tool.cfg
 
 /zip_build
