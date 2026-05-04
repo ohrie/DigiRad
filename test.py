@@ -1,5 +1,6 @@
 from enum import Enum
-    
+
+
 class Foo2:
     Next = None
     # Previous = Foo
@@ -9,6 +10,7 @@ class Foo2:
 
     def p(self):
         print("Foo2", self.v)
+
 
 class Foo:
     Next = Foo2
@@ -22,13 +24,15 @@ class Foo:
 
 class DynamicEnum(Enum):
     """Base class for enums that can create instances dynamically"""
-    
+
     def __call__(self, *args, **kwargs):
         return self.value(*args, **kwargs)
+
 
 class E(DynamicEnum):
     A = Foo
     B = Foo2
+
 
 dynValue = 42
 a = E.A

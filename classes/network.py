@@ -19,6 +19,7 @@ from enum import Enum
 CF = TypeVar('CF', bound='ConnectivityFunction')
 LOC = TypeVar('LOC', bound='LevelOfCentrality')
 
+
 class ConnectivityFunction(Enum):
     VFS_1 = 1
     VFS_2 = 2
@@ -28,8 +29,9 @@ class ConnectivityFunction(Enum):
 
     @staticmethod
     def defaults() -> List['ConnectivityFunction']:
-        return [ConnectivityFunction.VFS_2, ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]
-    
+        return [ConnectivityFunction.VFS_2,
+                ConnectivityFunction.VFS_3, ConnectivityFunction.VFS_4]
+
     def asStr(self) -> str:
         if self == ConnectivityFunction.VFS_1:
             return "Verbindungsfunktionsstufe I"
@@ -41,7 +43,7 @@ class ConnectivityFunction(Enum):
             return "Verbindungsfunktionsstufe IV"
         elif self == ConnectivityFunction.VFS_5:
             return "Verbindungsfunktionsstufe V"
-    
+
     def asStrShort(self) -> str:
         if self == ConnectivityFunction.VFS_1:
             return "VFS I"
@@ -53,20 +55,23 @@ class ConnectivityFunction(Enum):
             return "VFS IV"
         elif self == ConnectivityFunction.VFS_5:
             return "VFS V"
-    
+
     def isLowerEq(self, other: 'ConnectivityFunction') -> bool:
         return self.value <= other.value
-    
+
     def isHigherEq(self, other: 'ConnectivityFunction') -> bool:
         return self.value >= other.value
-    
+
     @staticmethod
-    def getLowerCF(value1: 'ConnectivityFunction', value2: 'ConnectivityFunction') -> 'ConnectivityFunction':
+    def getLowerCF(value1: 'ConnectivityFunction',
+                   value2: 'ConnectivityFunction') -> 'ConnectivityFunction':
         return ConnectivityFunction(min(value1.value, value2.value))
-    
+
     @staticmethod
-    def getUpperCF(value1: 'ConnectivityFunction', value2: 'ConnectivityFunction') -> 'ConnectivityFunction':
+    def getUpperCF(value1: 'ConnectivityFunction',
+                   value2: 'ConnectivityFunction') -> 'ConnectivityFunction':
         return ConnectivityFunction(max(value1.value, value2.value))
+
 
 class LevelOfCentrality(Enum):
     II = 20
@@ -77,7 +82,8 @@ class LevelOfCentrality(Enum):
 
     @staticmethod
     def defaults() -> List['LevelOfCentrality']:
-        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV, LevelOfCentrality.Singular, LevelOfCentrality.Surrounding]
+        return [LevelOfCentrality.II, LevelOfCentrality.III, LevelOfCentrality.IV,
+                LevelOfCentrality.Singular, LevelOfCentrality.Surrounding]
 
     @staticmethod
     def fromStr(value: str) -> 'LevelOfCentrality':
@@ -94,7 +100,7 @@ class LevelOfCentrality(Enum):
             return LevelOfCentrality.Surrounding
         else:
             raise ValueError(f"'{value}' is not a valid level of centrality")
-    
+
     def asStr(self) -> str:
         if self == LevelOfCentrality.II:
             return "Zentralitätsstufe II"
@@ -106,7 +112,7 @@ class LevelOfCentrality(Enum):
             return "Singulärer Erzeuger"
         elif self == LevelOfCentrality.Surrounding:
             return "Überörtlich"
-    
+
     def asStrShort(self) -> str:
         if self == LevelOfCentrality.II:
             return "Z II"
@@ -121,18 +127,20 @@ class LevelOfCentrality(Enum):
 
     def isLowerEq(self, other: 'LevelOfCentrality') -> bool:
         return self.value <= other.value
-    
+
     def isHigherEq(self, other: 'LevelOfCentrality') -> bool:
         return self.value >= other.value
-    
+
     @staticmethod
-    def getLowerLoc(value1: 'LevelOfCentrality', value2: 'LevelOfCentrality') -> 'LevelOfCentrality':
+    def getLowerLoc(value1: 'LevelOfCentrality',
+                    value2: 'LevelOfCentrality') -> 'LevelOfCentrality':
         return LevelOfCentrality(min(value1.value, value2.value))
-    
+
     @staticmethod
-    def getUpperLoc(value1: 'LevelOfCentrality', value2: 'LevelOfCentrality') -> 'LevelOfCentrality':
+    def getUpperLoc(value1: 'LevelOfCentrality',
+                    value2: 'LevelOfCentrality') -> 'LevelOfCentrality':
         return LevelOfCentrality(max(value1.value, value2.value))
-    
+
     def toConnectivityFunction(self) -> ConnectivityFunction:
         if self == LevelOfCentrality.II:
             return ConnectivityFunction.VFS_2
@@ -158,7 +166,7 @@ class NetworkSource(Enum):
             return NetworkSource.OSM
         else:
             return NetworkSource.UNKNOWN
-    
+
     def getFilterStr(self) -> str:
         if self == NetworkSource.ATKIS:
             return "objektart in ('Fahrbahnachse', 'Fahrwegachse', 'Strassenachse', 'Strassenverkehrsanlage', 'WegPfadSteig') AND klasse not in ('Bundesautobahn', '(Kletter-)Steig im Gebirge')"

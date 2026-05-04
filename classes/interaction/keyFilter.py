@@ -15,9 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 from PyQt5.QtCore import QObject, QEvent, Qt, pyqtSignal
 
-from qgis.core import QgsMessageLog
-
 from ...dialogstate import DialogStateMachine, DialogState
+
 
 class KeyPressFilter(QObject):
     centerEditEscape = pyqtSignal()
@@ -31,7 +30,7 @@ class KeyPressFilter(QObject):
         # If so, emit centerEditEscape signal
         if self.state.currentState == DialogState.CENTERPOINTSEDIT:
             if not event or not event.type():
-                return False # let event continue
+                return False  # let event continue
             if event.type() == QEvent.Type.KeyRelease and event.key():
                 if event.key() == Qt.Key_Escape:
                     self.centerEditEscape.emit()

@@ -38,7 +38,7 @@ DigiRad ist ein QGIS-Plugin, das die automatiserte Erstellung von Radverkehrsnet
 
 #### Methode 2: Manuelle Installation
 
-1. Laden Sie das Plugin als [ZIP-Datei](https://github.com/VisionVelo/DigiRad/releases/download/v0.7.0/visionvelo_digirad.zip) herunter
+1. Laden Sie das Plugin als [ZIP-Datei](https://github.com/VisionVelo/DigiRad/releases/download/v0.7.2/visionvelo_digirad.zip) herunter
 2. Entpacken Sie die Datei in Ihren QGIS-Plugins-Ordner:
    - **Windows**: `C:\Users\<Benutzername>\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\`
    - **Linux**: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
@@ -83,19 +83,22 @@ visionvelo_digirad/
 
 ### Projektleitung
 
-**Vision Velo GmbH**  
-Website: https://vision-velo.de  
-E-Mail: info@vision-velo.de
+[**Vision Velo GmbH**](https://vision-velo.de)
 
 ### Projektbeteiligte
 
-**IGS Ingenieurgesellschaft Stolz mbH**
+[**IGS Ingenieurgesellschaft Stolz mbH**](https://www.igs-ingenieure.de/)
 
 ## Finanzierung
 
 Das Projekt wird vom **Bundesministerium für Verkehr (BMV)** aus Mitteln zur Umsetzung des Nationalen Radverkehrsplans (NRVP) gefördert.
 
 Weitere Informationen zur Projektfinanzierung finden Sie unter der [Projektseite des Fördermittelgebers](https://www.mobilitaetsforum.bund.de/DE/Themen/Wissenspool/Projekte/NRVP/NRVP_23-25/NRVP_IGS-ING_DigiRad_2024-2025.html).
+
+<div style="display: flex; gap: 20px; align-items: center;">
+  <img src="res/bmv_resize_trans.png" alt="Logo BMV" width="150"/>
+  <img src="res/nicht_investiv.png" alt="Logo Nicht Investiv" width="150"/>
+</div>
 
 ## Lizenz
 

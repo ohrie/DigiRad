@@ -34,8 +34,10 @@ from .layers.layer import DigiRadLayer
 from .layers.baseLayer import BaseLayer
 from .processingConfig import ProcessingConfig
 
+
 class LayerManager:
-    def __init__(self, processingConfig: ProcessingConfig, showBaseMap: bool = True):
+    def __init__(self, processingConfig: ProcessingConfig,
+                 showBaseMap: bool = True):
         self._crs = QgsCoordinateReferenceSystem(CRS_STR)
         QgsProject.instance().setCrs(self._crs)
 
@@ -47,15 +49,15 @@ class LayerManager:
         self.layers = {}
         self.contextRef = None
         self.center = None
-    
+
     def setContextRef(self, contextRef: DialogStateContext):
         self.contextRef = contextRef
-    
+
     def unlink(self):
         self.layers = {}
         self.processingConfig = ProcessingConfig()
         self.projectName = self.processingConfig.projectName
-    
+
     def removeAll(self):
         root = QgsProject.instance().layerTreeRoot()
         group = root.findGroup(self.projectName)
@@ -64,7 +66,7 @@ class LayerManager:
         root.removeChildNode(group)
         self.layers = {}
         self.baseLayer = None
-    
+
     def show(self, center: Optional[QgsPointXY] = None):
         # If no layer is on the map, QGIS updates the CRS and extent
         # based on the first added layer.
@@ -81,20 +83,22 @@ class LayerManager:
 
         if self.showBaseMap:
             if self.contextRef:
-                providerName = self.contextRef.get(LocationSelectHandler.KBaseLayer)
+                providerName = self.contextRef.get(
+                    LocationSelectHandler.KBaseLayer)
             else:
                 providerName = ""
-            
+
             self.baseLayer = BaseLayer.createFromProviderName(providerName)
 
         self._ensureLayer(self.baseLayer)
         canvas.freeze(False)
 
-        # See https://gis.stackexchange.com/questions/303704/project-crs-not-being-respected-by-qgis/303710#303710
+        # See
+        # https://gis.stackexchange.com/questions/303704/project-crs-not-being-respected-by-qgis/303710#303710
         QTimer.singleShot(20, self._setProjectCrsAndCenter)
 
         self.update()
-    
+
     def _setProjectCrsAndCenter(self):
         QgsProject.instance().setCrs(self._crs)
         canvas = self.iface.mapCanvas()
@@ -103,30 +107,31 @@ class LayerManager:
         canvas.zoomScale(150000)
         if self.center:
             canvas.setCenter(self.center)
-        
+
         canvas.freeze(False)
         canvas.refresh()
-    
+
     def saveProjectToDisk(self, directory: str) -> Tuple[bool, str]:
         # Get all layers
         layers = []
         for value in self.contextRef.values():
             if isinstance(value, DigiRadLayer):
                 layers.append(value)
-        
+
         if not layers:
             return (True, "No layers")
         try:
-            projectFilePath = os.path.join(directory, self.projectName + ".qgz")
+            projectFilePath = os.path.join(
+                directory, self.projectName + ".qgz")
             gpkgFilePath = os.path.join(directory, self.projectName + ".gpkg")
-            
+
             # Prepare directory
             os.makedirs(directory, exist_ok=True)
             if os.path.exists(projectFilePath):
                 os.remove(projectFilePath)
             if os.path.exists(gpkgFilePath):
                 os.remove(gpkgFilePath)
-            
+
             # Save layers to geopackage file
             for layer in layers:
                 layerName = layer.name()
@@ -137,13 +142,14 @@ class LayerManager:
                 options = QgsVectorFileWriter.SaveVectorOptions()
                 options.driverName = "GPKG"
                 options.layerName = layerName
-                
-                # Check if this is the first layer (create new file) or append to existing
+
+                # Check if this is the first layer (create new file) or append
+                # to existing
                 if os.path.exists(gpkgFilePath):
                     options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
                 else:
                     options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
-                
+
                 error = QgsVectorFileWriter.writeAsVectorFormatV3(
                     layer.qgsLayer(),
                     gpkgFilePath,
@@ -156,7 +162,7 @@ class LayerManager:
                     msg = f"Error writing layer {layer.name()}: {error[1]}"
                     QgsMessageLog.logMessage(msg)
                     return (False, msg)
-                
+
                 # Replace source in existing layer
                 newSource = f"{gpkgFilePath}|layername={layerName}"
                 layer.qgsLayer().setDataSource(newSource, layer.name(), "ogr")
@@ -164,10 +170,12 @@ class LayerManager:
                     layer.qgsLayer().triggerRepaint()
                     layer.qgsLayer().reload()
                 else:
-                    msg = f"Error while setting data source for layer {layer.name()}: {layer.qgsLayer().error()}"
+                    msg = f"Error while setting data source for layer {
+                        layer.name()}: {
+                        layer.qgsLayer().error()}"
                     QgsMessageLog.logMessage(msg)
                     return (False, msg)
-            
+
             # Save project
             success = QgsProject.instance().write(projectFilePath)
             if not success:
@@ -178,31 +186,32 @@ class LayerManager:
                 return (True, "")
         except Exception as e:
             return (False, f"Error while saving to disk: {e}")
-            
+
     @staticmethod
     def _sanitizeLayername(layerName: str) -> str:
         layerName = layerName.replace(' ', '_').replace('-', '_')
         return ''.join(c for c in layerName if c.isalnum() or c == '_')
 
-    def update(self, layerHideList: List[str] = [], groupHidelist: List[str] = []):
+    def update(self, layerHideList: List[str]
+               = [], groupHidelist: List[str] = []):
         if not self.contextRef:
             return
-        
+
         updatedLayers = set()
         for value in self.contextRef.values():
             if isinstance(value, DigiRadLayer):
                 self.updateLayer(value)
                 updatedLayers.add(value.name())
-        
+
         layersToRemove = []
         for (layerId, layer) in self.layers.items():
             if layer.name() not in updatedLayers:
                 self._removeLayer(layer)
                 layersToRemove.append(layerId)
-        
+
         for layerId in layersToRemove:
             del self.layers[layerId]
-        
+
         if self.layers and (layerHideList or groupHidelist):
             root = QgsProject.instance().layerTreeRoot()
             group = root.findGroup(self.projectName)
@@ -218,7 +227,7 @@ class LayerManager:
                         else:
                             subgroup.setItemVisibilityChecked(True)
                             subgroup.setExpanded(True)
-                
+
                 layerName = value.name()
                 layerNode = group.findLayer(value._qgsLayer)
                 if layerNode:
@@ -226,20 +235,22 @@ class LayerManager:
                         layerNode.setItemVisibilityCheckedRecursive(False)
                         layerNode.setExpanded(False)
                     else:
-                        layerNode.setItemVisibilityCheckedRecursive(value.visible)
+                        layerNode.setItemVisibilityCheckedRecursive(
+                            value.visible)
                         layerNode.setExpanded(value.expanded)
 
     def _getGroup(self, layer: Optional[DigiRadLayer] = None):
         root = QgsProject.instance().layerTreeRoot()
         group = root.findGroup(self.projectName)
         if not group:
-            # If the project group is not found, add it and then move it to the top
+            # If the project group is not found, add it and then move it to the
+            # top
             group = root.addGroup(self.projectName)
             clone = group.clone()
             root.insertChildNode(0, clone)
             root.removeChildNode(group)
             group = clone
-        
+
         if layer and layer.groupName:
             subgroup = group.findGroup(layer.groupName)
             if subgroup:
@@ -249,7 +260,7 @@ class LayerManager:
                 group = self._moveGroupToTop(group, layer.groupName)
 
         return (root, group)
-    
+
     def _ensureLayer(self, layer: DigiRadLayer):
         if layer and layer.isQgsLayerPresent():
             (root, group) = self._getGroup(layer)
@@ -257,11 +268,12 @@ class LayerManager:
             layerNode = group.findLayer(qgsLayer)
             if not layerNode:
                 # Add the layer via the `addMapLayer` fn to the root
-                # and then move it to the group 
+                # and then move it to the group
                 QgsProject.instance().addMapLayer(qgsLayer)
                 layerNode = root.findLayer(qgsLayer.id())
                 if not layerNode:
-                    QgsMessageLog.logMessage(f"No layer node found for QGIS layer {qgsLayer.id()}")
+                    QgsMessageLog.logMessage(
+                        f"No layer node found for QGIS layer {qgsLayer.id()}")
                     return
                 clone = layerNode.clone()
                 group.insertChildNode(0, clone)
@@ -275,7 +287,7 @@ class LayerManager:
             (root, group) = self._getGroup(layer)
             if group.findLayer(layer.qgsLayer()):
                 group.removeLayer(layer.qgsLayer())
-    
+
     def _moveToTop(self, layer: DigiRadLayer):
         if layer and layer.isQgsLayerPresent():
             (root, group) = self._getGroup(layer)
@@ -285,7 +297,7 @@ class LayerManager:
             parent = layerNode.parent()
             parent.removeChildNode(layerNode)
             group.insertChildNode(0, clonedNode)
-        
+
     def _moveGroupToTop(self, group: QgsLayerTreeGroup, childGroupName: str):
         subGroupNode = group.findGroup(childGroupName)
 
@@ -310,12 +322,12 @@ class LayerManager:
 
         self._ensureLayer(layer)
         self.iface.layerTreeView().refreshLayerSymbology(layer.id())
-    
+
     def getLayer(self, layerType: Type) -> Optional[DigiRadLayer]:
         for layer in self.layers:
             if isinstance(layer, layerType):
                 return layer
-        
+
         return None
 
     def updateProjectName(self):

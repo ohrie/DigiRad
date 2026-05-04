@@ -13,6 +13,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
+from .classes.processingConfig import ProcessingConfig
+from .classes.layerManager import LayerManager
+from .visionvelo_digirad_dialog import DigiRadDialog
 import sys
 import os.path
 
@@ -24,9 +27,6 @@ from qgis.PyQt.QtWidgets import QAction
 from . import resources_rc
 sys.modules['resources_rc'] = resources_rc
 # Import the code for the dialog
-from .visionvelo_digirad_dialog import DigiRadDialog
-from .classes.layerManager import LayerManager
-from .classes.processingConfig import ProcessingConfig
 
 
 class DigiRad:
@@ -88,18 +88,17 @@ class DigiRad:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('DigiRad', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -175,11 +174,11 @@ class DigiRad:
 
         # will be set False in run()
         self.first_start = True
-    
+
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
 
-        #print "** CLOSING awd"
+        # print "** CLOSING awd"
 
         # disconnects
         if self.dockwidget:
@@ -193,7 +192,6 @@ class DigiRad:
 
         self.pluginIsActive = False
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -201,9 +199,8 @@ class DigiRad:
                 self.tr(u'&DigiRad'),
                 action)
             self.iface.removeToolBarIcon(action)
-        
-        del self.toolbar
 
+        del self.toolbar
 
     def run(self):
         """Run method that performs all the real work"""
@@ -217,7 +214,7 @@ class DigiRad:
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
-            if self.dockwidget == None:
+            if self.dockwidget is None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dockwidget = DigiRadDialog(self.iface, self.layerManager)
 

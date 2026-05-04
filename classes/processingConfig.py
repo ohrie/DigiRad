@@ -18,13 +18,14 @@ from datetime import datetime
 
 from .ars import ARSCode
 
+
 class ProcessingConfig:
     DefaultProjectName = "DigiRad"
 
     def __init__(self):
         self.projectName = ProcessingConfig.DefaultProjectName
         self.arsCode = None
-    
+
     def setARSCode(self, arsCode: Optional[ARSCode]):
         self.arsCode = arsCode
         dt = datetime.today().strftime('%Y-%m-%d-T%H-%M')

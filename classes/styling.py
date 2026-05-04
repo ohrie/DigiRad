@@ -20,9 +20,10 @@ from qgis.core import (
     QgsSymbol,
     QgsWkbTypes,
     Qgis
-    )
+)
 
 from .network import LevelOfCentrality, ConnectivityFunction
+
 
 class Colors:
     # Türkis
@@ -37,9 +38,10 @@ class Colors:
     Surrounding = QColor(245, 124, 0, 255)
     Default = QColor("gray")
     # Magenta
-    Error = QColor(255, 0, 255, 255) 
+    Error = QColor(255, 0, 255, 255)
 
     Black = QColor("black")
+
 
 class Style:
     @staticmethod
@@ -56,7 +58,7 @@ class Style:
             return Colors.Surrounding
         else:
             return Colors.Default
-    
+
     @staticmethod
     def getColorForCF(cf: ConnectivityFunction):
         if cf == ConnectivityFunction.VFS_2:
@@ -69,7 +71,7 @@ class Style:
             return Colors.Extra
         else:
             return Colors.Default
-    
+
     @staticmethod
     def getSizeForLOC(loc: LevelOfCentrality):
         if loc == LevelOfCentrality.II:
@@ -84,7 +86,7 @@ class Style:
             return 4
         else:
             return 1
-    
+
     @staticmethod
     def getSizeForCF(cf: ConnectivityFunction):
         if cf == ConnectivityFunction.VFS_2:
@@ -97,8 +99,9 @@ class Style:
             return 0.5
         else:
             return 0.5
-    
-    def getStyleForRouteLine(cf: ConnectivityFunction, isDemand: bool = False) -> QgsSymbol:
+
+    def getStyleForRouteLine(cf: ConnectivityFunction,
+                             isDemand: bool = False) -> QgsSymbol:
         if isDemand:
             symbol = QgsSymbol.defaultSymbol(QgsWkbTypes.LineGeometry)
             symbol.deleteSymbolLayer(0)
