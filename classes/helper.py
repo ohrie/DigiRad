@@ -15,8 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 from qgis.core import QgsPoint
 
+
 def createPointHash(point: QgsPoint) -> int:
     return hash((point.x(), point.y()))
+
 
 def createDoublePointHash(point1: QgsPoint, point2: QgsPoint) -> int:
     minX = min(point1.x(), point2.x())

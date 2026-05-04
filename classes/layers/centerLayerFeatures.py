@@ -23,14 +23,18 @@ from qgis.core import (
 from ..network import LevelOfCentrality
 from ..ars import ARSCodeStr
 
+
 class CenterLayerFeatureConfig:
-    def __init__(self, locName: str = "Zentralitaet", nameName: str = "Bemerkung", arsName: str = "ARS"):
+    def __init__(self, locName: str = "Zentralitaet",
+                 nameName: str = "Bemerkung", arsName: str = "ARS"):
         self.locName = locName
         self.nameName = nameName
         self.arsName = arsName
 
+
 class CenterLayerFeature:
-    def __init__(self, featureId, name: str, ars: ARSCodeStr, loc: LevelOfCentrality, geom: QgsPoint) -> 'CenterLayerFeature':
+    def __init__(self, featureId, name: str, ars: ARSCodeStr,
+                 loc: LevelOfCentrality, geom: QgsPoint) -> 'CenterLayerFeature':
         self.featureId = featureId
         self.name = name
         self.ars = ars
@@ -38,11 +42,12 @@ class CenterLayerFeature:
         self.geom = geom
 
     @staticmethod
-    def featuresFromLayer(qgsLayer: QgsVectorLayer, config: CenterLayerFeatureConfig) -> Dict[LevelOfCentrality, List['CenterLayerFeature']]:
+    def featuresFromLayer(qgsLayer: QgsVectorLayer,
+                          config: CenterLayerFeatureConfig) -> Dict[LevelOfCentrality, List['CenterLayerFeature']]:
         features = {}
         for loc in LevelOfCentrality:
             features[loc] = []
-        
+
         nameIdx = qgsLayer.fields().indexFromName(config.nameName)
         arsIdx = qgsLayer.fields().indexFromName(config.arsName)
         locIdx = qgsLayer.fields().indexFromName(config.locName)
@@ -53,7 +58,8 @@ class CenterLayerFeature:
             try:
                 loc = LevelOfCentrality.fromStr(loc)
             except Exception as e:
-                QgsMessageLog.logMessage(f"Unable to get level of centrality for feature {feat.id()} ({name}): {e}")
+                QgsMessageLog.logMessage(
+                    f"Unable to get level of centrality for feature {feat.id()} ({name}): {e}")
                 continue
             geom = feat.geometry()
             if not geom:
@@ -62,14 +68,16 @@ class CenterLayerFeature:
                 if not geom.convertToSingleType():
                     QgsMessageLog.logMessage("Unable to convert to single")
                     continue
-            
+
             ars = ARSCodeStr.fromStr(arsStr)
             if not ars:
-                QgsMessageLog.logMessage(f"Unable to create ars code from {arsStr}")
+                QgsMessageLog.logMessage(
+                    f"Unable to create ars code from {arsStr}")
                 ars = ARSCodeStr.empty()
-            
+
             geom = geom.asPoint()
             geom = QgsPoint(geom.x(), geom.y())
-            features[loc].append(CenterLayerFeature(feat.id(), name, ars, loc, geom))
+            features[loc].append(CenterLayerFeature(
+                feat.id(), name, ars, loc, geom))
 
         return features

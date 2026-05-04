@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 from qgis.core import QgsVectorLayer, QgsCategorizedSymbolRenderer, QgsMarkerSymbol, QgsRendererCategory
 
+
 class CenterLayer():
     def __init__(self, layer):
         renderer = self._createRenderer()
@@ -22,34 +23,36 @@ class CenterLayer():
         layer.triggerRepaint()
 
         self._layer = layer
-    
-    def _createRenderer(self, categoryField: str = "Centertype") -> QgsCategorizedSymbolRenderer:
+
+    def _createRenderer(
+            self, categoryField: str = "Centertype") -> QgsCategorizedSymbolRenderer:
         renderer = QgsCategorizedSymbolRenderer(categoryField)
 
         # Define your categories with their styles
         # Format: CenterType value, Symbol (color and size), Label
         categories = [
-            ["Oberzentru", QgsMarkerSymbol.createSimple({'color': '0,0,255', 'size': '4'}), "Oberzentrum"],
-            ["Grundzentr", QgsMarkerSymbol.createSimple({'color': '255,0,0', 'size': '2'}), "Grundzentrum"],
+            ["Oberzentru", QgsMarkerSymbol.createSimple(
+                {'color': '0,0,255', 'size': '4'}), "Oberzentrum"],
+            ["Grundzentr", QgsMarkerSymbol.createSimple(
+                {'color': '255,0,0', 'size': '2'}), "Grundzentrum"],
         ]
         for category in categories:
             value = category[0]
             symbol = category[1]
             label = category[2]
-            
+
             cat = QgsRendererCategory(value, symbol, label)
             renderer.addCategory(cat)
-        
+
         return renderer
 
     @staticmethod
     def loadFromFile(filePath: str, layerName):
         layer = QgsVectorLayer(filePath, layerName, "ogr")
         return CenterLayer(layer)
-    
 
     def qgsLayer(self):
         return self._layer
-    
+
     def name(self):
         return self._layer.name()

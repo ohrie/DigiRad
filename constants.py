@@ -28,5 +28,7 @@ EPSG_CODE = "25832"
 CRS_STR = "EPSG:{}".format(EPSG_CODE)
 # Surrounding distance in m
 SURROUNDING_QUERY_DISTANCE = 25000
-SURROUNDINGS_CENTER_POINTS_PATH = os.path.join(DAT_PATH, "DigiRadUmgebungsgemeinden.gpkg")
-SURROUNDING_LAYER = QgsVectorLayer(SURROUNDINGS_CENTER_POINTS_PATH, "suroundings_index", "ogr")
+SURROUNDINGS_CENTER_POINTS_PATH = os.path.join(
+    DAT_PATH, "DigiRadUmgebungsgemeinden.gpkg")
+SURROUNDING_LAYER = QgsVectorLayer(
+    SURROUNDINGS_CENTER_POINTS_PATH, "suroundings_index", "ogr")

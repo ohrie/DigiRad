@@ -17,16 +17,18 @@ from qgis.core import QgsDistanceArea, QgsCoordinateReferenceSystem, QgsCoordina
 
 from ...constants import CRS_STR
 
+
 class ValidationEntry:
     def __init__(self, airDistPathRel):
         self.airDistPathRel = airDistPathRel
-    
+
     @staticmethod
     def empty() -> 'ValidationEntry':
         ValidationEntry(0)
-    
+
     def isEmpty(self) -> bool:
         return self.airDistPathRel == 0
+
 
 class NetworkvalidatorMeta(type):
     _instances = {}
@@ -41,12 +43,14 @@ class NetworkvalidatorMeta(type):
             cls._instances[cls] = instance
         return cls._instances[cls]
 
+
 class Networkvalidator(metaclass=NetworkvalidatorMeta):
     def __init__(self):
         distCalc = QgsDistanceArea()
-        distCalc.setSourceCrs(QgsCoordinateReferenceSystem(CRS_STR), QgsCoordinateTransformContext())
+        distCalc.setSourceCrs(QgsCoordinateReferenceSystem(
+            CRS_STR), QgsCoordinateTransformContext())
         distCalc.setEllipsoid('WGS84')
-        
+
         self.distCalc = distCalc
 
     def validate(self, routeEntry) -> ValidationEntry:
@@ -54,9 +58,10 @@ class Networkvalidator(metaclass=NetworkvalidatorMeta):
             return ValidationEntry.empty()
         airDistPathRel = self._calculateAirDistPathRel(routeEntry)
         return ValidationEntry(airDistPathRel)
-    
+
     def _calculateAirDistPathRel(self, routeEntry) -> float:
-        airDistance = self.distCalc.measureLength(routeEntry.directRouteEntry.geometry())
+        airDistance = self.distCalc.measureLength(
+            routeEntry.directRouteEntry.geometry())
         pathDistance = self.distCalc.measureLength(routeEntry.geometry())
 
         return pathDistance / airDistance

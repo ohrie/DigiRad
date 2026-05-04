@@ -17,7 +17,6 @@ import unittest
 from qgis.PyQt.QtGui import QIcon
 
 
-
 class DigiRadDialogTest(unittest.TestCase):
     """Test rerources work."""
 
@@ -34,11 +33,4 @@ class DigiRadDialogTest(unittest.TestCase):
         path = ':/plugins/DigiRad/icon.png'
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
-
-if __name__ == "__main__":
-    suite = unittest.makeSuite(DigiRadResourcesTest)
-    runner = unittest.TextTestRunner(verbosity=2)
-    runner.run(suite)
-
-
 

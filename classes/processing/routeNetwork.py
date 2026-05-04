@@ -40,46 +40,53 @@ from ..processing.directRouteEntry import DirectRouteEntry
 from .routing.cfRouting import GraphkModifier
 from ...constants import CRS_STR
 
+
 class InnerPoint:
     def __init__(self, p: QgsPoint):
         self._x = p.x()
         self._y = p.y()
-    
+
     def x(self):
         return self._x
-    
+
     def y(self):
         return self._y
 
+
 class RouteGenerationOptions:
-    def __init__(self, detourTolerance: float = 0.0, centerDistanceTolerance: int = 100, networkStrategy: QgsNetworkStrategy = QgsNetworkDistanceStrategy()):
+    def __init__(self, detourTolerance: float = 0.0, centerDistanceTolerance: int = 100,
+                 networkStrategy: QgsNetworkStrategy = QgsNetworkDistanceStrategy()):
         self.detourTolerance = detourTolerance
         self.centerDistanceTolerance = centerDistanceTolerance
         self.networkStrategy = networkStrategy
-    
+
     def detourToModifactionFactor(self) -> float:
         return 1.0 - self.detourTolerance
-    
+
     def isDetourActive(self) -> bool:
         return self.detourTolerance != 0.0
-    
+
+
 class RouteEntry:
-    def __init__(self, directRouteEntry: DirectRouteEntry, routeResult: 'RouteResult') -> 'RouteEntry':
+    def __init__(self, directRouteEntry: DirectRouteEntry,
+                 routeResult: 'RouteResult') -> 'RouteEntry':
         self.directRouteEntry = directRouteEntry
         self.routeResult = routeResult
         self.validation = Networkvalidator().validate(self)
-    
+
     def geometry(self) -> QgsGeometry:
         return self.routeResult.geometry()
-    
+
     def notFound(self) -> bool:
         return self.routeResult is None
 
+
 class RouteNetwork:
-    def __init__(self, networkLayer: QgsVectorLayer, directRouteLayer: DirectRouteNetworklayer):
+    def __init__(self, networkLayer: QgsVectorLayer,
+                 directRouteLayer: DirectRouteNetworklayer):
         self.networkLayer = networkLayer
         self.directRouteLayer = directRouteLayer
-    
+
     def createNetwork(self) -> List[RouteEntry]:
         pathFinder = NetworkPathFinder(self.networkLayer)
         # TODO: Batch processing for large numbers of route entries
@@ -95,17 +102,21 @@ class RouteNetwork:
         for routeEntry in entries:
             pathPoints = pathFinder.findPathOfRelation(routeEntry.relationId)
             if not pathPoints:
-                QgsMessageLog.logMessage(f"No path found for relation {routeEntry.relationId}")
-            
-            # Still append the result to resultEntries if pathPoints is empty to indicate which routeEntry was not found
+                QgsMessageLog.logMessage(
+                    f"No path found for relation {routeEntry.relationId}")
+
+            # Still append the result to resultEntries if pathPoints is empty
+            # to indicate which routeEntry was not found
             resultEntries.append(RouteEntry(routeEntry, pathPoints))
-        
+
         QgsMessageLog.logMessage("Done.")
-        
+
         return resultEntries
 
+
 class RouteResult:
-    def __init__(self, edgeIds: List[int], points: List[QgsPoint], cost: float):
+    def __init__(self, edgeIds: List[int],
+                 points: List[QgsPoint], cost: float):
         self.edgeIds = edgeIds
         self.points = points
         self.cost = cost
@@ -114,12 +125,15 @@ class RouteResult:
     def geometry(self) -> QgsGeometry:
         if not self._geom:
             self._geom = QgsGeometry.fromPolyline(self.points)
-        
+
         return self._geom
+
 
 class NetworkPathFinder:
     """Class for finding multiple paths on a network without rebuilding the graph"""
-    def __init__(self, networkLayer, options: RouteGenerationOptions, inclineField=None, direction=QgsVectorLayerDirector.Direction.DirectionBoth):
+
+    def __init__(self, networkLayer, options: RouteGenerationOptions,
+                 inclineField=None, direction=QgsVectorLayerDirector.Direction.DirectionBoth):
         """Initialize with a network layer and optional fields"""
         self.networkLayer = networkLayer
         self.options = options
@@ -131,47 +145,55 @@ class NetworkPathFinder:
         self._routeEntryIndex = None
         self.crs = networkLayer.crs()
         self.distanceCalc = QgsDistanceArea()
-        self.distanceCalc.setSourceCrs(QgsCoordinateReferenceSystem(CRS_STR), QgsCoordinateTransformContext())
+        self.distanceCalc.setSourceCrs(QgsCoordinateReferenceSystem(
+            CRS_STR), QgsCoordinateTransformContext())
         self.distanceCalc.setEllipsoid('WGS84')
-        
+
         # Initialize the network topology
         self._buildDirector()
-    
+
     def _buildDirector(self):
         """Set up the network director with appropriate strategy"""
         self.director = QgsVectorLayerDirector(
             self.networkLayer, -1, '', '', '', self.direction)
-        
+
         self.director.addStrategy(self.options.networkStrategy)
         self.director.addStrategy(self.options.networkStrategy)
-    
+
     def buildGraph(self, routeEntries: List[DirectRouteEntry]):
         """Build a graph including all the provided route entries"""
         self._routeEntryIndex = RouteEntryIndex(routeEntries)
         builder = QgsGraphBuilder(self.crs)
-        self.tiedPoints = self.director.makeGraph(builder, self._routeEntryIndex.getTiedPoints())
+        self.tiedPoints = self.director.makeGraph(
+            builder, self._routeEntryIndex.getTiedPoints())
 
         self.graph = builder.graph()
-        self.graphModifier = GraphkModifier(self.graph, self.options.detourToModifactionFactor())
-        
+        self.graphModifier = GraphkModifier(
+            self.graph, self.options.detourToModifactionFactor())
+
         return self.graph
-    
-    def areRelationCenterDistancesInTolerance(self, relation: 'InnerDirectRouteEntry') -> bool:
-        indicies = self._routeEntryIndex.getTiedIndicesOfRelation(relation.relationId)
+
+    def areRelationCenterDistancesInTolerance(
+            self, relation: 'InnerDirectRouteEntry') -> bool:
+        indicies = self._routeEntryIndex.getTiedIndicesOfRelation(
+            relation.relationId)
         tiedP1 = self.tiedPoints[indicies[0]]
         tiedP2 = self.tiedPoints[indicies[1]]
 
-        dist1 = self.distanceCalc.measureLine(QgsPointXY(relation.p1.x(), relation.p1.y()), tiedP1)
+        dist1 = self.distanceCalc.measureLine(
+            QgsPointXY(relation.p1.x(), relation.p1.y()), tiedP1)
         if dist1 > self.options.centerDistanceTolerance:
             return False
-        
-        dist2 = self.distanceCalc.measureLine(QgsPointXY(relation.p2.x(), relation.p2.y()), tiedP2)
+
+        dist2 = self.distanceCalc.measureLine(
+            QgsPointXY(relation.p2.x(), relation.p2.y()), tiedP2)
         if dist2 > self.options.centerDistanceTolerance:
             return False
-        
+
         return True
-    
-    def findPathOfRelation(self, relationId: int, modifyGraph: bool = False) -> Optional[RouteResult]:
+
+    def findPathOfRelation(self, relationId: int,
+                           modifyGraph: bool = False) -> Optional[RouteResult]:
         """Find path of a relation"""
         indices = self._routeEntryIndex.getTiedIndicesOfRelation(relationId)
         if indices:
@@ -181,22 +203,24 @@ class NetworkPathFinder:
             return self.findPath(indices[0], indices[1], modifyGraph)
         else:
             return None
-    
-    def findPath(self, fromPointIdx, toPointIdx, modifyGraph: bool = False) -> Optional[RouteResult]:
+
+    def findPath(self, fromPointIdx, toPointIdx,
+                 modifyGraph: bool = False) -> Optional[RouteResult]:
         """Find path between two tied points by their index"""
         if not self.graph:
-            raise ValueError("Graph has not been built. Call buildGraph first.")
-            
+            raise ValueError(
+                "Graph has not been built. Call buildGraph first.")
+
         # Get vertex IDs from tied points
         fromVertex = self.graph.findVertex(self.tiedPoints[fromPointIdx])
         toVertex = self.graph.findVertex(self.tiedPoints[toPointIdx])
-        
+
         # Calculate shortest path
         (tree, costs) = QgsGraphAnalyzer.dijkstra(self.graph, fromVertex, 1)
-        
+
         if len(tree) == 0 or tree[toVertex] == -1:
             return None  # No path found
-        
+
         # Add last point
         points = [self.graph.vertex(toVertex).point()]
         cost = costs[toVertex]
@@ -208,7 +232,7 @@ class NetworkPathFinder:
             toVertex = edge.fromVertex()
             points.append(self.graph.vertex(toVertex).point())
             edgeIds.append(edgeId)
-        
+
         points.reverse()
         points = list(map(lambda p: QgsPoint(p.x(), p.y()), points))
 
@@ -216,12 +240,14 @@ class NetworkPathFinder:
             self.graphModifier.modifyEdgeCosts(edgeIds)
 
         return RouteResult(edgeIds, points, cost)
-    
+
     def cleanUp(self):
         self.graphModifier.reset()
 
+
 class RouteEntryIndexItem:
-    def __init__(self, routeEntry: 'InnerDirectRouteEntry', idxP1: int, idxP2: int):
+    def __init__(self, routeEntry: 'InnerDirectRouteEntry',
+                 idxP1: int, idxP2: int):
         self.relationId = routeEntry.relationId
         self.p1 = routeEntry.p1
         self.p2 = routeEntry.p2
@@ -229,20 +255,22 @@ class RouteEntryIndexItem:
         self.idxP1 = idxP1
         self.idxP2 = idxP2
 
+
 class RouteEntryIndex:
     def __init__(self, routeEntries: List['InnerDirectRouteEntry']):
         self._index = OrderedDict()
         for (i, entry) in enumerate(routeEntries):
-            self._index[entry.relationId] = RouteEntryIndexItem(entry, i * 2, i * 2 + 1)
-        
+            self._index[entry.relationId] = RouteEntryIndexItem(
+                entry, i * 2, i * 2 + 1)
+
     def getTiedPoints(self) -> List[QgsPointXY]:
         tiedPoints = []
         for entry in self._index.values():
             tiedPoints.append(QgsPointXY(entry.p1.x(), entry.p1.y()))
             tiedPoints.append(QgsPointXY(entry.p2.x(), entry.p2.y()))
-        
+
         return tiedPoints
-    
+
     def getTiedIndicesOfRelation(self, relationId: int) -> Tuple[int, int]:
         if relationId in self._index:
             entry = self._index[relationId]
@@ -250,12 +278,14 @@ class RouteEntryIndex:
         else:
             return None
 
+
 class InnerDirectRouteEntry:
     def __init__(self, entry: DirectRouteEntry):
         self.relationId = entry.relationId
         self.p1 = InnerPoint(entry.p1())
         self.p2 = InnerPoint(entry.p2())
         self.cf = entry.cf
-    
+
     def geometry(self) -> QgsGeometry:
-        return QgsGeometry.fromPolyline([QgsPoint(self.p1.x(), self.p1.y()), QgsPoint(self.p2.x(), self.p2.y())])
+        return QgsGeometry.fromPolyline(
+            [QgsPoint(self.p1.x(), self.p1.y()), QgsPoint(self.p2.x(), self.p2.y())])
