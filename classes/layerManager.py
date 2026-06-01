@@ -170,9 +170,10 @@ class LayerManager:
                     layer.qgsLayer().triggerRepaint()
                     layer.qgsLayer().reload()
                 else:
-                    msg = f"Error while setting data source for layer {
-                        layer.name()}: {
-                        layer.qgsLayer().error()}"
+                    msg = "Error while setting data source for layer {}: {}".format(
+                        layer.name(),
+                        layer.qgsLayer().error()
+                    )
                     QgsMessageLog.logMessage(msg)
                     return (False, msg)
 

@@ -12,23 +12,23 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
+import sys
+
+# Initialize Qt resources from file resources.py
+from . import resources_rc
+sys.modules['resources_rc'] = resources_rc
 
 from .classes.processingConfig import ProcessingConfig
 from .classes.layerManager import LayerManager
 from .visionvelo_digirad_dialog import DigiRadDialog
-import sys
+
 import os.path
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-# Initialize Qt resources from file resources.py
-from . import resources_rc
-sys.modules['resources_rc'] = resources_rc
 # Import the code for the dialog
-
-
 class DigiRad:
     """QGIS Plugin Implementation."""
 
