@@ -38,7 +38,7 @@ DigiRad ist ein QGIS-Plugin, das die automatiserte Erstellung von Radverkehrsnet
 
 #### Methode 2: Manuelle Installation
 
-1. Laden Sie das Plugin als [ZIP-Datei](https://github.com/VisionVelo/DigiRad/releases/download/v0.7.3/visionvelo_digirad.zip) herunter
+1. Laden Sie das Plugin als [ZIP-Datei](https://github.com/VisionVelo/DigiRad/releases/latest/download/visionvelo_digirad.zip) herunter
 2. Entpacken Sie die Datei in Ihren QGIS-Plugins-Ordner:
    - **Windows**: `C:\Users\<Benutzername>\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\`
    - **Linux**: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
