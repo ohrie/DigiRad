@@ -59,7 +59,7 @@ DigiRad ist ein QGIS-Plugin, das die automatiserte Erstellung von Radverkehrsnet
 
 ### Weitere Informationen
 
-Weiteführende Informationen finden Sie auf unserer [Plugin-Seite](https://vision-velo.de/digirad-digitales-radverkehrskonzept/).
+Weiteführende Informationen finden Sie auf unserer [Plugin-Seite](https://vision-velo.de/digirad-digitales-radverkehrskonzept/) sowie in unserem [Anwendungsleitfaden](https://vision-velo.de/wp-content/uploads/2026/06/020626_DigiRad_Leitfaden-zum-Plugin.pdf).
 
 Weitere Informationen zum Projekt finden Sie auch unter der [Projektseite im Mobilitätsforum Bund](https://www.mobilitaetsforum.bund.de/DE/Themen/Wissenspool/Projekte/NRVP/NRVP_23-25/NRVP_IGS-ING_DigiRad_2024-2025.html).
 
