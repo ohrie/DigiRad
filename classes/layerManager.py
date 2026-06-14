@@ -17,7 +17,7 @@ from typing import Type, Optional, Tuple, List
 
 import os
 
-from PyQt5.QtCore import QTimer
+from qgis.PyQt.QtCore import QTimer
 
 from qgis.core import (
     QgsMessageLog,
