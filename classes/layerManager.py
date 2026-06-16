@@ -88,6 +88,11 @@ class LayerManager:
             else:
                 providerName = ""
 
+            # Remove a previously added base map so we don't end up with
+            # multiple base map layers stacking up
+            if getattr(self, "baseLayer", None):
+                self._removeLayer(self.baseLayer)
+
             self.baseLayer = BaseLayer.createFromProviderName(providerName)
 
         self._ensureLayer(self.baseLayer)
@@ -277,7 +282,13 @@ class LayerManager:
                         f"No layer node found for QGIS layer {qgsLayer.id()}")
                     return
                 clone = layerNode.clone()
-                group.insertChildNode(0, clone)
+                # The base map should always be rendered below all other
+                # layers, so it is inserted at the bottom of the group
+                # instead of the top.
+                if isinstance(layer, BaseLayer):
+                    group.insertChildNode(len(group.children()), clone)
+                else:
+                    group.insertChildNode(0, clone)
                 layerNode.parent().removeChildNode(layerNode)
                 if clone:
                     clone.setItemVisibilityChecked(layer.visible)
